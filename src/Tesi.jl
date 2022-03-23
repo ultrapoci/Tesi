@@ -76,66 +76,33 @@ function Base.size(L::Lattice)
 end
 
 
-# ===== Iteration over even sites =====
-
-struct EvenLattice
+# ===== Iteration over even and odd sites =====
+"""
+Iterator over a lattice's even or odd sites, where even (odd) site means that the sum over all coordinates of the site is even (odd)  
+"""
+struct EvenOddLattice
 	lattice::Lattice
+	mod_result::Int # it is 1 if odd sites, or 0 if even sites
 end
 
-evensites(L) = EvenLattice(L)
+evensites(L::Lattice) = EvenOddLattice(L, 0)
+oddsites(L::Lattice) = EvenOddLattice(L, 1)
 
-function Base.iterate(L::EvenLattice)
-	if L.lattice.dimensions % 2 == 0
+function Base.iterate(L::EvenOddLattice)
+	# decide whether the first site is even or odd
+	if L.lattice.dimensions % 2 == L.mod_result # = 0 if even, = 1 if odd
 		(L.lattice[begin], Base.tail(Tuple(CartesianIndices(L.lattice))))
 	else
 		(L.lattice[begin + 1], Base.tail(Base.tail(Tuple(CartesianIndices(L.lattice)))))
 	end
 end
 
-function Base.iterate(L::EvenLattice, state)
-	if length(state) == 0
-		return nothing
-	end
-
+function Base.iterate(L::EvenOddLattice, state)
 	indices_tail = state
 	for cartesian_index in state
 		indices_tail = Base.tail(indices_tail)
-		s = sum(Tuple(cartesian_index)) # sum over all coordinates of link's position
-		if s % 2 == 0 # it's even
-			return (L.lattice[cartesian_index], indices_tail)
-		end
-	end
-
-	nothing	
-end
-
-
-# ===== Iteration over odd sites =====
-
-struct OddLattice
-	lattice::Lattice
-end
-
-oddsites(L) = OddLattice(L)
-
-function Base.iterate(L::OddLattice)
-	if L.lattice.dimensions % 2 == 1 
-		(L.lattice[begin], Base.tail(Tuple(CartesianIndices(L.lattice))))
-	else
-		(L.lattice[begin + 1], Base.tail(Base.tail(Tuple(CartesianIndices(L.lattice)))))
-	end
-end
-
-function Base.iterate(L::OddLattice, state)
-	if length(state) == 0
-		return nothing
-	end
-
-	indices_tail = state
-	for cartesian_index in state
-		indices_tail = Base.tail(indices_tail)
-		s = sum(Tuple(cartesian_index)) # sum over all coordinates of link's position
-		if s % 2 == 1 # it's odd
+		s = sum(Tuple(cartesian_index)) # sum over all coordinates of site's position
+		if s % 2 == L.mod_result # = 0 if even, = 1 if odd
 			return (L.lattice[cartesian_index], indices_tail)
 		end
 	end
