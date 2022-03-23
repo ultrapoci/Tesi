@@ -21,12 +21,15 @@ struct Link{D}
 	end            
 end
 
+"""
+Data structure containing the lattice as `dimensions`-dimensional array.
+"""
 struct Lattice{D} <: AbstractArray{Link{D}, D}
 	dimensions::Int
 	length::Int
 	lattice::Array{Vector{Link{D}}, D}
 	
-	function Lattice(dimensions::Int, length::Int)
+	function Lattice(dimensions::Int, length::Int) # TODO: cold and hot start
 		# TODO constraints on length and dimensions
 		lattice = Array{Vector{Link}}(undef, tuple(fill(length, dimensions)...)) 
 		for index in CartesianIndices(lattice)
