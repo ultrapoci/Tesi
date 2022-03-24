@@ -107,7 +107,17 @@ struct EvenOddLattice
 	mod_result::Int # it is 1 if odd sites, or 0 if even sites
 end
 
+"""
+Returns an iterator over all even sites of a given lattice. A site is even if the sum of all its coordinates are even. 
+This is useful in conjuction with `oddsites`: even and odd sites don't influence one another when applying the updating algorithm. 
+"""
 evensites(L::Lattice) = EvenOddLattice(L, 0)
+
+"""
+Returns an iterator over all odd sites of a given lattice. A site is odd if the sum of all its coordinates are odd. 
+This is useful in conjuction with `evensites`: even and odd sites don't influence one another when applying the updating algorithm.
+\$test\$
+"""
 oddsites(L::Lattice) = EvenOddLattice(L, 1)
 
 function Base.iterate(L::EvenOddLattice)
