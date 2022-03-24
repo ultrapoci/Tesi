@@ -35,16 +35,22 @@ struct Lattice{D} <: AbstractArray{Link{D}, D}
 	length::Int
 	lattice::Array{Vector{Link{D}}, D}
 	
-	function Lattice(dimensions::Int, length::Int) # TODO: cold and hot start
+	function Lattice(dimensions::Int, length::Int, start = :cold) # TODO: cold and hot start
 		# TODO constraints on length and dimensions
-		lattice = Array{Vector{Link}}(undef, tuple(fill(length, dimensions)...)) 
+		lattice = Array{Vector{Link}}(undef, ntuple(_ -> length, Val(dimensions))...) # `Val` is used for type stability
+
 		for index in CartesianIndices(lattice)
-			links = Link[]
-			for direction in 1:dimensions
-				push!(links, Link(Tuple(index), direction))
+			lattice[index] = if start ≠ :empty
+				links = Link[]
+				for direction in 1:dimensions
+					push!(links, Link(Tuple(index), direction))
+				end
+				links
+			else
+				Vector{Link}(undef, dimensions)
 			end
-			lattice[index] = links
 		end
+
 		new{dimensions}(dimensions, length, lattice)
 	end
 end
