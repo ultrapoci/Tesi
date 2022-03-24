@@ -5,7 +5,10 @@ DrWatson.@quickactivate "Tesi"
 
 import LinearAlgebra
 
-export Link, Lattice, evensites, oddsites
+export Link, Lattice, evensites, oddsites, directionindex
+
+
+# ==== Link =====
 
 struct Link{D}
 	position::NTuple{D, Int}
@@ -20,6 +23,9 @@ struct Link{D}
 		new{D}(position, direction, m)
 	end            
 end
+
+
+# =====  Lattice =====
 
 """
 Data structure containing the lattice as `dimensions`-dimensional array.
@@ -75,6 +81,22 @@ function Base.size(L::Lattice)
 	size(L.lattice)
 end
 
+"""
+Returns a `CartesianIndex` containing all zeros except a one in the `direction` position. Basically, it returns the unit
+vector in the given direction as a CartesianIndex.
+"""
+function directionindex(L::Lattice, direction::Int)
+	directionindex(L.dimensions, direction)
+end
+
+function directionindex(dimensions::Int, direction::Int)
+	CartesianIndex(
+		ntuple(
+			i -> i == direction ? 1 : 0,
+			Val(dimensions)
+		)
+	)
+end
 
 # ===== Iteration over even and odd sites =====
 """
