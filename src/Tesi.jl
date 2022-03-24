@@ -3,23 +3,25 @@ module Tesi
 using DrWatson
 DrWatson.@quickactivate "Tesi" 
 
-import LinearAlgebra
+import LinearAlgebra: I
+import EnumX: @enumx
 
-export Link, Lattice, evensites, oddsites, directionindex
+export Link, Lattice, evensites, oddsites, directionindex, LatticeStart
 
 
 # ==== Link =====
 
 struct Link{D}
-	position::NTuple{D, Int}
-	direction::Int
+	position::NTuple{D, Integer}
+	direction::Integer
 	m::Matrix{Complex} # TODO: see if there's a better way to store Sp(2) in memory
 
-	function Link(position::NTuple{D, Int}, direction::Int) where D
+	# TODO: cold and hot start
+	function Link(position::NTuple{D, Integer}, direction::Integer) where D
 		if direction > D 
 			throw(ArgumentError("direction = $direction of given link is bigger than dimensions = $D of the lattice"))
 		end
-		m = Matrix{Complex}(LinearAlgebra.I, 4, 4) # TODO: see if Hermitian(m) is useful 
+		m = Matrix{Complex}(I, 4, 4) # TODO: see if Hermitian(m) is useful 
 		new{D}(position, direction, m)
 	end            
 end
@@ -27,20 +29,38 @@ end
 
 # =====  Lattice =====
 
+@enumx LatticeStart begin 
+	"""
+	Creates a lattice as an `Array{Vector{Link{D}}, D}`, where every `Vector{Link{D}}` is initialized with `undef`.
+	"""
+	Empty
+
+	"""
+	Creates a lattice where all `Link`s are initialized with the identity matrix.
+	"""
+	Cold
+
+	"""
+	Creates a lattice where all `Link`s are initialized with a random matrix.
+	"""
+	Hot
+end
+
 """
 Data structure containing the lattice as `dimensions`-dimensional array.
 """
 struct Lattice{D} <: AbstractArray{Link{D}, D}
-	dimensions::Int
-	length::Int
+	dimensions::Integer
+	length::Integer
 	lattice::Array{Vector{Link{D}}, D}
 	
-	function Lattice(dimensions::Int, length::Int, start = :cold) # TODO: cold and hot start
+	#function Lattice(dimensions::Integer, length::Integer, start::LatticeStart.T = LatticeStart.Cold) 
+	function Lattice(::Val{dimensions}, length::Integer, start::LatticeStart.T = LatticeStart.Cold) where dimensions
 		# TODO constraints on length and dimensions
 		lattice = Array{Vector{Link}}(undef, ntuple(_ -> length, Val(dimensions))...) # `Val` is used for type stability
-
+		
 		for index in CartesianIndices(lattice)
-			lattice[index] = if start ≠ :empty
+			lattice[index] = if start ≠ LatticeStart.Empty
 				links = Link[]
 				for direction in 1:dimensions
 					push!(links, Link(Tuple(index), direction))
@@ -89,13 +109,14 @@ end
 
 """
 Returns a `CartesianIndex` containing all zeros except a one in the `direction` position. Basically, it returns the unit
-vector in the given direction as a CartesianIndex.
+vector in the given direction as a CartesianIndex. Use the version with `Val{dimensions}` when possible: it is much quicker.
 """
-function directionindex(L::Lattice, direction::Int)
+function directionindex(L::Lattice, direction::Integer)
 	directionindex(L.dimensions, direction)
 end
 
-function directionindex(dimensions::Int, direction::Int)
+#function directionindex(dimensions::Integer, direction::Integer)
+function directionindex(::Val{dimensions}, direction::Integer) where dimensions
 	CartesianIndex(
 		ntuple(
 			i -> i == direction ? 1 : 0,
@@ -122,7 +143,6 @@ evensites(L::Lattice) = EvenOddLattice(L, 0)
 """
 Returns an iterator over all odd sites of a given lattice. A site is odd if the sum of all its coordinates are odd. 
 This is useful in conjuction with `evensites`: even and odd sites don't influence one another when applying the updating algorithm.
-\$test\$
 """
 oddsites(L::Lattice) = EvenOddLattice(L, 1)
 
