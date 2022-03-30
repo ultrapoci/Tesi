@@ -30,7 +30,6 @@ struct Lattice{D} <: AbstractArray{Link{D}, D}
 	length::Integer
 	lattice::Array{Vector{Link{D}}, D}
 	
-	#function Lattice(dimensions::Integer, length::Integer, start::LatticeStart.T = LatticeStart.Cold) 
 	function Lattice(::Val{dimensions}, length::Integer, start::LatticeStart.T = LatticeStart.Cold) where dimensions
 		# TODO constraints on length and dimensions
 		lattice = Array{Vector{Link}}(undef, ntuple(_ -> length, Val(dimensions))...) # `Val` is used for type stability
