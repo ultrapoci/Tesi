@@ -26,17 +26,15 @@ end
 Data structure containing the lattice as `dimensions`-dimensional array.
 """
 struct Lattice{D} <: AbstractArray{Link{D}, D}
-	dimensions::Integer
-	length::Integer
 	lattice::Array{Vector{Link{D}}, D}
 	
-	function Lattice(::Val{dimensions}, length::Integer, start::LatticeStart.T = LatticeStart.Cold) where dimensions
+	function Lattice(::Val{dimensions}, length::Integer; start::LatticeStart.T = LatticeStart.Cold) where dimensions
 		# TODO constraints on length and dimensions
-		lattice = Array{Vector{Link}}(undef, ntuple(_ -> length, Val(dimensions))...) # `Val` is used for type stability
+		lattice = Array{Vector{Link}}(undef, ntuple(_ -> length, Val(dimensions))) # `Val` is used for type stability
 		
 		for index in CartesianIndices(lattice)
 			lattice[index] = if start ≠ LatticeStart.Empty
-				links = Link[]
+				links = Link{dimensions}[]
 				for direction in 1:dimensions
 					push!(links, Link(Tuple(index), direction))
 				end
@@ -46,7 +44,27 @@ struct Lattice{D} <: AbstractArray{Link{D}, D}
 			end
 		end
 
-		new{dimensions}(dimensions, length, lattice)
+		new{dimensions}(lattice)
+	end
+
+	function Lattice(timelength::Integer, spacedimensions::Vararg{Integer, D}; start::LatticeStart.T = LatticeStart.Cold) where D
+		# TODO constraints on length and dimensions
+		lattice = Array{Vector{Link}}(undef, timelength, spacedimensions...)
+		dimensions = D + 1
+
+		for index in CartesianIndices(lattice)
+			lattice[index] = if start ≠ LatticeStart.Empty
+				links = Link{dimensions}[]
+				for direction in 1:dimensions
+					push!(links, Link(Tuple(index), direction))
+				end
+				links
+			else
+				Vector{Link}(undef, dimensions)
+			end
+		end
+
+		new{dimensions}(lattice)
 	end
 end
 
@@ -55,9 +73,9 @@ function Base.getindex(L::Lattice, i)
 	getindex(L.lattice, i)
 end
 
-# Multiple indices: every entry is `mod`ed by the length of the lattice to wrap around
+# Multiple indices: every entry is `mod`ed by the dimensions of the lattice to wrap around
 function Base.getindex(L::Lattice, i...)
-	getindex(L.lattice, mod1.(i, L.length)...)
+	getindex(L.lattice, mod1.(i, size(L))...)
 end
 
 # Linear indexing, without `mod`
@@ -65,9 +83,9 @@ function Base.setindex!(L::Lattice, v, i)
 	setindex!(L.lattice, v, i)
 end
 
-# Multiple indices: every entry is `mod`ed by the length of the lattice to wrap around
+# Multiple indices: every entry is `mod`ed by the dimensions of the lattice to wrap around
 function Base.setindex!(L::Lattice, v, i...)
-	setindex!(L.lattice, v, mod1.(i, L.length)...)
+	setindex!(L.lattice, v, mod1.(i, size(L))...)
 end
 
 function Base.firstindex(L::Lattice)
@@ -88,7 +106,7 @@ end
 Returns a `CartesianIndex` containing all zeros except a one in the `direction` position. Basically, it returns the unit
 vector in the given direction as a CartesianIndex. Use the version with `Val{dimensions}` or `dimensions` when possible: it is much quicker.
 """
-function directionindex(::Val{dimensions}, direction::Integer)::CartesianIndex where dimensions <: Integer
+function directionindex(::Val{dimensions}, direction::Integer)::CartesianIndex where dimensions
 	CartesianIndex(
 		ntuple(
 			i -> i == direction ? 1 : 0,
@@ -101,8 +119,8 @@ function directionindex(dimensions::Integer, direction::Integer)::CartesianIndex
 	directionindex(Val(dimensions), direction)
 end
 
-function directionindex(L::Lattice, direction::Integer)::CartesianIndex
-	directionindex(Val(L.dimensions), direction)
+function directionindex(::Lattice{D}, direction::Integer)::CartesianIndex where D
+	directionindex(Val(D), direction)
 end
 
 
@@ -112,7 +130,7 @@ Iterator over a lattice's even or odd sites, where even (odd) site means that th
 """
 struct EvenOddLattice
 	lattice::Lattice
-	mod_result::Int # it is 1 if odd sites, or 0 if even sites
+	mod2_result::Int # it is 1 if odd sites, or 0 if even sites
 end
 
 """
@@ -133,13 +151,13 @@ end
 
 function Base.iterate(L::EvenOddLattice, state)
 	lattice = L.lattice
-	mod_result = L.mod_result
+	mod2_result = L.mod2_result
 
 	indices_tail = state
 	for cartesian_index in state
 		indices_tail = Base.tail(indices_tail)
 		s = sum(Tuple(cartesian_index)) # sum over all coordinates of site's position
-		if s % 2 == mod_result # = 0 if even, = 1 if odd
+		if s % 2 == mod2_result # = 0 if even, = 1 if odd
 			return (lattice[cartesian_index], indices_tail)
 		end
 	end
