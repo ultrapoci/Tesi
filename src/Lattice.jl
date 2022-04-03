@@ -24,6 +24,13 @@ end
 
 """
 Data structure containing the lattice as `dimensions`-dimensional array.
+
+	Lattice(Val(D), N)
+Creates a D-dimensional lattice with side length N. 
+
+	Lattice(x_0, x_1, x_2, ...)
+
+Creates a lattice with given length for each dimension. At least one dimension must be given.
 """
 struct Lattice{D} <: AbstractArray{Link{D}, D}
 	lattice::Array{Vector{Link{D}}, D}
