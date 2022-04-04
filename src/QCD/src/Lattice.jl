@@ -63,17 +63,13 @@ struct Lattice{D} <: AbstractArray{Link{D}, D}
 
 		for index in CartesianIndices(lattice)
 			lattice[index] = if start ≠ LatticeStart.Empty
-				links = Link{dimensions}[]
-				for direction in 1:dimensions
-					push!(links, Link(Tuple(index), direction))
-				end
-				links
+				[Link(Tuple(index), direction) for direction in 1:D]#::Vector{Link{D}}
 			else
-				Vector{Link}(undef, dimensions)
+				Vector{Link}(undef, D)
 			end
 		end
 
-		new{dimensions}(lattice)
+		new{D}(lattice)
 	end
 end
 
