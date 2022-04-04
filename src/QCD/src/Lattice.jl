@@ -1,4 +1,3 @@
-import LinearAlgebra: I
 import EnumX: @enumx
 
 export Lattice, evensites, oddsites, directionindex, LatticeStart
