@@ -53,10 +53,13 @@ struct Lattice{D} <: AbstractArray{Link{D}, D}
 		new{D}(lattice)
 	end
 
-	function Lattice(timelength::Integer, spacedimensions::Vararg{Integer, D}; start::LatticeStart.T = LatticeStart.Cold) where D
-		# TODO constraints on length and dimensions
-		lattice = Array{Vector{Link}}(undef, timelength, spacedimensions...)
-		dimensions = D + 1
+	function Lattice(dimensions::Vararg{Integer, D}; start::LatticeStart.T = LatticeStart.Cold) where D
+		# TODO constraints on negative dimensions
+		if D == 0
+			throw(ArgumentError("At least one dimension must be provided to Lattice constructor."))
+		end
+
+		lattice = Array{Vector{Link}}(undef, dimensions)
 
 		for index in CartesianIndices(lattice)
 			lattice[index] = if start ≠ LatticeStart.Empty
