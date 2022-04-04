@@ -34,23 +34,23 @@ Creates a lattice with given length for each dimension. At least one dimension m
 struct Lattice{D} <: AbstractArray{Link{D}, D}
 	lattice::Array{Vector{Link{D}}, D}
 	
-	function Lattice(::Val{dimensions}, length::Integer; start::LatticeStart.T = LatticeStart.Cold) where dimensions
+	function Lattice(::Val{D}, length::Integer; start::LatticeStart.T = LatticeStart.Cold) where D
 		# TODO constraints on length and dimensions
-		lattice = Array{Vector{Link}}(undef, ntuple(_ -> length, Val(dimensions))) # `Val` is used for type stability
+		lattice = Array{Vector{Link}}(undef, ntuple(_ -> length, Val(D))) # `Val` is used for type stability
 		
 		for index in CartesianIndices(lattice)
 			lattice[index] = if start ≠ LatticeStart.Empty
-				links = Link{dimensions}[]
-				for direction in 1:dimensions
+				links = Link{D}[]
+				for direction in 1:D
 					push!(links, Link(Tuple(index), direction))
 				end
 				links
 			else
-				Vector{Link}(undef, dimensions)
+				Vector{Link}(undef, D)
 			end
 		end
 
-		new{dimensions}(lattice)
+		new{D}(lattice)
 	end
 
 	function Lattice(timelength::Integer, spacedimensions::Vararg{Integer, D}; start::LatticeStart.T = LatticeStart.Cold) where D
