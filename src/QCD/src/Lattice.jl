@@ -31,7 +31,7 @@ Creates a D-dimensional lattice with side length N.
 
 Creates a lattice with given length for each dimension. At least one dimension must be given.
 """
-struct Lattice{D} <: AbstractArray{Link{D}, D}
+struct Lattice{D} <: AbstractArray{Vector{Link{D}}, D}
 	lattice::Array{Vector{Link{D}}, D}
 	
 	function Lattice(::Val{D}, length::Integer; start::LatticeStart.T = LatticeStart.Cold) where D
