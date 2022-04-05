@@ -35,7 +35,14 @@ struct Lattice{D} <: AbstractArray{Vector{Link{D}}, D}
 	lattice::Array{Vector{Link{D}}, D}
 	
 	function Lattice(::Val{D}, length::Integer; start::LatticeStart.T = LatticeStart.Cold) where D
-		# TODO constraints on length and dimensions
+		if D ≤ 0 || !(D isa Integer)
+			throw(ArgumentError("The number of dimensions of the lattice must be a positive integer."))
+		end
+
+		if length ≤ 0
+			throw(ArgumentError("The length of the lattice must be positive."))
+		end
+
 		lattice = Array{Vector{Link}}(undef, ntuple(_ -> length, Val(D))) # `Val` is used for type stability
 		
 		for index in CartesianIndices(lattice)
@@ -54,16 +61,19 @@ struct Lattice{D} <: AbstractArray{Vector{Link{D}}, D}
 	end
 
 	function Lattice(dimensions::Vararg{Integer, D}; start::LatticeStart.T = LatticeStart.Cold) where D
-		# TODO constraints on negative dimensions
 		if D == 0
 			throw(ArgumentError("At least one dimension must be provided to Lattice constructor."))
+		end
+
+		if any(d -> d ≤ 0, dimensions)
+			throw(ArgumentError("All dimensions provided to Lattice constructor must be strictly greater than zero."))
 		end
 
 		lattice = Array{Vector{Link}}(undef, dimensions)
 
 		for index in CartesianIndices(lattice)
 			lattice[index] = if start ≠ LatticeStart.Empty
-				[Link(Tuple(index), direction) for direction in 1:D]#::Vector{Link{D}}
+				[Link(Tuple(index), direction) for direction in 1:D]
 			else
 				Vector{Link}(undef, D)
 			end
