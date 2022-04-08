@@ -39,6 +39,14 @@ function asmatrix(S::Sp2Element)
 	[S.topleft S.topright; -conj(S.topright) conj(S.topleft)]
 end
 
+function Base.:*(S::Sp2Element, T::Sp2Element)
+	asmatrix(S) * asmatrix(T)
+end
+
+function Base.adjoint(S::Sp2Element)
+	adjoint(asmatrix(S))
+end
+
 function Base.getindex(S::Sp2Element, i...)
 	getindex(asmatrix(S), i...)
 end
@@ -57,4 +65,5 @@ end
 
 function Base.size(S::Sp2Element)
 	size(asmatrix(S))
+end
 end
