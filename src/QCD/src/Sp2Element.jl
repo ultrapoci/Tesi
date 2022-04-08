@@ -88,4 +88,3 @@ end
 function Base.size(S::Sp2Element)
 	size(asmatrix(S))
 end
-end
