@@ -36,7 +36,7 @@ struct Sp2Element <: AbstractMatrix{ComplexF64}
 end
 
 """
-Adjust the element of S to make sure that S belongs to SU(4), which means that S must be unitary.
+Adjust the element of S to make sure that S belongs to SU(4), which means that S must be unitary and have determinant = 1.
 """
 function normalizeSp2(S::Sp2Element)
 	V₁ = [S.topleft[1, :]; S.topright[1, :]] # first row of S
