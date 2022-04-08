@@ -35,6 +35,26 @@ struct Sp2Element <: AbstractMatrix{ComplexF64}
 	end
 end
 
+"""
+Adjust the element of S to make sure that S belongs to SU(4), which means that S must be unitary.
+"""
+function normalizeSp2(S::Sp2Element)
+	V₁ = [S.topleft[1, :]; S.topright[1, :]] # first row of S
+	V₂ = [S.topleft[2, :]; S.topright[2, :]] # second row of S
+	V₃ = [-conj(S.topright[1, :]); conj(S.topleft[1, :])] # third row of S
+
+	N = norm(V₁)
+	V₁ = V₁ / N
+	V₃ = V₃ / N
+
+	# NOTE: the scalar product ⋅ automatically takes the conjugate of the left term
+	V₂ = V₂ - (V₁ ⋅ V₂)V₁ - (V₃ ⋅ V₂)V₃
+	V₂ = V₂ / norm(V₂)
+
+	W = [V₁[1] V₁[2]; V₂[1] V₂[2]]
+	X = [V₁[3] V₁[4]; V₂[3] V₂[4]]
+
+	Sp2Element(W, X)
 end
 
 function asmatrix(S::Sp2Element)
