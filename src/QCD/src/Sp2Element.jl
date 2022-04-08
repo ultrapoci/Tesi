@@ -1,4 +1,6 @@
-export Sp2Element, asmatrix
+export Sp2Element, asmatrix, normalizeSp2
+
+using LinearAlgebra
 
 # TODO check if it is also an element of SU(4)
 struct Sp2Element <: AbstractMatrix{ComplexF64}
