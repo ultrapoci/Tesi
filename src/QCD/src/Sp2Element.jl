@@ -13,7 +13,9 @@ struct Sp2Element <: AbstractArray{Number, 2}
 		if size(W) ≠ (2, 2) || size(X) ≠ (2, 2)
 			throw(
 				ArgumentError(
-					"One or both of the given matrices don't respect the required dimension of (2,2):\n\tsize(W) = $(size(W)),\n\tsize(X) = $(size(X))."
+					"One or both of the given matrices don't respect the required dimension of (2,2):\n\
+					\tsize(W) = $(size(W)),\n\
+					\tsize(X) = $(size(X))."
 				)
 			)	
 		end
