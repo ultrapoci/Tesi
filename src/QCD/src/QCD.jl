@@ -70,7 +70,8 @@ end
 """
 	getstaple(lattice::Lattice{D}, link::Link{D}, direction::Integer) where D
 
-Returns the staple around `link` in the given `direction`. If, for example, the link points up (↑), this returns:
+Returns the staple around `link` in the given `direction`. If, for example, the link points up (↑), 
+and `direction` is positive, this returns:
 
 → * ↓ * ←
 
