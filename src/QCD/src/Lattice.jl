@@ -1,6 +1,6 @@
 import EnumX: @enumx
 
-export Lattice, evensites, oddsites, directionindex, LatticeStart
+export Lattice, evensites, oddsites, LatticeStart
 
 #* ===== Lattice =====
 
@@ -34,33 +34,7 @@ Creates a lattice with given length for each dimension. At least one dimension m
 struct Lattice{D} <: AbstractArray{Vector{Link{D}}, D}
 	lattice::Array{Vector{Link{D}}, D}
 	
-	function Lattice(::Val{D}, length::Integer; start::LatticeStart.T = LatticeStart.Cold) where D
-		if D ≤ 0 || !(D isa Integer)
-			throw(ArgumentError("The number of dimensions of the lattice must be a positive integer."))
-		end
-
-		if length ≤ 0
-			throw(ArgumentError("The length of the lattice must be positive."))
-		end
-
-		lattice = Array{Vector{Link}}(undef, ntuple(_ -> length, Val(D))) # `Val` is used for type stability
-		
-		for index in CartesianIndices(lattice)
-			lattice[index] = if start ≠ LatticeStart.Empty
-				links = Link{D}[]
-				for direction in 1:D
-					push!(links, Link(Tuple(index), direction))
-				end
-				links
-			else
-				Vector{Link}(undef, D)
-			end
-		end
-
-		new{D}(lattice)
-	end
-
-	function Lattice(dimensions::Vararg{Integer, D}; start::LatticeStart.T = LatticeStart.Cold) where D
+	function Lattice(dimensions::NTuple{D, Integer}; start::LatticeStart.T = LatticeStart.Cold) where D
 		if D == 0
 			throw(ArgumentError("At least one dimension must be provided to Lattice constructor."))
 		end
@@ -73,7 +47,7 @@ struct Lattice{D} <: AbstractArray{Vector{Link{D}}, D}
 
 		for index in CartesianIndices(lattice)
 			lattice[index] = if start ≠ LatticeStart.Empty
-				[Link(Tuple(index), direction) for direction in 1:D]
+				[Link(direction, index) for direction in 1:D]
 			else
 				Vector{Link}(undef, D)
 			end
@@ -81,6 +55,26 @@ struct Lattice{D} <: AbstractArray{Vector{Link{D}}, D}
 
 		new{D}(lattice)
 	end
+
+	function Lattice(dimensions::Vararg{Integer, D}; start::LatticeStart.T = LatticeStart.Cold) where D
+		Lattice(Tuple(dimensions); start = start)
+	end
+
+	function Lattice(::Val{D}, length::Integer; start::LatticeStart.T = LatticeStart.Cold) where D
+		Lattice(ntuple(_ -> length, Val(D)); start = start)
+	end
+end
+
+function Base.getindex(L::Lattice, i::CartesianIndex)
+	t = Tuple(i)
+	index = mod1.(t, size(L)) |> CartesianIndex
+	getindex(L.lattice, index)
+end
+
+function Base.setindex!(L::Lattice, v, i::CartesianIndex)
+	t = Tuple(i)
+	index = mod1.(t, size(L)) |> CartesianIndex
+	setindex!(L.lattice, v, index)
 end
 
 # Linear indexing, without `mod`
@@ -114,30 +108,6 @@ end
 function Base.size(L::Lattice)
 	size(L.lattice)
 end
-
-
-#* ===== directionindex =====
-"""
-Returns a `CartesianIndex` containing all zeros except a one in the `direction` position. Basically, it returns the unit
-vector in the given direction as a CartesianIndex. Use the version with `Val{dimensions}` or `dimensions` when possible: it is much quicker.
-"""
-function directionindex(::Val{dimensions}, direction::Integer)::CartesianIndex where dimensions
-	CartesianIndex(
-		ntuple(
-			i -> i == direction ? 1 : 0,
-			Val(dimensions)
-		)
-	)
-end
-
-function directionindex(dimensions::Integer, direction::Integer)::CartesianIndex
-	directionindex(Val(dimensions), direction)
-end
-
-function directionindex(::Lattice{D}, direction::Integer)::CartesianIndex where D
-	directionindex(Val(D), direction)
-end
-
 
 #* ===== Iteration over even and odd sites =====
 """
@@ -178,4 +148,8 @@ function Base.iterate(L::EvenOddLattice, state)
 	end
 
 	nothing	
+end
+
+function directionindex(::Lattice{D}, direction::Integer)::CartesianIndex where D
+	directionindex(Val(D), direction)
 end
