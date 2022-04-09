@@ -95,7 +95,7 @@ function getstaple(lattice::Lattice{D}, link::Link{D}, direction::Integer) where
 	û = directionindex(D, u)
 	v̂ = directionindex(D, v)
 	
-	U₁ = getlink(lattice, v, x + û)
+	U₁ = getlink(lattice,  v, x + û)
 	U₂ = getlink(lattice, -u, x + û + v̂)
 	U₃ = getlink(lattice, -v, x + v̂)
 
