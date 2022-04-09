@@ -1,18 +1,28 @@
 module QCD
 
-export unittuple, directionindex, getlink
+include("Sp2Element.jl")
+include("Link.jl")
+include("Lattice.jl")
+
+export unittuple, directionindex, getlink, getstaple
 
 function unittuple(::Val{dimensions}, direction::Integer) where dimensions
 	ntuple(
-		i -> i == direction ? 1 : 0,
+		i -> i == abs(direction) ? sign(direction) : 0,
 		Val(dimensions)
 	)
 end
 
+
 #* ===== directionindex =====
 """
+	directionindex(::Val{dimensions}, direction::Integer)::CartesianIndex where dimensions
+	directionindex(dimensions::Integer, direction::Integer)::CartesianIndex
+	directionindex(::Lattice{D}, direction::Integer)::CartesianIndex where D
+
 Returns a `CartesianIndex` containing all zeros except a one in the `direction` position. Basically, it returns the unit
 vector in the given direction as a CartesianIndex. Use the version with `Val{dimensions}` or `dimensions` when possible: it is much quicker.
+It accounts for negative directions: if `direction` is < 0, it will return an index with a -1 instead of a 1 in `abs(direction)` position.
 """
 function directionindex(::Val{dimensions}, direction::Integer)::CartesianIndex where dimensions
 	CartesianIndex(
@@ -24,11 +34,14 @@ function directionindex(dimensions::Integer, direction::Integer)::CartesianIndex
 	directionindex(Val(dimensions), direction)
 end
 
-include("Sp2Element.jl")
-include("Link.jl")
-include("Lattice.jl")
+function directionindex(::Lattice{D}, direction::Integer)::CartesianIndex where D
+	directionindex(Val(D), direction)
+end
 
+
+#* ===== getlink =====
 """
+	getlink(lattice::Lattice{D}, direction::Integer, position::CartesianIndex{D}) where D
 Returns the link at the given position in the given direction. If the direction is negative, 
 returns the adjoint of the link that points towards the given position. 
 """
@@ -36,12 +49,11 @@ function getlink(lattice::Lattice{D}, direction::Integer, position::CartesianInd
 	if direction ∈ 1:D 
 		lattice[position][direction]
 	elseif direction ∈ -D:-1
-		d = -direction
-		p = position - directionindex(Val(D), d)
-		s = lattice[p][d].s
-		Link(s', direction, position)
+		p = position + directionindex(D, direction)
+		s = lattice[p][-direction].s
+		Link(s', direction, position; modby = size(lattice))
 	else
-		throw(ArgumentError("Direction = $direction must be in the interval [1, $D] or [-$D, -1]."))
+		throw(ArgumentError("direction = $direction must be in the interval [1, $D] or [-$D, -1]."))
 	end
 end
 
@@ -51,6 +63,41 @@ end
 
 function getlink(lattice::Lattice{D}, direction::Integer, position::Vararg{Integer, D}) where D
 	getlink(lattice, direction, CartesianIndex(position))
+end
+
+
+#* ===== getstaple =====
+"""
+	getstaple(lattice::Lattice{D}, link::Link{D}, direction::Integer) where D
+
+Returns the staple around `link` in the given `direction`. If, for example, the link points up (↑), this returns:
+
+→ * ↓ * ←
+
+The returned product already follows the given link direction, meaning that multiplying this by the link itself
+gives the complete plaquette.
+"""
+function getstaple(lattice::Lattice{D}, link::Link{D}, direction::Integer) where D
+	if link.direction ≤ 0 
+		throw(ArgumentError("The provided link has negative direction = $(link.direction)."))
+	elseif direction ∉ 1:D && direction ∉ -D:-1
+		throw(ArgumentError("The staple's direction = $direction must be in range [1, $D] or [-$D, -1]."))
+	elseif link.direction == direction
+		throw(ArgumentError("Given direction = $direction cannot be the same as the link's direction."))
+	end
+
+	x = link.position
+	u = link.direction
+	v = direction
+
+	û = directionindex(D, u)
+	v̂ = directionindex(D, v)
+	
+	U₁ = getlink(lattice, v, x + û)
+	U₂ = getlink(lattice, -u, x + û + v̂)
+	U₃ = getlink(lattice, -v, x + v̂)
+
+	U₁ * U₂ * U₃
 end
 
 end # module QCD
