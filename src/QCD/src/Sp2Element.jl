@@ -14,22 +14,21 @@ struct Sp2Element <: AbstractMatrix{ComplexF64}
 	function Sp2Element(W::Matrix{ComplexF64}, X::Matrix{ComplexF64})
 		if size(W) ≠ (2, 2) || size(X) ≠ (2, 2)
 			throw(ArgumentError(
-					"One or both of the given matrices don't respect the required dimension of (2,2):\n\
-					\tsize(top left) = $(size(W)),\n\
-					\tsize(top right) = $(size(X))."
-			))	
+				"One or both of the given matrices don't respect the required dimension of (2,2):\n\
+				\tsize(top left) = $(size(W)),\n\
+				\tsize(top right) = $(size(X))."
+			))
 		end
-
 		new(W, X)
 	end
 
 	function Sp2Element(W::Matrix{<:Number}, X::Matrix{<:Number})
 		if size(W) ≠ (2, 2) || size(X) ≠ (2, 2)
 			throw(ArgumentError(
-					"One or both of the given matrices don't respect the required dimension of (2,2):\n\
-					\tsize(top left) = $(size(W)),\n\
-					\tsize(top right) = $(size(X))."
-			))	
+				"One or both of the given matrices don't respect the required dimension of (2,2):\n\
+				\tsize(top left) = $(size(W)),\n\
+				\tsize(top right) = $(size(X))."
+			))
 		end
 		new(ComplexF64.(W), ComplexF64.(X))
 	end
@@ -43,6 +42,7 @@ function normalizeSp2(S::Sp2Element)
 	V₂ = [S.topleft[2, :]; S.topright[2, :]] # second row of S
 	V₃ = [-conj(S.topright[1, :]); conj(S.topleft[1, :])] # third row of S
 
+	# norm(V₁) = norm(V₃)
 	N = norm(V₁)
 	V₁ = V₁ / N
 	V₃ = V₃ / N
@@ -62,11 +62,13 @@ function asmatrix(S::Sp2Element)
 end
 
 function Base.:*(S::Sp2Element, T::Sp2Element)
-	asmatrix(S) * asmatrix(T)
+	R = asmatrix(S) * asmatrix(T)
+	Sp2Element(R[1:2, 1:2], R[1:2, 3:4])
 end
 
 function Base.adjoint(S::Sp2Element)
-	adjoint(asmatrix(S))
+	R = adjoint(asmatrix(S))
+	Sp2Element(R[1:2, 1:2], R[1:2, 3:4])
 end
 
 function Base.getindex(S::Sp2Element, i...)
