@@ -36,4 +36,35 @@ struct Link{D} <: AbstractMatrix{ComplexF64}
 		Link(Sp2Element(), direction, CartesianIndex(position))
 	end
 end
+
+function Base.:*(l1::Link, l2::Link)
+	l1.s * l2.s
+end
+
+function Base.:*(l::Link, S::Sp2Element)
+	l.s * S
+end
+
+function Base.:*(S::Sp2Element, l::Link)
+	S * l.s
+end
+
+function Base.getindex(link::Link, i...)
+	getindex(link.s, i...)
+end
+
+function Base.setindex!(link::Link, v, i...)
+	setindex!(link.s, v, i...)
+end
+
+function Base.firstindex(link::Link)
+	firstindex(link.s)
+end
+
+function Base.lastindex(link::Link)
+	lastindex(link.s)
+end
+
+function Base.size(link::Link)
+	size(link.s)
 end
