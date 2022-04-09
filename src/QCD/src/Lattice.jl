@@ -1,4 +1,4 @@
-import EnumX: @enumx
+using EnumX: @enumx
 
 export Lattice, evensites, oddsites, LatticeStart
 
@@ -22,14 +22,15 @@ export Lattice, evensites, oddsites, LatticeStart
 end
 
 """
-Data structure containing the lattice as `dimensions`-dimensional array.
+Creates a D-dimensional lattice with side length N.
 
-	Lattice(Val(D), N)
-Creates a D-dimensional lattice with side length N. 
-
-	Lattice(x_0, x_1, x_2, ...)
+	Lattice(Val(D), N[; start::LatticeStart.T = LatticeStart.Cold])
 
 Creates a lattice with given length for each dimension. At least one dimension must be given.
+
+	Lattice(x_0, x_1, x_2, ... [; start::LatticeStart.T = LatticeStart.Cold])
+	Lattice((x_0, x_1, x_2)[; start::LatticeStart.T = LatticeStart.Cold])
+
 """
 struct Lattice{D} <: AbstractArray{Vector{Link{D}}, D}
 	lattice::Array{Vector{Link{D}}, D}
@@ -46,11 +47,13 @@ struct Lattice{D} <: AbstractArray{Vector{Link{D}}, D}
 		lattice = Array{Vector{Link}}(undef, dimensions)
 
 		for index in CartesianIndices(lattice)
-			lattice[index] = if start ≠ LatticeStart.Empty
+			lattice[index] = if start == LatticeStart.Cold
 				[Link(direction, index) for direction in 1:D]
+			elseif start == LatticeStart.Hot
+				[Link(randSp2(), direction, index) for direction in 1:D]
 			else
 				Vector{Link}(undef, D)
-			end
+			end			
 		end
 
 		new{D}(lattice)
@@ -148,8 +151,4 @@ function Base.iterate(L::EvenOddLattice, state)
 	end
 
 	nothing	
-end
-
-function directionindex(::Lattice{D}, direction::Integer)::CartesianIndex where D
-	directionindex(Val(D), direction)
 end
