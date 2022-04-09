@@ -1,8 +1,7 @@
-export Sp2Element, asmatrix, normalizeSp2
+export Sp2Element, asmatrix, normalizeSp2, randSp2
 
 using LinearAlgebra
 
-# TODO check if it is also an element of SU(4)
 struct Sp2Element <: AbstractMatrix{ComplexF64}
 	topleft::Matrix{ComplexF64}
 	topright::Matrix{ComplexF64}
@@ -35,6 +34,7 @@ struct Sp2Element <: AbstractMatrix{ComplexF64}
 end
 
 """
+	normalizeSp2(S::Sp2Element)
 Adjust the element of `S` to make sure that `S` belongs to SU(4), which means that `S` must be unitary and have determinant = 1.
 """
 function normalizeSp2(S::Sp2Element)
@@ -59,6 +59,13 @@ end
 
 function asmatrix(S::Sp2Element)
 	[S.topleft S.topright; -conj(S.topright) conj(S.topleft)]
+end
+
+"""
+Returns a random `Sp2Element`, already normalized such that it belongs to SU(4).
+"""
+function randSp2()
+	normalizeSp2(Sp2Element(rand(ComplexF64, 2, 2), rand(ComplexF64, 2, 2)))
 end
 
 function Base.:*(S::Sp2Element, T::Sp2Element)
