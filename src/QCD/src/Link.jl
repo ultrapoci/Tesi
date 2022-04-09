@@ -7,33 +7,41 @@ struct Link{D} <: AbstractMatrix{ComplexF64}
 	direction::Integer
 	position::CartesianIndex{D}
 
-	# TODO: cold and hot start
-	function Link(S::Sp2Element, direction::Integer, position::CartesianIndex{D}) where D
+	function Link(S::Sp2Element, direction::Integer, position::CartesianIndex{D}; modby::Union{Integer, NTuple{D, Integer}} = 0) where D
 		if abs(direction) > D 
 			throw(ArgumentError("abs(direction) = $(abs(direction)) of link is bigger than dimensions = $D of the lattice"))
 		end
 
-		new{D}(S, direction, position)
+		if modby == 0
+			new{D}(S, direction, position)
+		else
+			if any(d -> d ≤ 0, modby)
+				throw(ArgumentError("modby = $modby in Link constructor: must be a positve integer or a tuple of positive integers."))
+			end
+
+			p = mod1.(Tuple(position), modby)
+			new{D}(S, direction, CartesianIndex(p))
+		end
 	end
 
-	function Link(S::Sp2Element, direction::Integer, position::Vararg{Integer, D}) where D
-		Link(S, direction, Tuple(position))
+	function Link(S::Sp2Element, direction::Integer, position::Vararg{Integer, D}; modby::Union{Integer, NTuple{D, Integer}} = 0) where D
+		Link(S, direction, Tuple(position); modby = modby)
 	end
 	
-	function Link(S::Sp2Element, direction::Integer, position::NTuple{D, Integer}) where D
-		Link(S, direction, CartesianIndex(position))
+	function Link(S::Sp2Element, direction::Integer, position::NTuple{D, Integer}; modby::Union{Integer, NTuple{D, Integer}} = 0) where D
+		Link(S, direction, CartesianIndex(position); modby = modby)
 	end
 	
-	function Link(direction::Integer, position::CartesianIndex{D}) where D
-		Link(Sp2Element(), direction, position)
+	function Link(direction::Integer, position::CartesianIndex{D}; modby::Union{Integer, NTuple{D, Integer}} = 0) where D
+		Link(Sp2Element(), direction, position; modby = modby)
 	end
 
-	function Link(direction::Integer, position::NTuple{D, Integer}) where D
-		Link(Sp2Element(), direction, CartesianIndex(position))
+	function Link(direction::Integer, position::NTuple{D, Integer}; modby::Union{Integer, NTuple{D, Integer}} = 0) where D
+		Link(Sp2Element(), direction, CartesianIndex(position); modby = modby)
 	end
 
-	function Link(direction::Integer, position::Vararg{Integer, D}) where D
-		Link(Sp2Element(), direction, CartesianIndex(position))
+	function Link(direction::Integer, position::Vararg{Integer, D}; modby::Union{Integer, NTuple{D, Integer}} = 0) where D
+		Link(Sp2Element(), direction, CartesianIndex(position); modby = modby)
 	end
 end
 
