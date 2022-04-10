@@ -107,3 +107,8 @@ function Base.zero(::Type{Sp2Element})
 	z = zeros(ComplexF64, 2, 2)
 	Sp2Element(z, z)
 end
+
+function LinearAlgebra.inv(S::Sp2Element)
+	R = inv(asmatrix(S))
+	Sp2Element(R[1:2, 1:2], R[1:2, 3:4])
+end
