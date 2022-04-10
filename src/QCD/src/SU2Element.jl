@@ -68,6 +68,15 @@ function Base.size(S::SU2Element)
 	size(asmatrix(S))
 end
 
+function Base.zero(::Type{SU2Element})
+	SU2Element(zero(ComplexF64), zero(ComplexF64))
+end
+
 function LinearAlgebra.det(S::SU2Element)
 	abs2(S.t₁) + abs2(S.t₂)
+end
+
+function LinearAlgebra.inv(S::SU2Element)
+	R = inv(asmatrix(S))
+	SU2Element(R[1, 1], R[1, 2])
 end
