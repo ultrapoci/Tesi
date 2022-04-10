@@ -2,8 +2,10 @@ name = "Tesi"
 authors = ["Nicholas Pini"]
 
 [deps]
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 DrWatson = "634d3b9d-ee7a-5ddf-bec9-22491ea816e1"
 QCD = "24eddd18-7351-47c8-9139-005f0efac71b"
+UnicodePlots = "b8865327-cd53-5732-bb35-84acbb429228"
 
 [compat]
 DrWatson = "2.9.1"
