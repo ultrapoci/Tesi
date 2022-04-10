@@ -38,6 +38,11 @@ function Base.:*(S::SU2Element, T::SU2Element)
 	SU2Element(R[1, 1], R[1, 2])
 end
 
+function Base.:+(S::SU2Element, T::SU2Element)
+	R = asmatrix(S) + asmatrix(T)
+	SU2Element(R[1, 1], R[1, 2])
+end
+
 function Base.adjoint(S::SU2Element)
 	R = adjoint(asmatrix(S))
 	SU2Element(R[1, 1], R[1, 2])
