@@ -73,6 +73,11 @@ function Base.:*(S::Sp2Element, T::Sp2Element)
 	Sp2Element(R[1:2, 1:2], R[1:2, 3:4])
 end
 
+function Base.:+(S::Sp2Element, T::Sp2Element)
+	R = asmatrix(S) + asmatrix(T)
+	Sp2Element(R[1:2, 1:2], R[1:2, 3:4])
+end
+
 function Base.adjoint(S::Sp2Element)
 	R = adjoint(asmatrix(S))
 	Sp2Element(R[1:2, 1:2], R[1:2, 3:4])
@@ -96,4 +101,9 @@ end
 
 function Base.size(S::Sp2Element)
 	size(asmatrix(S))
+end
+
+function Base.zero(::Type{Sp2Element})
+	z = zeros(ComplexF64, 2, 2)
+	Sp2Element(z, z)
 end
