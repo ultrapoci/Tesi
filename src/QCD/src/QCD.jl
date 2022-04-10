@@ -1,5 +1,6 @@
 module QCD
 
+include("SU2Element.jl")
 include("Sp2Element.jl")
 include("Link.jl")
 include("Lattice.jl")
@@ -7,10 +8,18 @@ include("Lattice.jl")
 export unittuple, directionindex, getlink, getstaple
 
 function unittuple(::Val{dimensions}, direction::Integer) where dimensions
+	if dimensions ≤ 0
+		throw(ArgumentError("dimensions = $dimensions in unittuple must be a positive integer"))
+	end
+	
 	ntuple(
 		i -> i == abs(direction) ? sign(direction) : 0,
 		Val(dimensions)
 	)
+end
+
+function unittuple(dimensions::Integer, direction::Integer)
+	unittuple(Val{dimensions}, direction)
 end
 
 
@@ -25,9 +34,7 @@ vector in the given direction as a CartesianIndex. Use the version with `Val{dim
 It accounts for negative directions: if `direction` is < 0, it will return an index with a -1 instead of a 1 in `abs(direction)` position.
 """
 function directionindex(::Val{dimensions}, direction::Integer)::CartesianIndex where dimensions
-	CartesianIndex(
-		unittuple(Val(dimensions), direction)
-	)
+	CartesianIndex(unittuple(Val(dimensions), direction))
 end
 
 function directionindex(dimensions::Integer, direction::Integer)::CartesianIndex
@@ -42,8 +49,8 @@ end
 #* ===== getlink =====
 """
 	getlink(lattice::Lattice{D}, direction::Integer, position::CartesianIndex{D}) where D
-Returns the link at the given position in the given direction. If the direction is negative, 
-returns the adjoint of the link that points towards the given position. 
+Returns the link at the given `position` in the given `direction`. If the `direction` is negative, 
+returns the adjoint of the link that points towards the given `position` from the neighbour. 
 """
 function getlink(lattice::Lattice{D}, direction::Integer, position::CartesianIndex{D}) where D
 	if direction ∈ 1:D 
