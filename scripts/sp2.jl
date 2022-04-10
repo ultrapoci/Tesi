@@ -1,6 +1,6 @@
 using LinearAlgebra, QCD, Distributions
 
-function staplesum(lattice::Lattice{D}, link::Link{D}) where D
+function sumstaples(lattice::Lattice{D}, link::Link{D}) where D
 	total = zero(Sp2Element)
 	u = link.direction
 	for v in mod1.(u+1:u+D-1, D) # generate all D dimensions except u
@@ -11,29 +11,51 @@ function staplesum(lattice::Lattice{D}, link::Link{D}) where D
 	total
 end
 
+"""
+	subrepresentations(s::Sp2Element)
+Extracts the four ``SU(2)`` matrices embedded in an ``Sp(2)`` element and returns a tuple containing
+the SU2Element already normalized, the square root of the determinant calculated before the normalization
+and an anonymous function that takes the two complex numbers in SU2Element and builds an Sp2Element.
+"""
 function subrepresentations(s::Sp2Element)
 	S = asmatrix(s)
-	repr = Tuple{Matrix{Complex}, Real}[]
+	repr = Tuple{SU2Element, Real, Function}[]
 
 	# SU(2) + U(1) + U(1)
 	t₁ = S[1, 1]
 	t₂ = S[1, 3]
-	push!(repr, SU2Element(t₁, t₂) |> normalizeSU2det)
+	(M, sqrtΔ) = normalizeSU2det(SU2Element(t₁, t₂))
+	push!(
+		repr, 
+		(M, sqrtΔ, (x, y) -> Sp2Element([x 0; 0 1], [y 0; 0 0])		)
+	)
 
 	# SU(2) + U(1) + U(1)
 	t₁ = S[2, 2]
 	t₂ = S[2, 4]
-	push!(repr, SU2Element(t₁, t₂) |> normalizeSU2det)
+	(M, sqrtΔ) = normalizeSU2det(SU2Element(t₁, t₂))
+	push!(
+		repr, 
+		(M, sqrtΔ, (x, y) -> Sp2Element([1 0; 0 x], [0 0; 0 y])		)
+	)
 
 	# SU(2) + SU(2)
 	t₁ = S[1, 1] + S[2, 2]
 	t₂ = S[1, 4] + S[2, 3]
-	push!(repr, SU2Element(t₁, t₂) |> normalizeSU2det)
+	(M, sqrtΔ) = normalizeSU2det(SU2Element(t₁, t₂))
+	push!(
+		repr, 
+		(M, sqrtΔ, (x, y) -> Sp2Element([x 0; 0 x], [0 y; y 0]))
+	)
 
 	# SU(2) + SU(2)
 	t₁ = S[1, 1] + S[4, 4]
 	t₂ = S[1, 2] - S[4, 3]
-	push!(repr, SU2Element(t₁, t₂) |> normalizeSU2det)
+	(M, sqrtΔ) = normalizeSU2det(SU2Element(t₁, t₂))
+	push!(
+		repr, 
+		(M, sqrtΔ, (x, y) -> Sp2Element([x y; -conj(y) conj(x)], [0 0; 0 0]))
+	)
 
 	repr
 end
@@ -61,4 +83,24 @@ function randomSU2(k::Real, β::Real)
 	a₃ = r * cos(θ)
 
 	SU2Element(complex(a₀, a₃), complex(a₂, a₁))
+end
+
+function overrelaxation(lattice::Lattice, link::Link)
+	U = link
+	R = sumstaples(lattice, link)
+	for (u, _, f) in subrepresentations(link * R)
+		a = u^-2
+		U = f(a.t₁, a.t₂) * U
+	end
+	U
+end
+
+function heatbath(lattice::Lattice, link::Link, β::Real)
+	U = link
+	R = sumstaples(lattice, link)
+	for (u, k, f) in subrepresentations(link * R)
+		a = randomSU2(k, β) * u^-1
+		U = f(a.t₁, a.t₂) * U
+	end
+	U
 end
