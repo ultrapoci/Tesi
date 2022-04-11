@@ -80,3 +80,7 @@ function LinearAlgebra.inv(S::SU2Element)
 	R = inv(asmatrix(S))
 	SU2Element(R[1, 1], R[1, 2])
 end
+
+function LinearAlgebra.tr(S::SU2Element)
+	tr(asmatrix(S))
+end

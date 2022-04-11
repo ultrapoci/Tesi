@@ -112,3 +112,7 @@ function LinearAlgebra.inv(S::Sp2Element)
 	R = inv(asmatrix(S))
 	Sp2Element(R[1:2, 1:2], R[1:2, 3:4])
 end
+
+function LinearAlgebra.tr(S::Sp2Element)
+	tr(asmatrix(S))
+end
