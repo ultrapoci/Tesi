@@ -104,3 +104,6 @@ function heatbath(lattice::Lattice, link::Link, β::Real)
 	end
 	U
 end
+
+# TODO plaquette
+# TODO polyakov loop
