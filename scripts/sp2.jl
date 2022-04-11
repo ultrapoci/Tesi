@@ -105,5 +105,32 @@ function heatbath(lattice::Lattice, link::Link, β::Real)
 	U
 end
 
-# TODO plaquette
-# TODO polyakov loop
+function averageplaquette(lattice::Lattice{D}) where D
+	s = 0.0
+	for site in lattice, link in site[begin:end-1], v in link.direction+1:D
+		s += tr(plaquette(lattice, link, v))
+	end
+	
+	V = length(lattice)
+
+	# the 4 term is due to 2N for N=2
+	# sum(1:D-1) is the number of plaquettes per site
+	s / (4 * sum(1:D-1) * V) 
+end
+
+function lattice_overrelaxation(lattice::Lattice{D}, n::Integer) where D
+	dims = size(lattice)
+	prevlattice = lattice
+	for _ in 1:n
+		newlattice = Lattice(dims, start = LatticeStart.Empty)
+		#for itersites in [evensites(prevlattice), oddsites(prevlattice)], site in itersites, u in 1:D
+		for iterlinks in [evenlink, oddlinks], u in 1:D, link in iterlinks(prevlattice, u)
+			direction = link.direction
+			position = link.position
+			U = overrelaxation(lattice, link)
+			newlattice[position][direction] = Link(U, direction, position)
+		end
+		prevlattice = newlattice
+	end
+	prevlattice
+end
