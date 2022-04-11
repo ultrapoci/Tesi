@@ -51,7 +51,7 @@ function Base.show(io::IO, ::MIME"text/plain", link::Link{D}) where D
 	show(io, "text/plain", link.s)
 end
 
-function Base.:*(l1::Link, l2::Link)
+#= function Base.:*(l1::Link, l2::Link)
 	l1.s * l2.s
 end
 
@@ -73,7 +73,7 @@ end
 
 function Base.:+(S::Sp2Element, l::Link)
 	S + l.s
-end
+end =#
 
 function Base.getindex(link::Link, i...)
 	getindex(link.s, i...)
