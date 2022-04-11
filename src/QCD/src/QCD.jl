@@ -5,7 +5,7 @@ include("Sp2Element.jl")
 include("Link.jl")
 include("Lattice.jl")
 
-export unittuple, directionindex, getlink, getstaple
+export unittuple, directionindex, getlink, staple
 
 function unittuple(::Val{dimensions}, direction::Integer) where dimensions
 	if dimensions ≤ 0
@@ -73,9 +73,9 @@ function getlink(lattice::Lattice{D}, direction::Integer, position::Vararg{Integ
 end
 
 
-#* ===== getstaple =====
+#* ===== staple =====
 """
-	getstaple(lattice::Lattice{D}, link::Link{D}, direction::Integer) where D
+	staple(lattice::Lattice{D}, link::Link{D}, direction::Integer) where D
 
 Returns the staple around `link` in the given `direction`. If, for example, the link points up (↑), 
 and `direction` is positive, this returns:
@@ -86,7 +86,7 @@ The returned product already follows the given link direction, meaning that mult
 gives the complete plaquette. Only accepts Link with positive direction, and `direction` must not be equal to the
 Link's direction.
 """
-function getstaple(lattice::Lattice{D}, link::Link{D}, direction::Integer) where D
+function staple(lattice::Lattice{D}, link::Link{D}, direction::Integer) where D
 	if link.direction ≤ 0 
 		throw(ArgumentError("The provided link has negative direction = $(link.direction)."))
 	elseif direction ∉ 1:D && direction ∉ -D:-1
@@ -102,9 +102,9 @@ function getstaple(lattice::Lattice{D}, link::Link{D}, direction::Integer) where
 	û = directionindex(D, u)
 	v̂ = directionindex(D, v)
 	
-	U₁ = getlink(lattice,  v, x + û)
-	U₂ = getlink(lattice, -u, x + û + v̂)
-	U₃ = getlink(lattice, -v, x + v̂)
+	U₁ = getlink(lattice,  v, x + û).s
+	U₂ = getlink(lattice, -u, x + û + v̂).s
+	U₃ = getlink(lattice, -v, x + v̂).s
 
 	U₁ * U₂ * U₃
 end

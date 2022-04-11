@@ -20,7 +20,7 @@ l = Lattice(4, 4)
 link = getlink(l, 1, 1, 1)
 
 # ╔═╡ 7479f415-e2d3-4791-a63e-f61229afb9d8
-getstaple(l, link, 2)
+staple(l, link, 2)
 
 # ╔═╡ Cell order:
 # ╠═50226000-b84f-11ec-3345-abbbeab7adc1

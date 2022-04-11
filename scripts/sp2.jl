@@ -4,8 +4,8 @@ function sumstaples(lattice::Lattice{D}, link::Link{D}) where D
 	total = zero(Sp2Element)
 	u = link.direction
 	for v in mod1.(u+1:u+D-1, D) # generate all D dimensions except u
-		s₊ = getstaple(lattice, link, v)
-		s₋ = getstaple(lattice, link, -v)
+		s₊ = staple(lattice, link, v)
+		s₋ = staple(lattice, link, -v)
 		total += s₊ + s₋
 	end
 	total
@@ -27,7 +27,7 @@ function subrepresentations(s::Sp2Element)
 	(M, sqrtΔ) = normalizeSU2det(SU2Element(t₁, t₂))
 	push!(
 		repr, 
-		(M, sqrtΔ, (x, y) -> Sp2Element([x 0; 0 1], [y 0; 0 0])		)
+		(M, sqrtΔ, (x, y) -> Sp2Element([x 0; 0 1], [y 0; 0 0]))
 	)
 
 	# SU(2) + U(1) + U(1)
@@ -36,7 +36,7 @@ function subrepresentations(s::Sp2Element)
 	(M, sqrtΔ) = normalizeSU2det(SU2Element(t₁, t₂))
 	push!(
 		repr, 
-		(M, sqrtΔ, (x, y) -> Sp2Element([1 0; 0 x], [0 0; 0 y])		)
+		(M, sqrtΔ, (x, y) -> Sp2Element([1 0; 0 x], [0 0; 0 y]))
 	)
 
 	# SU(2) + SU(2)
@@ -86,9 +86,9 @@ function randomSU2(k::Real, β::Real)
 end
 
 function overrelaxation(lattice::Lattice, link::Link)
-	U = link
+	U = link.s
 	R = sumstaples(lattice, link)
-	for (u, _, f) in subrepresentations(link * R)
+	for (u, _, f) in subrepresentations(U * R)
 		a = u^-2
 		U = f(a.t₁, a.t₂) * U
 	end
@@ -96,9 +96,9 @@ function overrelaxation(lattice::Lattice, link::Link)
 end
 
 function heatbath(lattice::Lattice, link::Link, β::Real)
-	U = link
+	U = link.s
 	R = sumstaples(lattice, link)
-	for (u, k, f) in subrepresentations(link * R)
+	for (u, k, f) in subrepresentations(U * R)
 		a = randomSU2(k, β) * u^-1
 		U = f(a.t₁, a.t₂) * U
 	end
