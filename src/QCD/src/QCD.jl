@@ -5,7 +5,7 @@ include("Sp2Element.jl")
 include("Link.jl")
 include("Lattice.jl")
 
-export unittuple, directionindex, getlink, staple
+export getlink, staple, plaquette, unittuple, directionindex
 
 function unittuple(::Val{dimensions}, direction::Integer) where dimensions
 	if dimensions ≤ 0
@@ -107,6 +107,21 @@ function staple(lattice::Lattice{D}, link::Link{D}, direction::Integer) where D
 	U₃ = getlink(lattice, -v, x + v̂).s
 
 	U₁ * U₂ * U₃
+end
+
+#* ===== plaquette =====
+
+function plaquette(lattice::Lattice{D}, link::Link{D}, direction::Integer) where D
+	#= if link.direction ≤ 0 
+		throw(ArgumentError("The provided link has negative direction = $(link.direction)."))
+	elseif direction ∉ 1:D && direction ∉ -D:-1
+		throw(ArgumentError("The plaquette's direction = $direction must be in range [1, $D] or [-$D, -1]."))
+	elseif link.direction == direction
+		throw(ArgumentError("Given direction = $direction cannot be the same as the link's direction."))
+	end =#
+
+	R = staple(lattice, link, direction)
+	link.s * R
 end
 
 end # module QCD
