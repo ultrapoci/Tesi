@@ -8,8 +8,8 @@ struct Link{D} <: AbstractMatrix{ComplexF64}
 	position::CartesianIndex{D}
 
 	function Link(S::Sp2Element, direction::Integer, position::CartesianIndex{D}; modby::Union{Integer, NTuple{D, Integer}} = 0) where D
-		if abs(direction) > D 
-			throw(ArgumentError("abs(direction) = $(abs(direction)) of link is bigger than dimensions = $D of the lattice"))
+		if direction ∉ 1:D
+			throw(ArgumentError("direction = $direction of link is must be in range [1, $D]."))
 		end
 
 		if modby == 0
@@ -50,30 +50,6 @@ function Base.show(io::IO, ::MIME"text/plain", link::Link{D}) where D
     println(io, "direction = $(link.direction)")
 	show(io, "text/plain", link.s)
 end
-
-#= function Base.:*(l1::Link, l2::Link)
-	l1.s * l2.s
-end
-
-function Base.:*(l::Link, S::Sp2Element)
-	l.s * S
-end
-
-function Base.:*(S::Sp2Element, l::Link)
-	S * l.s
-end
-
-function Base.:+(l1::Link, l2::Link)
-	l1.s + l2.s
-end
-
-function Base.:+(l::Link, S::Sp2Element)
-	l.s + S
-end
-
-function Base.:+(S::Sp2Element, l::Link)
-	S + l.s
-end =#
 
 function Base.getindex(link::Link, i...)
 	getindex(link.s, i...)
