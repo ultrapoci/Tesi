@@ -65,7 +65,12 @@ end
 Returns a random `Sp2Element`, already normalized such that it belongs to SU(4).
 """
 function randSp2()
-	normalizeSp2(Sp2Element(rand(ComplexF64, 2, 2), rand(ComplexF64, 2, 2)))
+	normalizeSp2(
+		Sp2Element(
+			rand(ComplexF64, 2, 2) .- complex(0.5, 0.5), 
+			rand(ComplexF64, 2, 2) .- complex(0.5, 0.5)
+		)
+	)
 end
 
 function Base.:*(S::Sp2Element, T::Sp2Element)
@@ -102,8 +107,8 @@ function Base.lastindex(S::Sp2Element)
 	lastindex(asmatrix(S))
 end
 
-function Base.size(S::Sp2Element)
-	size(asmatrix(S))
+function Base.size(::Sp2Element)
+	(4, 4)
 end
 
 function Base.zero(::Type{Sp2Element})
@@ -117,5 +122,5 @@ function LinearAlgebra.inv(S::Sp2Element)
 end
 
 function LinearAlgebra.tr(S::Sp2Element)
-	tr(asmatrix(S))
+	2(real(S.topleft[1, 1]) + real(S.topleft[2, 2]))
 end
