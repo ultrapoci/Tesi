@@ -1,4 +1,4 @@
-export Lattice, evensites, oddsites, evenlinks, oddlinks
+export Lattice, evensites, oddsites, evenlinks, oddlinks, updatelattice!
 
 #* ===== Lattice =====
 """
@@ -96,13 +96,31 @@ function Base.size(L::Lattice)
 	size(L.lattice)
 end
 
-#* ===== Iteration over even and odd sites =====
+#* ===== updatelattice! =====
+function updatelattice!(L::Lattice{D}, link::Link{D}) where D
+	L[link.position][link.direction] = link
+end
+
+function updatelattice!(L::Lattice{D}, links::Vector{Link{D}}) where D
+	for link in links
+		updatelattice!(L, link)
+	end
+end
+
+#* ===== Iteration over even and odd sites and links =====
 """
-Iterator over a lattice's even or odd sites, where even (odd) site means that the sum over all coordinates of the site is even (odd)  
+Iterator over a lattice's even or odd sites, where even (odd) site means that the sum over all coordinates of the site is even (odd).
 """
-struct EvenOddLattice
-	lattice::Lattice
+struct EvenOddLattice{D}
+	lattice::Lattice{D}
 	mod2_result::Int # it is 1 if odd sites, or 0 if even sites
+
+	function EvenOddLattice(lattice::Lattice{D}, mod2_result::Int) where D
+		if mod2_result ≠ 0 && mod2_result ≠ 1
+			throw(ArgumentError("mod2_result in EvenOddLattice must be 0 or 1, got $mod2_result."))
+		end
+		new{D}(lattice, mod2_result)
+	end
 end
 
 """
@@ -138,7 +156,7 @@ function Base.iterate(L::EvenOddLattice, state)
 end
 
 struct EvenOddLinks{D}
-	eolattice::EvenOddLattice
+	eolattice::EvenOddLattice{D}
 	direction::Integer
 
 	function EvenOddLinks(eolattice::EvenOddLattice{D}, direction::Integer) where D
@@ -149,8 +167,8 @@ struct EvenOddLinks{D}
 	end
 end
 
-evenlinks(L::Lattice, direction::Integer) = EvenOddLinks(EvenOddLattice(L, 0), direction)
-oddlinks(L::Lattice, direction::Integer) = EvenOddLinks(EvenOddLattice(L, 1), direction)
+evenlinks(L::Lattice, direction::Integer) = EvenOddLinks(evensites(L), direction)
+oddlinks(L::Lattice, direction::Integer) = EvenOddLinks(oddsites(L), direction)
 
 function Base.iterate(L::EvenOddLinks)
 	iterate(L, Tuple(CartesianIndices(L.eolattice.lattice)))
