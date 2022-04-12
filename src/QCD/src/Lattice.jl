@@ -21,7 +21,7 @@ struct Lattice{D} <: AbstractArray{Vector{Link{D}}, D}
 	
 	function Lattice(dimensions::NTuple{D, Integer}; start::Symbol = :cold) where D
 		if start ∉ [:cold, :hot, :empty]
-			throw(ArgumentError("start keyword argument must be equal to :empty, :cold or :hot. Got start = $start."))
+			throw(ArgumentError("start keyword argument must be equal to :empty, :cold or :hot. Got start = :$start."))
 		elseif D == 0
 			throw(ArgumentError("At least one dimension must be provided to Lattice constructor."))
 		elseif any(d -> d ≤ 0, dimensions)
@@ -97,10 +97,18 @@ function Base.size(L::Lattice)
 end
 
 #* ===== updatelattice! =====
+"""
+	updatelattice!(L::Lattice{D}, link::Link{D}) where D
+Substitute the link already present in the lattice `L` with the provided `link`.
+"""
 function updatelattice!(L::Lattice{D}, link::Link{D}) where D
 	L[link.position][link.direction] = link
 end
 
+"""
+	updatelattice!(L::Lattice{D}, links::Vector{Link{D}}) where D
+Substitute all links in `links` in the lattice `L`.
+"""
 function updatelattice!(L::Lattice{D}, links::Vector{Link{D}}) where D
 	for link in links
 		updatelattice!(L, link)
@@ -155,6 +163,9 @@ function Base.iterate(L::EvenOddLattice, state)
 	nothing	
 end
 
+"""
+Iterator over a lattice links that points in the given `direction`.
+"""
 struct EvenOddLinks{D}
 	eolattice::EvenOddLattice{D}
 	direction::Integer
@@ -167,7 +178,14 @@ struct EvenOddLinks{D}
 	end
 end
 
+"""
+Returns an iterator over all links pointing in the given `direction` that belong to even sites. See also `evensites`.
+"""
 evenlinks(L::Lattice, direction::Integer) = EvenOddLinks(evensites(L), direction)
+
+"""
+Returns an iterator over all links pointing in the given `direction` that belong to odd sites. See also `oddsites`.
+"""
 oddlinks(L::Lattice, direction::Integer) = EvenOddLinks(oddsites(L), direction)
 
 function Base.iterate(L::EvenOddLinks)
