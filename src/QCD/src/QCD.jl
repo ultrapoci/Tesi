@@ -49,6 +49,8 @@ end
 #* ===== linkelement =====
 """
 	linkelement(lattice::Lattice{D}, direction::Integer, position::CartesianIndex{D}) where D
+	linkelement(lattice::Lattice{D}, direction::Integer, position::NTuple{D, Integer}) where D
+	linkelement(lattice::Lattice{D}, direction::Integer, position::Vararg{Integer, D}) where D
 Returns the link's Sp2 element at the given `position` in the given `direction`. If the `direction` is negative, 
 returns the adjoint of the link's Sp2 element that points towards the given `position` from the neighbour.
 """
@@ -111,6 +113,9 @@ function staple(lattice::Lattice{D}, link::Link{D}, direction::Integer) where D
 end
 
 #* ===== plaquette =====
+"""
+Returns the plaquette of the given `link` in the given `direction`. It is an Sp2Element. 
+"""
 function plaquette(lattice::Lattice{D}, link::Link{D}, direction::Integer) where D
 	R = staple(lattice, link, direction)
 	link.s * R
