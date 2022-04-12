@@ -82,5 +82,5 @@ function LinearAlgebra.inv(S::SU2Element)
 end
 
 function LinearAlgebra.tr(S::SU2Element)
-	tr(asmatrix(S))
+	2 * real(S.t₁)
 end
