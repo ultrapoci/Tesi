@@ -73,6 +73,14 @@ function Base.:*(S::Sp2Element, T::Sp2Element)
 	Sp2Element(R[1:2, 1:2], R[1:2, 3:4])
 end
 
+function Base.:*(S::Sp2Element, T::Matrix{<:Number})
+	asmatrix(S) * T
+end
+
+function Base.:*(S::Matrix{<:Number}, T::Sp2Element)
+	S * asmatrix(T)
+end
+
 function Base.adjoint(S::Sp2Element)
 	R = adjoint(asmatrix(S))
 	Sp2Element(R[1:2, 1:2], R[1:2, 3:4])
