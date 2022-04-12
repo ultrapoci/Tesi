@@ -1,7 +1,5 @@
 export Sp2Element, asmatrix, normalizeSp2, randSp2
 
-using LinearAlgebra
-
 struct Sp2Element <: AbstractMatrix{ComplexF64}
 	topleft::Matrix{ComplexF64}
 	topright::Matrix{ComplexF64}
