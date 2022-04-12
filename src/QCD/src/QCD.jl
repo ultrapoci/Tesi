@@ -84,6 +84,8 @@ and `direction` is positive, this returns:
 The returned product already follows the given link direction, meaning that multiplying this by the link itself
 gives the complete plaquette. Only accepts Link with positive direction, and `direction` must not be equal to the
 Link's direction.
+
+It handles negative directions.
 """
 function staple(lattice::Lattice{D}, link::Link{D}, direction::Integer) where D
 	if link.direction ≤ 0 
