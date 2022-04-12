@@ -10,11 +10,6 @@ uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
 
-[[deps.EnumX]]
-git-tree-sha1 = "1d2621e1a6246c5cf1116be0055686f305210b80"
-uuid = "4e289a0a-7415-4d19-859d-a7e5c4648b56"
-version = "1.0.2"
-
 [[deps.Libdl]]
 uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 

@@ -4,5 +4,4 @@ authors = ["Nicholas Pini <ultrapoci@gmail.com>"]
 version = "0.1.0"
 
 [deps]
-EnumX = "4e289a0a-7415-4d19-859d-a7e5c4648b56"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
