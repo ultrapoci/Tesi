@@ -5,7 +5,7 @@ include("Sp2Element.jl")
 include("Link.jl")
 include("Lattice.jl")
 
-export getlink, staple, plaquette, unittuple, directionindex
+export linkelement, staple, plaquette, unittuple, directionindex
 
 function unittuple(::Val{dimensions}, direction::Integer) where dimensions
 	if dimensions ≤ 0
@@ -46,30 +46,29 @@ function directionindex(::Lattice{D}, direction::Integer)::CartesianIndex where 
 end
 
 
-#* ===== getlink =====
+#* ===== linkelement =====
 """
-	getlink(lattice::Lattice{D}, direction::Integer, position::CartesianIndex{D}) where D
-Returns the link at the given `position` in the given `direction`. If the `direction` is negative, 
-returns the adjoint of the link that points towards the given `position` from the neighbour. 
+	linkelement(lattice::Lattice{D}, direction::Integer, position::CartesianIndex{D}) where D
+Returns the link's Sp2 element at the given `position` in the given `direction`. If the `direction` is negative, 
+returns the adjoint of the link's Sp2 element that points towards the given `position` from the neighbour.
 """
-function getlink(lattice::Lattice{D}, direction::Integer, position::CartesianIndex{D}) where D
+function linkelement(lattice::Lattice{D}, direction::Integer, position::CartesianIndex{D}) where D
 	if direction ∈ 1:D 
-		lattice[position][direction]
+		lattice[position][direction].s
 	elseif direction ∈ -D:-1
 		p = position + directionindex(D, direction)
-		s = lattice[p][-direction].s
-		Link(s', direction, position; modby = size(lattice))
+		lattice[p][-direction].s'
 	else
 		throw(ArgumentError("direction = $direction must be in the interval [1, $D] or [-$D, -1]."))
 	end
 end
 
-function getlink(lattice::Lattice{D}, direction::Integer, position::NTuple{D, Integer}) where D
-	getlink(lattice, direction, CartesianIndex(position))
+function linkelement(lattice::Lattice{D}, direction::Integer, position::NTuple{D, Integer}) where D
+	linkelement(lattice, direction, CartesianIndex(position))
 end
 
-function getlink(lattice::Lattice{D}, direction::Integer, position::Vararg{Integer, D}) where D
-	getlink(lattice, direction, CartesianIndex(position))
+function linkelement(lattice::Lattice{D}, direction::Integer, position::Vararg{Integer, D}) where D
+	linkelement(lattice, direction, CartesianIndex(position))
 end
 
 
@@ -102,9 +101,9 @@ function staple(lattice::Lattice{D}, link::Link{D}, direction::Integer) where D
 	û = directionindex(D, u)
 	v̂ = directionindex(D, v)
 	
-	U₁ = getlink(lattice,  v, x + û).s
-	U₂ = getlink(lattice, -u, x + û + v̂).s
-	U₃ = getlink(lattice, -v, x + v̂).s
+	U₁ = linkelement(lattice,  v, x + û)
+	U₂ = linkelement(lattice, -u, x + û + v̂)
+	U₃ = linkelement(lattice, -v, x + v̂)
 
 	U₁ * U₂ * U₃
 end
