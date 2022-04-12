@@ -154,27 +154,26 @@ function Base.iterate(L::EvenOddLattice, state)
 end
 
 struct EvenOddLinks{D}
-	lattice::Lattice
-	mod2_result::Int # it is 1 if odd sites, or 0 if even sites
+	eolattice::EvenOddLattice
 	direction::Integer
 
-	function EvenOddLinks(lattice::Lattice{D}, mod2_result::Int, direction::Integer) where D
+	function EvenOddLinks(eolattice::EvenOddLattice{D}, direction::Integer) where D
 		if direction ∉ 1:D
 			throw(ArgumentError("Direction given is $direction, but it must be in range [1, $D]."))
 		end
-		new{D}(lattice, mod2_result, direction)
+		new{D}(eolattice, direction)
 	end
 end
 
-evenlinks(lattice::Lattice, direction::Integer) = EvenOddLinks(lattice, 0, direction)
-oddlinks(lattice::Lattice, direction::Integer) = EvenOddLinks(lattice, 1, direction)
+evenlinks(L::Lattice, direction::Integer) = EvenOddLinks(EvenOddLattice(L, 0), direction)
+oddlinks(L::Lattice, direction::Integer) = EvenOddLinks(EvenOddLattice(L, 1), direction)
 
 function Base.iterate(L::EvenOddLinks)
-	iterate(L, Tuple(CartesianIndices(L.lattice)))
+	iterate(L, Tuple(CartesianIndices(L.eolattice.lattice)))
 end
 
 function Base.iterate(L::EvenOddLinks, state)
-	result = iterate(EvenOddLattice(L.lattice, L.mod2_result), state)
+	result = iterate(L.eolattice, state)
 	if !isnothing(result)
 		return (result[1][L.direction], result[2])
 	end
