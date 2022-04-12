@@ -1,7 +1,17 @@
 using LinearAlgebra, QCD, Distributions
 
+function iterlinks(L::Lattice, direction::Integer, parity::Symbol) 
+	if parity == :even
+		evenlinks(L, direction)
+	elseif parity == :odd
+		oddlinks(L, direction)
+	else
+		throw(ArgumentError("iterlinks accepts either :even or :odd as third argument."))
+	end
+end
+
 function sumstaples(lattice::Lattice{D}, link::Link{D}) where D
-	total = zeros(ComplexF64, 2, 2)
+	total = zeros(ComplexF64, 4, 4)
 	u = link.direction
 	for v in mod1.(u+1:u+D-1, D) # generate all D dimensions except u
 		s₊ = staple(lattice, link, v) |> asmatrix
@@ -60,6 +70,10 @@ function subrepresentations(s::Sp2Element)
 	repr
 end
 
+"""
+	generate_a0(k::Real, β::Real)
+Generates a real number ``a₀`` according to the distribution √(1 - a₀^2) exp(a₀ β k).		
+"""
 function generate_a0(k::Real, β::Real)
 	reject = true
 	a₀ = 0.0
@@ -111,26 +125,18 @@ function averageplaquette(lattice::Lattice{D}) where D
 		s += tr(plaquette(lattice, link, v))
 	end
 	
-	V = length(lattice)
-
+	V = length(lattice) # lattice's volume
+	np = D * (D - 1) ÷ 2 # number of plaquettes per site
+	
 	# the 4 term is due to 2N for N=2
-	# sum(1:D-1) is the number of plaquettes per site
-	s / (4 * sum(1:D-1) * V) 
+	s / (4 * np * V) 
 end
 
-function lattice_overrelaxation(lattice::Lattice{D}, n::Integer) where D
-	dims = size(lattice)
-	prevlattice = lattice
-	for _ in 1:n
-		newlattice = Lattice(dims, start = LatticeStart.Empty)
-		#for itersites in [evensites(prevlattice), oddsites(prevlattice)], site in itersites, u in 1:D
-		for iterlinks in [evenlink, oddlinks], u in 1:D, link in iterlinks(prevlattice, u)
-			direction = link.direction
-			position = link.position
+function lattice_overrelaxation!(lattice::Lattice{D}, n::Integer) where D
+	for _ in 1:n, parity in [:even, :odd], u in 1:D
+		for link in iterlinks(lattice, u, parity)
 			U = overrelaxation(lattice, link)
-			newlattice[position][direction] = Link(U, direction, position)
+			lattice[link.position][link.direction] = Link(U, link.direction, link.position)
 		end
-		prevlattice = newlattice
 	end
-	prevlattice
 end
