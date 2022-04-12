@@ -43,11 +43,11 @@ struct Lattice{D} <: AbstractArray{Vector{Link{D}}, D}
 		new{D}(lattice)
 	end
 
-	function Lattice(dimensions::Vararg{Integer, D}; start::LatticeStart.T = LatticeStart.Cold) where D
+	function Lattice(dimensions::Vararg{Integer, D}; start::Symbol = :cold) where D
 		Lattice(Tuple(dimensions); start = start)
 	end
 
-	function Lattice(::Val{D}, length::Integer; start::LatticeStart.T = LatticeStart.Cold) where D
+	function Lattice(::Val{D}, length::Integer; start::Symbol = :cold) where D
 		Lattice(ntuple(_ -> length, Val(D)); start = start)
 	end
 end
