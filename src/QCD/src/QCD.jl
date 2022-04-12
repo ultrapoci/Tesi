@@ -110,16 +110,7 @@ function staple(lattice::Lattice{D}, link::Link{D}, direction::Integer) where D
 end
 
 #* ===== plaquette =====
-
 function plaquette(lattice::Lattice{D}, link::Link{D}, direction::Integer) where D
-	#= if link.direction ≤ 0 
-		throw(ArgumentError("The provided link has negative direction = $(link.direction)."))
-	elseif direction ∉ 1:D && direction ∉ -D:-1
-		throw(ArgumentError("The plaquette's direction = $direction must be in range [1, $D] or [-$D, -1]."))
-	elseif link.direction == direction
-		throw(ArgumentError("Given direction = $direction cannot be the same as the link's direction."))
-	end =#
-
 	R = staple(lattice, link, direction)
 	link.s * R
 end
