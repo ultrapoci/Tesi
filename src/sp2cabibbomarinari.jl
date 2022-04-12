@@ -123,19 +123,6 @@ function heatbath(lattice::Lattice, link::Link, β::Real)
 	U
 end
 
-function averageplaquette(lattice::Lattice{D}) where D
-	s = 0.0
-	for site in lattice, link in site[begin:end-1], v in link.direction+1:D
-		s += tr(plaquette(lattice, link, v))
-	end
-	
-	V = length(lattice) # lattice's volume
-	np = D * (D - 1) ÷ 2 # number of plaquettes per site
-	
-	# the 4 term is due to 2N for N=2
-	s / (4 * np * V) 
-end
-
 function lattice_overrelaxation!(lattice::Lattice{D}, n::Integer) where D
 	for _ in 1:n, parity in [:even, :odd], u in 1:D
 		newlinks = Link{D}[]
@@ -164,3 +151,18 @@ function lattice_normalization!(lattice::Lattice{D}) where D
 		updatelattice!(lattice, Link(s, u, x))
 	end
 end
+
+function averageplaquette(lattice::Lattice{D}) where D
+	s = 0.0
+	for site in lattice, link in site[begin:end-1], v in link.direction+1:D
+		s += tr(plaquette(lattice, link, v))
+	end
+	
+	V = length(lattice) # lattice's volume
+	np = D * (D - 1) ÷ 2 # number of plaquettes per site
+	
+	# the 4 term is due to 2N for N=2
+	s / (4 * np * V) 
+end
+
+# TODO polyakov
