@@ -1,11 +1,11 @@
 using LinearAlgebra, QCD, Distributions
 
 function sumstaples(lattice::Lattice{D}, link::Link{D}) where D
-	total = zero(Sp2Element)
+	total = zeros(ComplexF64, 2, 2)
 	u = link.direction
 	for v in mod1.(u+1:u+D-1, D) # generate all D dimensions except u
-		s₊ = staple(lattice, link, v)
-		s₋ = staple(lattice, link, -v)
+		s₊ = staple(lattice, link, v) |> asmatrix
+		s₋ = staple(lattice, link, -v)  |> asmatrix
 		total += s₊ + s₋
 	end
 	total
