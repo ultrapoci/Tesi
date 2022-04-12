@@ -21,7 +21,7 @@ struct Lattice{D} <: AbstractArray{Vector{Link{D}}, D}
 	
 	function Lattice(dimensions::NTuple{D, Integer}; start::Symbol = :cold) where D
 		if start ∉ [:cold, :hot, :empty]
-			throw(ArgumentError("starts keyword argument must be equal to :empty, :cold or :hot. Got start = $start."))
+			throw(ArgumentError("start keyword argument must be equal to :empty, :cold or :hot. Got start = $start."))
 		elseif D == 0
 			throw(ArgumentError("At least one dimension must be provided to Lattice constructor."))
 		elseif any(d -> d ≤ 0, dimensions)
