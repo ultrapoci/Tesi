@@ -166,4 +166,12 @@ function averageplaquette(lattice::Lattice{D}) where D
 	s / (4 * np * V) 
 end
 
+function action(lattice::Lattice{D}) where D
+	s = 0.0
+	for site in lattice, link in site[begin:end-1], v in link.direction+1:D
+		s += 1 - 0.5 * tr(plaquette(lattice, link, v))
+	end
+	s
+end
+
 # TODO polyakov
