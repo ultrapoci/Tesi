@@ -114,6 +114,7 @@ end
 
 #* ===== plaquette =====
 """
+	plaquette(lattice::Lattice{D}, link::Link{D}, direction::Integer) where D
 Returns the plaquette of the given `link` in the given `direction`. It is an Sp2Element. 
 """
 function plaquette(lattice::Lattice{D}, link::Link{D}, direction::Integer) where D
