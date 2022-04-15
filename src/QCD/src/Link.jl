@@ -32,16 +32,16 @@ struct Link{D} <: AbstractMatrix{ComplexF64}
 		Link(S, direction, CartesianIndex(position); modby = modby)
 	end
 	
-	function Link(direction::Integer, position::CartesianIndex{D}; modby::Union{Integer, NTuple{D, Integer}} = 0) where D
-		Link(Sp2Element(), direction, position; modby = modby)
+	function Link(direction::Integer, position::CartesianIndex{D}; type::Type{<:Sp2Element} = Sp2ElementA, modby::Union{Integer, NTuple{D, Integer}} = 0) where D
+		Link(Sp2Element(type), direction, position; modby = modby)
 	end
 
-	function Link(direction::Integer, position::NTuple{D, Integer}; modby::Union{Integer, NTuple{D, Integer}} = 0) where D
-		Link(Sp2Element(), direction, CartesianIndex(position); modby = modby)
+	function Link(direction::Integer, position::NTuple{D, Integer}; type::Type{<:Sp2Element} = Sp2ElementA, modby::Union{Integer, NTuple{D, Integer}} = 0) where D
+		Link(Sp2Element(type), direction, CartesianIndex(position); modby = modby)
 	end
 
-	function Link(direction::Integer, position::Vararg{Integer, D}; modby::Union{Integer, NTuple{D, Integer}} = 0) where D
-		Link(Sp2Element(), direction, CartesianIndex(position); modby = modby)
+	function Link(direction::Integer, position::Vararg{Integer, D}; type::Type{<:Sp2Element} = Sp2ElementA, modby::Union{Integer, NTuple{D, Integer}} = 0) where D
+		Link(Sp2Element(type), direction, CartesianIndex(position); modby = modby)
 	end
 end
 

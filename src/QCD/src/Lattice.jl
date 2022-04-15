@@ -4,22 +4,26 @@ export Lattice, evensites, oddsites, evenlinks, oddlinks, updatelattice!
 """
 Creates a D-dimensional lattice with side length N.
 
-	Lattice(Val(D), N[; start::Symbol = :cold])
+	Lattice(Val(D), N[; type::Type{<:Sp2Element} = Sp2ElementA, start::Symbol = :cold])
 
 Creates a lattice with given length for each dimension. At least one dimension must be given.
 
-	Lattice(x_0, x_1, x_2, ... [; start::Symbol = :cold])
-	Lattice((x_0, x_1, x_2)[; start::Symbol = :cold])
+	Lattice(x_0, x_1, x_2, ... [; type::Type{<:Sp2Element} = Sp2ElementA, start::Symbol = :cold])
+	Lattice((x_0, x_1, x_2)[; type::Type{<:Sp2Element} = Sp2ElementA, start::Symbol = :cold])
 
 If `start` = :cold, all links of the lattice are set to be the identity element.
 If `start` = :hot, all links are randomized and normalized Sp2Element.
 If `start` = :empty, the lattice contains initialized vectors of undef links.
 
+`type` refers to what kind of representation to use for the Sp2 element in links:
+- Sp2ElementA is the one used in Pepe's paper
+- Sp2ElementB is the one used in Pepe's source code
+
 """
 struct Lattice{D} <: AbstractArray{Vector{Link{D}}, D}
 	lattice::Array{Vector{Link{D}}, D}
 	
-	function Lattice(dimensions::NTuple{D, Integer}; start::Symbol = :cold) where D
+	function Lattice(dimensions::NTuple{D, Integer}; type::Type{<:Sp2Element} = Sp2ElementA, start::Symbol = :cold) where D
 		if start ∉ [:cold, :hot, :empty]
 			throw(ArgumentError("start keyword argument must be equal to :empty, :cold or :hot. Got start = :$start."))
 		elseif D == 0
@@ -32,9 +36,9 @@ struct Lattice{D} <: AbstractArray{Vector{Link{D}}, D}
 
 		for index in CartesianIndices(lattice)
 			lattice[index] = if start == :cold
-				[Link(direction, index) for direction in 1:D]
+				[Link(direction, index, type = type) for direction in 1:D]
 			elseif start == :hot
-				[Link(randSp2(), direction, index) for direction in 1:D]
+				[Link(rand(type), direction, index) for direction in 1:D]
 			else
 				Vector{Link}(undef, D)
 			end			
@@ -43,12 +47,12 @@ struct Lattice{D} <: AbstractArray{Vector{Link{D}}, D}
 		new{D}(lattice)
 	end
 
-	function Lattice(dimensions::Vararg{Integer, D}; start::Symbol = :cold) where D
-		Lattice(Tuple(dimensions); start = start)
+	function Lattice(dimensions::Vararg{Integer, D}; type::Type{<:Sp2Element} = Sp2ElementA, start::Symbol = :cold) where D
+		Lattice(Tuple(dimensions); type = type, start = start)
 	end
 
-	function Lattice(::Val{D}, length::Integer; start::Symbol = :cold) where D
-		Lattice(ntuple(_ -> length, Val(D)); start = start)
+	function Lattice(::Val{D}, length::Integer; type::Type{<:Sp2Element} = Sp2ElementA, start::Symbol = :cold) where D
+		Lattice(ntuple(_ -> length, Val(D)); type = type, start = start)
 	end
 end
 

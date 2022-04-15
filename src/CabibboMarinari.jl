@@ -29,7 +29,7 @@ Extracts the four ``SU(2)`` matrices embedded in a 4x4 matrix and returns a tupl
 the SU2Element already normalized, the square root of the determinant calculated before the normalization
 and an anonymous function that takes the two complex numbers in SU2Element and builds an Sp2Element.
 """
-function subrepresentations(S::Matrix{<:Number})
+function subrepresentations(::Type{Sp2ElementA}, S::Matrix{<:Number}) # TODO
 	repr = Tuple{SU2Element, Real, Function}[]
 
 	# SU(2) + U(1) + U(1)
@@ -38,7 +38,7 @@ function subrepresentations(S::Matrix{<:Number})
 	(M, sqrtΔ) = normalizeSU2det(SU2Element(t₁, t₂))
 	push!(
 		repr, 
-		(M, sqrtΔ, (x::SU2Element) -> Sp2Element([x.t₁ 0; 0 1], [x.t₂ 0; 0 0]))
+		(M, sqrtΔ, (x::SU2Element) -> Sp2Element(Sp2ElementA, [x.t₁ 0; 0 1], [x.t₂ 0; 0 0]))
 	)
 
 	# SU(2) + U(1) + U(1)
@@ -47,7 +47,7 @@ function subrepresentations(S::Matrix{<:Number})
 	(M, sqrtΔ) = normalizeSU2det(SU2Element(t₁, t₂))
 	push!(
 		repr, 
-		(M, sqrtΔ, (x::SU2Element) -> Sp2Element([1 0; 0 x.t₁], [0 0; 0 x.t₂]))
+		(M, sqrtΔ, (x::SU2Element) -> Sp2Element(Sp2ElementA, [1 0; 0 x.t₁], [0 0; 0 x.t₂]))
 	)
 
 	# SU(2) + SU(2)
@@ -56,7 +56,7 @@ function subrepresentations(S::Matrix{<:Number})
 	(M, sqrtΔ) = normalizeSU2det(SU2Element(t₁, t₂))
 	push!(
 		repr, 
-		(M, sqrtΔ, (x::SU2Element) -> Sp2Element([x.t₁ 0; 0 x.t₁], [0 x.t₂; x.t₂ 0]))
+		(M, sqrtΔ, (x::SU2Element) -> Sp2Element(Sp2ElementA, [x.t₁ 0; 0 x.t₁], [0 x.t₂; x.t₂ 0]))
 	)
 
 	# SU(2) + SU(2)
@@ -65,14 +65,56 @@ function subrepresentations(S::Matrix{<:Number})
 	(M, sqrtΔ) = normalizeSU2det(SU2Element(t₁, t₂))
 	push!(
 		repr, 
-		(M, sqrtΔ, (x::SU2Element) -> Sp2Element([x.t₁ x.t₂; -conj(x.t₂) conj(x.t₁)], [0 0; 0 0]))
+		(M, sqrtΔ, (x::SU2Element) -> Sp2Element(Sp2ElementA, [x.t₁ x.t₂; -conj(x.t₂) conj(x.t₁)], [0 0; 0 0]))
+	)
+
+	repr
+end
+
+function subrepresentations(::Type{Sp2ElementB}, S::Matrix{<:Number}) # TODO
+	repr = Tuple{SU2Element, Real, Function}[]
+
+	# SU(2) + U(1) + U(1)
+	t₁ = S[1, 1]
+	t₂ = S[1, 4]
+	(M, sqrtΔ) = normalizeSU2det(SU2Element(t₁, t₂))
+	push!(
+		repr, 
+		(M, sqrtΔ, (x::SU2Element) -> Sp2Element(Sp2ElementB, [x.t₁ 0; 0 1], [0 x.t₂; 0 0]))
+	)
+
+	# SU(2) + U(1) + U(1)
+	t₁ = S[2, 2]
+	t₂ = S[2, 3]
+	(M, sqrtΔ) = normalizeSU2det(SU2Element(t₁, t₂))
+	push!(
+		repr, 
+		(M, sqrtΔ, (x::SU2Element) -> Sp2Element(Sp2ElementB, [1 0; 0 x.t₁], [0 0; x.t₂ 0]))
+	)
+
+	# SU(2) + SU(2)
+	t₁ = S[1, 1] + S[2, 2]
+	t₂ = S[1, 3] - S[2, 4]
+	(M, sqrtΔ) = normalizeSU2det(SU2Element(t₁, t₂))
+	push!(
+		repr, 
+		(M, sqrtΔ, (x::SU2Element) -> Sp2Element(Sp2ElementB, [x.t₁ 0; 0 x.t₁], [x.t₂ 0; 0 -x.t₂]))
+	)
+
+	# SU(2) + SU(2)
+	t₁ = S[1, 1] + S[3, 3]
+	t₂ = S[1, 2] + S[3, 4]
+	(M, sqrtΔ) = normalizeSU2det(SU2Element(t₁, t₂))
+	push!(
+		repr, 
+		(M, sqrtΔ, (x::SU2Element) -> Sp2Element(Sp2ElementB, [x.t₁ x.t₂; -conj(x.t₂) conj(x.t₁)], [0 0; 0 0]))
 	)
 
 	repr
 end
 
 function subrepresentations(S::Sp2Element)
-	subrepresentations(asmatrix(S))
+	subrepresentations(typeof(S), asmatrix(S))
 end
 
 """
@@ -106,30 +148,32 @@ end
 
 function overrelaxation(lattice::Lattice, link::Link)
 	U = link.s
+	T = typeof(U)
 	R = sumstaples(lattice, link)
-	for (u, _, f) in subrepresentations(U * R)
+	for (u, _, f) in subrepresentations(T, U * R)
 		a = u^-2
 		U = f(a) * U
 	end
-	U
+	Link(U, link.direction, link.position)
 end
 
 function heatbath(lattice::Lattice, link::Link, β::Real)
 	U = link.s
+	T = typeof(U)
 	R = sumstaples(lattice, link)
-	for (u, k, f) in subrepresentations(U * R)
+	for (u, k, f) in subrepresentations(T, U * R)
 		a = randomSU2(k, β) * u^-1
 		U = f(a) * U
 	end
-	U
+	Link(U, link.direction, link.position)
 end
 
 function lattice_overrelaxation!(lattice::Lattice{D}, n::Integer) where D
 	for _ in 1:n, parity in [:even, :odd], u in 1:D
 		newlinks = Link{D}[]
 		for link in iterlinks(lattice, u, parity)
-			U = overrelaxation(lattice, link)
-			push!(newlinks, Link(U, link.direction, link.position))
+			newlink = overrelaxation(lattice, link)
+			push!(newlinks, newlink)
 		end
 		updatelattice!(lattice, newlinks)
 	end
@@ -139,8 +183,8 @@ function lattice_heatbath!(lattice::Lattice{D}, β::Real) where D
 	for parity in [:even, :odd], u in 1:D
 		newlinks = Link{D}[]
 		for link in iterlinks(lattice, u, parity)
-			U = heatbath(lattice, link, β)
-			push!(newlinks, Link(U, link.direction, link.position))
+			newlink = heatbath(lattice, link, β)
+			push!(newlinks, newlink)
 		end
 		updatelattice!(lattice, newlinks)
 	end
