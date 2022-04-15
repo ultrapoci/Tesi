@@ -19,7 +19,7 @@ function termalization!(L::Lattice, params::Dict)
 	end
 end
 
-function termalization!(L::Lattice, params::Dict, observable::Function, v::Vector{Float64})
+function termalization!(L::Lattice, params::Dict, observable::Function, v::Vector{Real})
 	@unpack β, nterm, nover, norm_every = params
 	
 	@showprogress 1 "Termalization" for n in 1:nterm
@@ -41,9 +41,9 @@ function termalization(params::Dict)
 end
 
 function termalization(params::Dict, observable::Function)
-	@unpack dims, lattice_start = params
-	lattice = Lattice(dims..., start = lattice_start)
-	v = Float64[]
+	@unpack dims, lattice_start, sp2type = params
+	lattice = Lattice(dims..., type = sp2type, start = lattice_start)
+	v = Real[]
 	termalization!(lattice, params, observable, v)
 	lattice, v
 end
@@ -52,5 +52,6 @@ end
 
 include("parameters.jl")
 display(params)
-lattice, v = termalization(params, action);
+lattice, v = termalization(params, averageplaquette);
+println(averageplaquette(lattice))
 plot(v)
