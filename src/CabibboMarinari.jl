@@ -23,103 +23,104 @@ function sumstaples(lattice::Lattice{D}, link::Link{D}) where D
 end
 
 """
-	subrepresentations(S::Matrix{<:Number})
-	subrepresentations(S::Sp2Element)
-Extracts the four ``SU(2)`` matrices embedded in a 4x4 matrix and returns a tuple containing
-the SU2Element already normalized, the square root of the determinant calculated before the normalization
-and an anonymous function that takes the two complex numbers in SU2Element and builds an Sp2Element.
+	subrepresentations(::Type{Sp2ElementA})
+	subrepresentations(::Type{Sp2ElementB})
+Returns a vector of tuples, each containing two functions: 
+- the first function takes an Sp2Element and returns a tuple, where the first element is the extracted SU2Element (already normalized) according to \
+one of the four decompositions of the ``Sp2`` algebra, while the second element is the square root of the determinant calculated before the normalization
+- the second function does the inverse: takes an SU2Element and builds an Sp2Element according the decomposition considered. 
+
+Each pair represent one algebra decomposition. 
+
+The input type determines which form of the Sp2 matrix to use when building decompositions.
 """
-function subrepresentations(::Type{Sp2ElementA}, S::Matrix{<:Number}) # TODO
-	repr = Tuple{SU2Element, Real, Function}[]
+function subrepresentations(::Type{Sp2ElementA})
+	repr = Tuple{Function, Function}[]
 
 	# SU(2) + U(1) + U(1)
-	t₁ = S[1, 1]
-	t₂ = S[1, 3]
-	(M, sqrtΔ) = normalizeSU2det(SU2Element(t₁, t₂))
 	push!(
 		repr, 
-		(M, sqrtΔ, (x::SU2Element) -> Sp2Element(Sp2ElementA, [x.t₁ 0; 0 1], [x.t₂ 0; 0 0]))
+		(
+			x -> SU2Element(x[1, 1], x[1, 3]) |> normalizeSU2det,
+			(x::SU2Element) -> Sp2Element(Sp2ElementA, [x.t₁ 0; 0 1], [x.t₂ 0; 0 0])
+		)
 	)
 
 	# SU(2) + U(1) + U(1)
-	t₁ = S[2, 2]
-	t₂ = S[2, 4]
-	(M, sqrtΔ) = normalizeSU2det(SU2Element(t₁, t₂))
 	push!(
 		repr, 
-		(M, sqrtΔ, (x::SU2Element) -> Sp2Element(Sp2ElementA, [1 0; 0 x.t₁], [0 0; 0 x.t₂]))
+		(
+			x -> SU2Element(x[2, 2], x[2, 4]) |> normalizeSU2det,
+			(x::SU2Element) -> Sp2Element(Sp2ElementA, [1 0; 0 x.t₁], [0 0; 0 x.t₂])
+		)
 	)
 
 	# SU(2) + SU(2)
-	t₁ = S[1, 1] + S[2, 2]
-	t₂ = S[1, 4] + S[2, 3]
-	(M, sqrtΔ) = normalizeSU2det(SU2Element(t₁, t₂))
 	push!(
 		repr, 
-		(M, sqrtΔ, (x::SU2Element) -> Sp2Element(Sp2ElementA, [x.t₁ 0; 0 x.t₁], [0 x.t₂; x.t₂ 0]))
+		(
+			x -> SU2Element(x[1, 1] + x[2, 2], x[1, 4] + x[2, 3]) |> normalizeSU2det,
+			(x::SU2Element) -> Sp2Element(Sp2ElementA, [x.t₁ 0; 0 x.t₁], [0 x.t₂; x.t₂ 0])
+		)
 	)
 
 	# SU(2) + SU(2)
-	t₁ = S[1, 1] + S[4, 4]
-	t₂ = S[1, 2] - S[4, 3]
-	(M, sqrtΔ) = normalizeSU2det(SU2Element(t₁, t₂))
 	push!(
 		repr, 
-		(M, sqrtΔ, (x::SU2Element) -> Sp2Element(Sp2ElementA, [x.t₁ x.t₂; -conj(x.t₂) conj(x.t₁)], [0 0; 0 0]))
+		(
+			x -> SU2Element(x[1, 1] + x[4, 4], x[1, 2] - x[4, 3]) |> normalizeSU2det,
+			(x::SU2Element) -> Sp2Element(Sp2ElementA, [x.t₁ x.t₂; -conj(x.t₂) conj(x.t₁)], [0 0; 0 0])
+		)
 	)
 
 	repr
 end
 
-function subrepresentations(::Type{Sp2ElementB}, S::Matrix{<:Number}) # TODO
-	repr = Tuple{SU2Element, Real, Function}[]
+function subrepresentations(::Type{Sp2ElementB})
+	repr = Tuple{Function, Function}[]
 
 	# SU(2) + U(1) + U(1)
-	t₁ = S[1, 1]
-	t₂ = S[1, 4]
-	(M, sqrtΔ) = normalizeSU2det(SU2Element(t₁, t₂))
 	push!(
 		repr, 
-		(M, sqrtΔ, (x::SU2Element) -> Sp2Element(Sp2ElementB, [x.t₁ 0; 0 1], [0 x.t₂; 0 0]))
+		(
+			x -> SU2Element(x[1, 1], x[1, 4]) |> normalizeSU2det,
+			(x::SU2Element) -> Sp2Element(Sp2ElementB, [x.t₁ 0; 0 1], [0 x.t₂; 0 0])
+		)
 	)
 
 	# SU(2) + U(1) + U(1)
-	t₁ = S[2, 2]
-	t₂ = S[2, 3]
-	(M, sqrtΔ) = normalizeSU2det(SU2Element(t₁, t₂))
 	push!(
 		repr, 
-		(M, sqrtΔ, (x::SU2Element) -> Sp2Element(Sp2ElementB, [1 0; 0 x.t₁], [0 0; x.t₂ 0]))
+		(
+			x -> SU2Element(x[2, 2], x[2, 3]) |> normalizeSU2det,
+			(x::SU2Element) -> Sp2Element(Sp2ElementB, [1 0; 0 x.t₁], [0 0; x.t₂ 0])
+		)
 	)
 
 	# SU(2) + SU(2)
-	t₁ = S[1, 1] + S[2, 2]
-	t₂ = S[1, 3] - S[2, 4]
-	(M, sqrtΔ) = normalizeSU2det(SU2Element(t₁, t₂))
 	push!(
 		repr, 
-		(M, sqrtΔ, (x::SU2Element) -> Sp2Element(Sp2ElementB, [x.t₁ 0; 0 x.t₁], [x.t₂ 0; 0 -x.t₂]))
+		(
+			x -> SU2Element(x[1, 1] + x[2, 2], x[1, 3] - x[2, 4]) |> normalizeSU2det,
+			(x::SU2Element) -> Sp2Element(Sp2ElementB, [x.t₁ 0; 0 x.t₁], [x.t₂ 0; 0 -x.t₂])
+		)
 	)
 
 	# SU(2) + SU(2)
-	t₁ = S[1, 1] + S[3, 3]
-	t₂ = S[1, 2] + S[3, 4]
-	(M, sqrtΔ) = normalizeSU2det(SU2Element(t₁, t₂))
 	push!(
 		repr, 
-		(M, sqrtΔ, (x::SU2Element) -> Sp2Element(Sp2ElementB, [x.t₁ x.t₂; -conj(x.t₂) conj(x.t₁)], [0 0; 0 0]))
+		(
+			x -> SU2Element(x[1, 1] + x[3, 3], x[1, 2] + x[3, 4]) |> normalizeSU2det,
+			(x::SU2Element) -> Sp2Element(Sp2ElementB, [x.t₁ x.t₂; -conj(x.t₂) conj(x.t₁)], [0 0; 0 0])
+		)
 	)
 
 	repr
-end
-
-function subrepresentations(S::Sp2Element)
-	subrepresentations(typeof(S), asmatrix(S))
 end
 
 """
 	generate_a0(k::Real, β::Real)
-Generates a real number ``a₀`` according to the distribution √(1 - a₀^2) exp(a₀ β k).		
+Generates a real number ``a₀`` according to the distribution P(a₀) = √(1 - a₀^2) exp(a₀ β k).		
 """
 function generate_a0(k::Real, β::Real)
 	reject = true
@@ -150,9 +151,10 @@ function overrelaxation(lattice::Lattice, link::Link)
 	U = link.s
 	T = typeof(U)
 	R = sumstaples(lattice, link)
-	for (u, _, f) in subrepresentations(T, U * R)
+	for (to_su2, to_sp2) in subrepresentations(T)
+		u, = to_su2(U * R) # don't need the square root of the determinant
 		a = u^-2
-		U = f(a) * U
+		U = to_sp2(a) * U
 	end
 	Link(U, link.direction, link.position)
 end
@@ -161,9 +163,10 @@ function heatbath(lattice::Lattice, link::Link, β::Real)
 	U = link.s
 	T = typeof(U)
 	R = sumstaples(lattice, link)
-	for (u, k, f) in subrepresentations(T, U * R)
+	for (to_su2, to_sp2) in subrepresentations(T)
+		u, k = to_su2(U * R)
 		a = randomSU2(k, β) * u^-1
-		U = f(a) * U
+		U = to_sp2(a) * U
 	end
 	Link(U, link.direction, link.position)
 end
