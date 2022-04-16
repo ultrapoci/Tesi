@@ -1,4 +1,6 @@
-export Sp2Element, Sp2ElementA, Sp2ElementB, asmatrix, normalizeSp2
+export Sp2Element, Sp2ElementA, Sp2ElementB, asmatrix, normalizeSp2, J
+
+using LinearAlgebra
 
 abstract type Sp2Element <: AbstractMatrix{ComplexF64} end
 
@@ -81,6 +83,13 @@ function Sp2Element(::Type{Sp2ElementB}, W, X)
 	Sp2ElementB(W, X)
 end
 
+function J(::Type{Sp2ElementA})
+	[0 0 1 0; 0 0 0 1; -1 0 0 0; 0 -1 0 0]
+end
+
+function J(::Type{Sp2ElementB})
+	[0 0 0 1; 0 0 -1 0; 0 1 0 0; -1 0 0 0]
+end
 
 """
 	normalizeSp2(S::Sp2Element)
