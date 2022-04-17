@@ -92,13 +92,12 @@ function run(allparams, obsparams)
 	for params in dict_list(allparams)
 		display(params)
 		d = copy(params)
-		d["observables"] = Dict()
 
 		measurements, = termalization(params, observables)
 
 		for (measurement, obs_name) in zip(eachcol(measurements), iterobs(observables))
 			obs_mean, xrange = incrementalmean(measurement, meanoffset)
-			d["observables"][obs_name] = obs_mean[end] # add final mean to dictionary
+			d[obs_name] = obs_mean[end] # add final mean to dictionary
 
 			println("mean $obs_name = $(obs_mean[end])")
 
@@ -116,7 +115,7 @@ function run(allparams, obsparams)
 		safesave(datadir("jld2", jld2name), d)
 
 		datname = savename(params, "dat", ignores = "latticestart")
-		safesave(datadir("dat", datname), merge(params, d["observables"]))
+		safesave(datadir("dat", datname), d)
 
 		println()
 	end
