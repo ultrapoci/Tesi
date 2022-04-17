@@ -3,7 +3,7 @@ using DrWatson
 
 using QCD, Plots, Statistics, ProgressMeter
 import DelimitedFiles
-includet(srcdir("CabibboMarinari.jl"))
+include(srcdir("CabibboMarinari.jl"))
 
 function DrWatson._wsave(filename, data::Dict)
 	if splitext(filename)[2] == ".dat" 
@@ -86,39 +86,38 @@ showall(x) = begin show(stdout, "text/plain", x); println() end
 iterobs(ob::Function) = (String(Symbol(ob)),)
 iterobs(ob::Tuple) = String.(Symbol.(ob))
 
-##
+function run(allparams, obsparams)
+	@unpack observables, to_plot, meanoffset = obsparams
 
-include("parameters.jl")
-@unpack observables, to_plot, meanoffset = obsparams
+	for params in dict_list(allparams)
+		display(params)
+		d = copy(params)
+		d["observables"] = Dict()
 
-for params in dict_list(allparams)
-	display(params)
-	d = copy(params)
-	d["observables"] = Dict()
+		measurements, = termalization(params, observables)
 
-	measurements, = termalization(params, observables)
+		for (measurement, obs_name) in zip(eachcol(measurements), iterobs(observables))
+			obs_mean, xrange = incrementalmean(measurement, meanoffset)
+			d["observables"][obs_name] = obs_mean[end] # add final mean to dictionary
 
-	for (measurement, obs_name) in zip(eachcol(measurements), iterobs(observables))
-		obs_mean, xrange = incrementalmean(measurement, meanoffset)
-		d["observables"][obs_name] = obs_mean[end] # add final mean to dictionary
+			println("mean $obs_name = $(obs_mean[end])")
 
-		println("mean $obs_name = $(obs_mean[end])")
-
-		if to_plot
-			plottitle = savename(params, connector = ", ")
-			p = plot(measurement, label = obs_name, title = plottitle, titlefontsize = 10)
-			plot!(p, xrange, obs_mean, label = "mean $obs_name")
-			plotname = savename(obs_name, params, "png", ignores = "latticestart")	
-			safesave(plotsdir(plotname), p)
-			display(p)
+			if to_plot
+				plottitle = savename(params, connector = ", ")
+				p = plot(measurement, label = obs_name, title = plottitle, titlefontsize = 10)
+				plot!(p, xrange, obs_mean, label = "mean $obs_name")
+				plotname = savename(obs_name, params, "png", ignores = "latticestart")	
+				safesave(plotsdir(plotname), p)
+				display(p)
+			end
 		end
+
+		jld2name = savename(params, "jld2", ignores = "latticestart")
+		safesave(datadir("jld2", jld2name), d)
+
+		datname = savename(params, "dat", ignores = "latticestart")
+		safesave(datadir("dat", datname), merge(params, d["observables"]))
+
+		println()
 	end
-
-	jld2name = savename(params, "jld2", ignores = "latticestart")
-	safesave(datadir("jld2", jld2name), d)
-
-	datname = savename(params, "dat", ignores = "latticestart")
-	safesave(datadir("dat", datname), merge(params, d["observables"]))
-
-	println()
 end
