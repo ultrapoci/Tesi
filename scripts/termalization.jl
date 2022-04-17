@@ -105,20 +105,20 @@ for params in dict_list(allparams)
 		println("mean $obs_name = $(obs_mean[end])")
 
 		if to_plot
-			plottitle = savename(params)
+			plottitle = savename(params, connector = ", ")
 			p = plot(measurement, label = obs_name, title = plottitle, titlefontsize = 10)
 			plot!(p, xrange, obs_mean, label = "mean $obs_name")
-			plotname = savename(obs_name, params, "png")	
-			savefig(p, plotsdir(plotname))
+			plotname = savename(obs_name, params, "png", ignores = "latticestart")	
+			safesave(plotsdir(plotname), p)
 			display(p)
 		end
 	end
 
-	jld2name = savename(params, "jld2")
-	wsave(datadir("jld2", jld2name), d)
+	jld2name = savename(params, "jld2", ignores = "latticestart")
+	safesave(datadir("jld2", jld2name), d)
 
-	datname = savename(params, "dat")
-	wsave(datadir("dat", datname), merge(params, d["observables"]))
+	datname = savename(params, "dat", ignores = "latticestart")
+	safesave(datadir("dat", datname), merge(params, d["observables"]))
 
 	println()
 end
