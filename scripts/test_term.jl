@@ -14,12 +14,11 @@ but the progress bar doesn't. The bar is shown at 100%
 completion after the loop finishes.
 =#
 function test1!(L::Lattice)
-	@track for n in 1:100
+	@track for i in 1:100
+		sleep(0.00001)
 		lattice_overrelaxation!(L, 3)
 		lattice_heatbath!(L, 1.0)
-		if n % 10 == 0
-			lattice_normalization!(L)
-		end
+		lattice_normalization!(L)
 	end
 end
 
@@ -30,11 +29,9 @@ appear fast enough.
 =#
 function test2!(L::Lattice)
 	ProgressMeter.@showprogress 1 for n in 1:100
-		lattice_overrelaxation!(L, 3)
+		#lattice_overrelaxation!(L, 3)
 		lattice_heatbath!(L, 1.0)
-		if n % 10 == 0
-			lattice_normalization!(L)
-		end
+		lattice_normalization!(L)
 	end
 end
 
@@ -42,4 +39,20 @@ end
 
 L = Lattice(4, 4, 4)
 test1!(L)
-test2!(L)
+#test2!(L)
+
+##
+
+very_slow_fn() = sleep(10)
+slow_fn() = sleep(1)
+
+function mytest()
+	@track for n in 1:10
+		n == 1 && very_slow_fn()
+		slow_fn()
+	end
+end
+
+##
+
+mytest()
