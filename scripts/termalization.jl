@@ -5,6 +5,9 @@ using QCD, Plots, Statistics, ProgressMeter
 import DelimitedFiles
 include(srcdir("CabibboMarinari.jl"))
 
+
+#* ===== UTILITIES =====
+
 function DrWatson._wsave(filename, data::Dict)
 	if splitext(filename)[2] == ".dat" 
 		DelimitedFiles.writedlm(filename, data, " = ")
@@ -12,6 +15,22 @@ function DrWatson._wsave(filename, data::Dict)
 		save(filename, data)
 	end
 end
+
+showall(x) = begin show(stdout, "text/plain", x); println() end
+
+takeobservables(x::Pair) = (x.first,), (x.second,)
+takeobservables(x) = first.(x), last.(x)
+
+function incrementalmean(v, offset::Integer = 1)
+	if offset ∉ 1:length(v)
+		throw(ArgumentError("Given offset = $offset must be positive and less than or equal to length(v) = $(length(v))"))
+	end
+
+	[mean(v[offset:i]) for i in offset:length(v)], offset:length(v)
+end
+
+
+#* ===== TERMALIZATION =====
 
 function one_termalization!(L::Lattice, nover::Integer, β::Real, normalize::Bool = false)
 	lattice_overrelaxation!(L, nover)
@@ -73,39 +92,32 @@ function termalization(params::Dict, observables)
 	reduce(hcat, v)', lattice
 end
 
-function incrementalmean(v, offset::Integer = 1)
-	if offset ∉ 1:length(v)
-		throw(ArgumentError("Given offset = $offset must be positive and less than or equal to length(v) = $(length(v))"))
-	end
 
-	[mean(v[offset:i]) for i in offset:length(v)], offset:length(v)
-end
+#* ===== RUN =====
 
-showall(x) = begin show(stdout, "text/plain", x); println() end
+function run()
+	include(scriptsdir("parameters.jl"))
 
-iterobs(ob::Function) = (String(Symbol(ob)),)
-iterobs(ob::Tuple) = String.(Symbol.(ob))
-
-function run(allparams, obsparams)
 	@unpack observables, to_plot, meanoffset = obsparams
+	obsnames, obsfunctions = takeobservables(observables)
 
 	for params in dict_list(allparams)
 		display(params)
 		d = copy(params)
 
-		measurements, = termalization(params, observables)
+		measurements, = termalization(params, obsfunctions)
 
-		for (measurement, obs_name) in zip(eachcol(measurements), iterobs(observables))
-			obs_mean, xrange = incrementalmean(measurement, meanoffset)
-			d[obs_name] = obs_mean[end] # add final mean to dictionary
+		for (measurement, obsname) in zip(eachcol(measurements), obsnames)
+			obsmean, xrange = incrementalmean(measurement, meanoffset)
+			d[obsname] = obsmean[end] # add final mean to dictionary
 
-			println("mean $obs_name = $(obs_mean[end])")
+			println("mean $obsname = $(obsmean[end])")
 
 			if to_plot
 				plottitle = savename(params, connector = ", ")
-				p = plot(measurement, label = obs_name, title = plottitle, titlefontsize = 10)
-				plot!(p, xrange, obs_mean, label = "mean $obs_name")
-				plotname = savename(obs_name, params, "png", ignores = "latticestart")	
+				p = plot(measurement, label = obsname, title = plottitle, titlefontsize = 10)
+				plot!(p, xrange, obsmean, label = "mean $obsname")
+				plotname = savename(obsname, params, "png", ignores = "latticestart")	
 				safesave(plotsdir(plotname), p)
 				display(p)
 			end
