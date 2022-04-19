@@ -1,9 +1,10 @@
 using DrWatson
 @quickactivate "Tesi"
 
-using QCD, Plots, Statistics, ProgressMeter
-import DelimitedFiles
+using QCD, Plots, Statistics, ProgressMeter, DataFrames
+import DelimitedFiles, CSV
 include(srcdir("CabibboMarinari.jl"))
+include(scriptsdir("parameters.jl"))
 
 
 #* ===== UTILITIES =====
@@ -14,6 +15,10 @@ function DrWatson._wsave(filename, data::Dict)
 	else
 		save(filename, data)
 	end
+end
+
+function DrWatson._wsave(filename, data::DataFrame)
+	CSV.write(filename, data)
 end
 
 showall(x) = begin show(stdout, "text/plain", x); println() end
@@ -34,11 +39,11 @@ end
 
 function one_termalization!(L::Lattice, nover::Integer, β::Real, normalize::Bool = false)
 	lattice_overrelaxation!(L, nover)
-	lattice_heatbath!(L, β/2) # β/2 is to have 8/g² as coefficient
+	lattice_heatbath!(L, β)
 	normalize && lattice_normalization!(L)
 end
 
-function termalization!(L::Lattice, params::Dict)
+function termalization!(L::Lattice, params)
 	@unpack β, nterm, nover, nnorm = params
 	
 	@showprogress 1 "Termalization" for n in 1:nterm
@@ -46,14 +51,14 @@ function termalization!(L::Lattice, params::Dict)
 	end
 end
 
-function termalization(params::Dict)
+function termalization(params)
 	@unpack dims, latticestart, sp2type = params
 	lattice = Lattice(dims, start = latticestart, type = sp2type)
 	termalization!(lattice, params)
 	lattice
 end
 
-function termalization!(L::Lattice, params::Dict, observable::Function, v::Vector)
+function termalization!(L::Lattice, params, observable::Function, v::Vector)
 	@unpack β, nterm, nover, nnorm = params
 	
 	@showprogress 1 "Termalization" for n in 1:nterm
@@ -62,7 +67,7 @@ function termalization!(L::Lattice, params::Dict, observable::Function, v::Vecto
 	end
 end
 
-function termalization(params::Dict, observable::Function)
+function termalization(params, observable::Function)
 	@unpack dims, latticestart, sp2type = params
 	lattice = Lattice(dims..., start = latticestart, type = sp2type)
 	v = []
@@ -70,7 +75,7 @@ function termalization(params::Dict, observable::Function)
 	v, lattice
 end
 
-function termalization!(L::Lattice, params::Dict, observables, v)
+function termalization!(L::Lattice, params, observables, v)
 	@unpack β, nterm, nover, nnorm = params
 	
 	@showprogress 1 "Termalization" for n in 1:nterm
@@ -84,7 +89,7 @@ function termalization!(L::Lattice, params::Dict, observables, v)
 	end
 end
 
-function termalization(params::Dict, observables)
+function termalization(params, observables)
 	@unpack dims, latticestart, sp2type = params
 	lattice = Lattice(dims..., type = sp2type, start = latticestart)
 	v = []
@@ -95,15 +100,17 @@ end
 
 #* ===== RUN =====
 
-function run()
-	include(scriptsdir("parameters.jl"))
-
-	@unpack observables, to_plot, meanoffset = obsparams
+function run(allparams::TermParams, obsparams::ObsParams)
+	@unpack observables, to_plot, save_dat, save_jld2, save_df = obsparams
 	obsnames, obsfunctions = takeobservables(observables)
 
+	df = DataFrame()
+
 	for params in dict_list(allparams)
+		@unpack meanoffset = params
+
 		display(params)
-		d = copy(params)
+		d = Dict(params)
 
 		measurements, = termalization(params, obsfunctions)
 
@@ -114,21 +121,37 @@ function run()
 			println("mean $obsname = $(obsmean[end])")
 
 			if to_plot
-				plottitle = savename(params, connector = ", ")
+				plottitle = savename(params, connector = ", ", sort = false)
 				p = plot(measurement, label = obsname, title = plottitle, titlefontsize = 10)
 				plot!(p, xrange, obsmean, label = "mean $obsname")
-				plotname = savename(obsname, params, "png", ignores = "latticestart")	
+				plotname = savename(obsname, params, "png", sort = false)	
 				safesave(plotsdir(plotname), p)
 				display(p)
 			end
 		end
 
-		jld2name = savename(params, "jld2", ignores = "latticestart")
-		safesave(datadir("jld2", jld2name), d)
+		if save_jld2
+			jld2name = savename(params, "jld2", sort = false)
+			safesave(datadir("jld2", jld2name), d)
+		end 
 
-		datname = savename(params, "dat", ignores = "latticestart")
-		safesave(datadir("dat", datname), d)
+		if save_dat
+			datname = savename(params, "dat", sort = false)
+			safesave(datadir("dat", datname), d)
+		end
 
+		append!(df, d)
 		println()
 	end
+
+	sort!(df, [:dims, :β])
+
+	if save_df
+		dfname = savename(allparams, "csv")
+		safesave(datadir(dfname), df)
+	end
+
+	df
 end
+
+run() = begin include(scriptsdir("parameters.jl")); run(TermParams(), ObsParams()) end
