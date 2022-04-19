@@ -221,4 +221,15 @@ function action(lattice::Lattice{D}) where D
 	s
 end
 
-# TODO polyakov
+function polyakovloop(lattice::Lattice{D}, x::CartesianIndex{Dm1}) where {D, Dm1}
+	Dm1 == D-1 || throw(TypeError(:polyakovloop, CartesianIndex{D-1}, CartesianIndex{Dm1}))
+	U = linkelement(lattice, 1, CartesianIndex(1, x))
+	Nₜ = first(size(lattice))
+	for i in 2:Nₜ
+		U = U * linkelement(lattice, 1, CartesianIndex(i, x))
+	end
+	tr(U)
+end
+
+polyakovloop(lattice::Lattice, t::Tuple{Vararg{Integer}}) = polyakovloop(lattice, CartesianIndex(t))
+polyakovloop(lattice::Lattice, t::Vararg{Integer}) = polyakovloop(lattice, CartesianIndex(t))
