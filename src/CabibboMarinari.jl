@@ -147,7 +147,7 @@ function randomSU2(k::Real, β::Real)
 	SU2Element(complex(a₀, a₃), complex(a₂, a₁))
 end
 
-function overrelaxation(lattice::Lattice, link::Link)
+function overrelaxation(lattice::Lattice{D}, link::Link{D}) where D
 	U = link.s
 	T = typeof(U)
 	R = sumstaples(lattice, link)
@@ -159,7 +159,7 @@ function overrelaxation(lattice::Lattice, link::Link)
 	Link(U, link.direction, link.position)
 end
 
-function heatbath(lattice::Lattice, link::Link, β::Real)
+function heatbath(lattice::Lattice{D}, link::Link{D}, β::Real) where D
 	U = link.s
 	T = typeof(U)
 	R = sumstaples(lattice, link)
@@ -171,8 +171,9 @@ function heatbath(lattice::Lattice, link::Link, β::Real)
 	Link(U, link.direction, link.position)
 end
 
-function lattice_overrelaxation!(lattice::Lattice{D}, n::Integer) where D
-	for _ in 1:n, parity in [:even, :odd], u in 1:D
+function lattice_overrelaxation!(lattice::Lattice{D}, n::Integer; log = false) where D
+	for i in 1:n, parity in [:even, :odd], u in 1:D
+		log && @info "overrelaxation" iteration=i parity direction=u
 		newlinks = Link{D}[]
 		for link in iterlinks(lattice, u, parity)
 			newlink = overrelaxation(lattice, link)
@@ -182,8 +183,9 @@ function lattice_overrelaxation!(lattice::Lattice{D}, n::Integer) where D
 	end
 end
 
-function lattice_heatbath!(lattice::Lattice{D}, β::Real) where D
+function lattice_heatbath!(lattice::Lattice{D}, β::Real; log = false) where D
 	for parity in [:even, :odd], u in 1:D
+		log && @info "heat bath" parity direction=u
 		newlinks = Link{D}[]
 		for link in iterlinks(lattice, u, parity)
 			newlink = heatbath(lattice, link, β)
@@ -193,8 +195,9 @@ function lattice_heatbath!(lattice::Lattice{D}, β::Real) where D
 	end
 end
 
-function lattice_normalization!(lattice::Lattice{D}) where D
+function lattice_normalization!(lattice::Lattice{D}; log = false) where D
 	for x in CartesianIndices(lattice), u in 1:D
+		log && @info "normalization" position=Tuple(x) direction=u
 		s = normalizeSp2(linkelement(lattice, u, x))
 		updatelattice!(lattice, Link(s, u, x))
 	end
