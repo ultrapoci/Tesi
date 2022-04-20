@@ -1,26 +1,5 @@
-using LinearAlgebra, QCD
+using LinearAlgebra, QCD, Distributed
 using Distributions: Uniform
-
-function iterlinks(L::Lattice, direction::Integer, parity::Symbol) 
-	if parity == :even
-		evenlinks(L, direction)
-	elseif parity == :odd
-		oddlinks(L, direction)
-	else
-		throw(ArgumentError("iterlinks accepts either :even or :odd as third argument: got :$parity."))
-	end
-end
-
-function sumstaples(lattice::Lattice{D}, link::Link{D}) where D
-	total = zeros(ComplexF64, 4, 4)
-	u = link.direction
-	for v in mod1.(u+1:u+D-1, D) # generate all D dimensions except u
-		s₊ = staple(lattice, link, v) |> asmatrix
-		s₋ = staple(lattice, link, -v)  |> asmatrix
-		total += s₊ + s₋
-	end
-	total
-end
 
 """
 	subrepresentations(::Type{Sp2ElementA})
@@ -202,6 +181,62 @@ function lattice_normalization!(lattice::Lattice{D}; log = false) where D
 		updatelattice!(lattice, Link(s, u, x))
 	end
 end
+
+
+#*===== DISTRIBUTED =====
+
+function dist_lattice_overrelaxation!(lattice::Lattice{D}, n::Integer) where D
+	#= for _ in 1:n, u in 1:D
+		newlinks = pmap([:even, :odd]) do parity
+			[overrelaxation(lattice, link) for link in iterlinks(lattice, u, parity)]
+		end
+		updatelattice!(lattice, reduce(vcat, newlinks))
+	end =#
+
+	for _ in 1:n
+		newlinks = pmap([:even, :odd]) do parity
+			new = Link{D}[]
+			for u in 1:D
+				tmp = Link{D}[]
+				for link in iterlinks(lattice, u, parity)
+					newlink = overrelaxation(lattice, link)
+					push!(tmp, newlink)
+					push!(new, newlink)
+				end
+				updatelattice!(lattice, tmp) # update local Lattice
+			end
+			new
+		end
+		updatelattice!(lattice, reduce(vcat, newlinks))
+	end
+end
+
+function dist_lattice_heatbath!(lattice::Lattice{D}, β::Real) where D
+	#= for u in 1:D
+		newlinks = pmap([:even, :odd]) do parity
+			[heatbath(lattice, link, β) for link in iterlinks(lattice, u, parity)]
+		end
+		updatelattice!(lattice, reduce(vcat, newlinks))
+	end =#
+
+	newlinks = pmap([:even, :odd]) do parity
+		new = Link{D}[]
+		for u in 1:D
+			tmp = Link{D}[]
+			for link in iterlinks(lattice, u, parity)
+				newlink = heatbath(lattice, link, β)
+				push!(tmp, newlink)
+				push!(new, newlink)
+			end
+			updatelattice!(lattice, tmp) # update local Lattice
+		end
+		new
+	end
+	updatelattice!(lattice, reduce(vcat, newlinks))
+end
+
+
+#* ===== OBSERVABLES =====
 
 function averageplaquette(lattice::Lattice{D}) where D
 	s = 0.0
