@@ -100,7 +100,7 @@ end
 
 #* ===== RUN =====
 
-function run(allparams::TermParams, obsparams::ObsParams)
+function run(allparams::TermParams, obsparams::ObsParams, folder = "")
 	@unpack observables, save_plot, display_plot, save_dat, save_jld2, save_df = obsparams
 	obsnames, obsfunctions = takeobservables(observables)
 
@@ -125,19 +125,19 @@ function run(allparams::TermParams, obsparams::ObsParams)
 				p = plot(measurement, label = obsname, title = plottitle, titlefontsize = 10)
 				plot!(p, xrange, obsmean, label = "mean $obsname")
 				plotname = savename(obsname, params, "png", sort = false)	
-				save_plot && safesave(plotsdir(plotname), p)
+				save_plot && safesave(plotsdir(folder, plotname), p)
 				display_plot && display(p)
 			end
 		end
 
 		if save_jld2
 			jld2name = savename(params, "jld2", sort = false)
-			safesave(datadir("jld2", jld2name), d)
+			safesave(datadir(folder, "jld2", jld2name), d)
 		end 
 
 		if save_dat
 			datname = savename(params, "dat", sort = false)
-			safesave(datadir("dat", datname), d)
+			safesave(datadir(folder, "dat", datname), d)
 		end
 
 		append!(df, d)
@@ -148,7 +148,7 @@ function run(allparams::TermParams, obsparams::ObsParams)
 
 	if save_df
 		dfname = savename(allparams, "csv")
-		safesave(datadir(dfname), df)
+		safesave(datadir(folder, dfname), df)
 	end
 
 	df
