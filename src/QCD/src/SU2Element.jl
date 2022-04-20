@@ -15,9 +15,7 @@ struct SU2Element <: AbstractMatrix{ComplexF64}
 	end
 end
 
-function asmatrix(S::SU2Element)
-	[S.t₁ S.t₂; -conj(S.t₂) conj(S.t₁)]
-end
+asmatrix(S::SU2Element) = [S.t₁ S.t₂; -conj(S.t₂) conj(S.t₁)]
 
 function normalizeSU2(S::SU2Element)
 	sqrtΔ = √det(S)
@@ -48,39 +46,23 @@ function Base.adjoint(S::SU2Element)
 	SU2Element(R[1, 1], R[1, 2])
 end
 
-function Base.getindex(S::SU2Element, i...)
-	getindex(asmatrix(S), i...)
-end
+Base.getindex(S::SU2Element, i...) = getindex(asmatrix(S), i...)
 
-function Base.setindex!(S::SU2Element, v, i...)
-	setindex!(asmatrix(S), v, i...)
-end
+Base.setindex!(S::SU2Element, v, i...) = setindex!(asmatrix(S), v, i...)
 
-function Base.firstindex(S::SU2Element)
-	firstindex(asmatrix(S))
-end
+Base.firstindex(S::SU2Element) = firstindex(asmatrix(S))
 
-function Base.lastindex(S::SU2Element)
-	lastindex(asmatrix(S))
-end
+Base.lastindex(S::SU2Element) = lastindex(asmatrix(S))
 
-function Base.size(S::SU2Element)
-	size(asmatrix(S))
-end
+Base.size(S::SU2Element) = size(asmatrix(S))
 
-function Base.zero(::Type{SU2Element})
-	SU2Element(zero(ComplexF64), zero(ComplexF64))
-end
+Base.zero(::Type{SU2Element}) = SU2Element(zero(ComplexF64), zero(ComplexF64))
 
-function LinearAlgebra.det(S::SU2Element)
-	abs2(S.t₁) + abs2(S.t₂)
-end
+LinearAlgebra.det(S::SU2Element) = abs2(S.t₁) + abs2(S.t₂)
 
 function LinearAlgebra.inv(S::SU2Element)
 	R = inv(asmatrix(S))
 	SU2Element(R[1, 1], R[1, 2])
 end
 
-function LinearAlgebra.tr(S::SU2Element)
-	2 * real(S.t₁)
-end
+LinearAlgebra.tr(S::SU2Element) = 2 * real(S.t₁)
