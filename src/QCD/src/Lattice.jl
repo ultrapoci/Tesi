@@ -1,4 +1,4 @@
-export Lattice, evensites, oddsites, evenlinks, oddlinks, updatelattice!
+export Lattice, evensites, oddsites, evenlinks, oddlinks, iterlinks, updatelattice!, everylink
 
 #* ===== Lattice =====
 """
@@ -69,55 +69,41 @@ function Base.setindex!(L::Lattice, v, i::CartesianIndex)
 end
 
 # Linear indexing, without `mod`
-function Base.getindex(L::Lattice, i)
-	getindex(L.lattice, i)
-end
+Base.getindex(L::Lattice, i) = getindex(L.lattice, i)
 
 # Multiple indices: every entry is `mod`ed by the dimensions of the lattice to wrap around
-function Base.getindex(L::Lattice, i...)
-	getindex(L.lattice, mod1.(i, size(L))...)
-end
+Base.getindex(L::Lattice, i...) = getindex(L.lattice, mod1.(i, size(L))...)
 
 # Linear indexing, without `mod`
-function Base.setindex!(L::Lattice, v, i)
-	setindex!(L.lattice, v, i)
-end
+Base.setindex!(L::Lattice, v, i) = setindex!(L.lattice, v, i)
 
 # Multiple indices: every entry is `mod`ed by the dimensions of the lattice to wrap around
-function Base.setindex!(L::Lattice, v, i...)
-	setindex!(L.lattice, v, mod1.(i, size(L))...)
-end
+Base.setindex!(L::Lattice, v, i...) = setindex!(L.lattice, v, mod1.(i, size(L))...)
 
-function Base.firstindex(L::Lattice)
-	firstindex(L.lattice)
-end
+Base.firstindex(L::Lattice) = firstindex(L.lattice)
 
-function Base.lastindex(L::Lattice)
-	lastindex(L.lattice)
-end
+Base.lastindex(L::Lattice) = lastindex(L.lattice)
 
-function Base.size(L::Lattice)
-	size(L.lattice)
-end
+Base.size(L::Lattice) = size(L.lattice)
+
 
 #* ===== updatelattice! =====
 """
 	updatelattice!(L::Lattice{D}, link::Link{D}) where D
 Substitute the link already present in the lattice `L` with the provided `link`.
 """
-function updatelattice!(L::Lattice{D}, link::Link{D}) where D
-	L[link.position][link.direction] = link
-end
+updatelattice!(L::Lattice{D}, link::Link{D}) where D = L[link.position][link.direction] = link
 
 """
 	updatelattice!(L::Lattice{D}, links::Vector{Link{D}}) where D
 Substitute all links in `links` in the lattice `L`.
 """
-function updatelattice!(L::Lattice{D}, links::Vector{Link{D}}) where D
+function updatelattice!(L::Lattice{D}, links) where D
 	for link in links
 		updatelattice!(L, link)
 	end
 end
+
 
 #* ===== Iteration over even and odd sites and links =====
 """
@@ -126,30 +112,18 @@ Iterator over a lattice's even or odd sites, where even (odd) site means that th
 struct EvenOddLattice{D}
 	lattice::Lattice{D}
 	mod2_result::Int # it is 1 if odd sites, or 0 if even sites
+	nsites::Integer
 
 	function EvenOddLattice(lattice::Lattice{D}, mod2_result::Int) where D
 		if mod2_result ≠ 0 && mod2_result ≠ 1
 			throw(ArgumentError("mod2_result in EvenOddLattice must be 0 or 1, got $mod2_result."))
 		end
-		new{D}(lattice, mod2_result)
+		nsites = count(p -> sum(p) % 2 == mod2_result, Tuple.(CartesianIndices(lattice)))
+		new{D}(lattice, mod2_result, nsites)
 	end
 end
 
-"""
-Returns an iterator over all even sites of a given lattice. A site is even if the sum of all its coordinates are even. 
-This is useful in conjuction with `oddsites`: even and odd sites don't influence one another when applying the updating algorithm. 
-"""
-evensites(L::Lattice) = EvenOddLattice(L, 0)
-
-"""
-Returns an iterator over all odd sites of a given lattice. A site is odd if the sum of all its coordinates are odd. 
-This is useful in conjuction with `evensites`: even and odd sites don't influence one another when applying the updating algorithm.
-"""
-oddsites(L::Lattice) = EvenOddLattice(L, 1)
-
-function Base.iterate(L::EvenOddLattice)
-	iterate(L, Tuple(CartesianIndices(L.lattice)))
-end
+Base.iterate(L::EvenOddLattice) = iterate(L, Tuple(CartesianIndices(L.lattice)))
 
 function Base.iterate(L::EvenOddLattice, state)
 	lattice = L.lattice
@@ -167,6 +141,20 @@ function Base.iterate(L::EvenOddLattice, state)
 	nothing	
 end
 
+Base.length(L::EvenOddLattice) = L.nsites
+
+"""
+Returns an iterator over all even sites of a given lattice. A site is even if the sum of all its coordinates are even. 
+This is useful in conjuction with `oddsites`: even and odd sites don't influence one another when applying the updating algorithm. 
+"""
+evensites(L::Lattice) = EvenOddLattice(L, 0)
+
+"""
+Returns an iterator over all odd sites of a given lattice. A site is odd if the sum of all its coordinates are odd. 
+This is useful in conjuction with `evensites`: even and odd sites don't influence one another when applying the updating algorithm.
+"""
+oddsites(L::Lattice) = EvenOddLattice(L, 1)
+
 """
 Iterator over a lattice links that points in the given `direction`.
 """
@@ -182,6 +170,18 @@ struct EvenOddLinks{D}
 	end
 end
 
+Base.iterate(L::EvenOddLinks) = iterate(L, Tuple(CartesianIndices(L.eolattice.lattice)))
+
+function Base.iterate(L::EvenOddLinks, state)
+	result = iterate(L.eolattice, state)
+	if !isnothing(result)
+		return (result[1][L.direction], result[2])
+	end
+	nothing
+end
+
+Base.length(L::EvenOddLinks) = L.eolattice.nsites
+
 """
 Returns an iterator over all links pointing in the given `direction` that belong to even sites. See also `evensites`.
 """
@@ -192,14 +192,18 @@ Returns an iterator over all links pointing in the given `direction` that belong
 """
 oddlinks(L::Lattice, direction::Integer) = EvenOddLinks(oddsites(L), direction)
 
-function Base.iterate(L::EvenOddLinks)
-	iterate(L, Tuple(CartesianIndices(L.eolattice.lattice)))
+function iterlinks(L::Lattice, direction::Integer, parity::Symbol) 
+	if parity == :even
+		evenlinks(L, direction)
+	elseif parity == :odd
+		oddlinks(L, direction)
+	else
+		throw(ArgumentError("iterlinks accepts either :even or :odd as third argument: got :$parity."))
+	end
 end
 
-function Base.iterate(L::EvenOddLinks, state)
-	result = iterate(L.eolattice, state)
-	if !isnothing(result)
-		return (result[1][L.direction], result[2])
-	end
-	nothing
+function everylink(L::Lattice{D}) where D
+	Base.Iterators.flatten(
+		[iterlinks(L, u, parity) for u in 1:D, parity in (:even, :odd)]
+	)
 end
