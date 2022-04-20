@@ -5,7 +5,7 @@ include("Sp2Element.jl")
 include("Link.jl")
 include("Lattice.jl")
 
-export linkelement, staple, plaquette, unittuple, directionindex
+export linkelement, staple, plaquette, unittuple, directionindex, sumstaples
 
 function unittuple(::Val{dimensions}, direction::Integer) where dimensions
 	if dimensions ≤ 0
@@ -18,9 +18,7 @@ function unittuple(::Val{dimensions}, direction::Integer) where dimensions
 	)
 end
 
-function unittuple(dimensions::Integer, direction::Integer)
-	unittuple(Val{dimensions}, direction)
-end
+unittuple(dimensions::Integer, direction::Integer) = unittuple(Val(dimensions), direction)
 
 
 #* ===== directionindex =====
@@ -33,17 +31,11 @@ Returns a `CartesianIndex` containing all zeros except a one in the `direction` 
 vector in the given direction as a CartesianIndex. Use the version with `Val{dimensions}` or `dimensions` when possible: it is much quicker.
 It accounts for negative directions: if `direction` is < 0, it will return an index with a -1 instead of a 1 in `abs(direction)` position.
 """
-function directionindex(::Val{dimensions}, direction::Integer)::CartesianIndex where dimensions
-	CartesianIndex(unittuple(Val(dimensions), direction))
-end
+directionindex(::Val{D}, direction::Integer) where D = CartesianIndex(unittuple(Val(D), direction))
 
-function directionindex(dimensions::Integer, direction::Integer)::CartesianIndex
-	directionindex(Val(dimensions), direction)
-end
+directionindex(dimensions::Integer, direction::Integer) = directionindex(Val(dimensions), direction)
 
-function directionindex(::Lattice{D}, direction::Integer)::CartesianIndex where D
-	directionindex(Val(D), direction)
-end
+directionindex(::Lattice{D}, direction::Integer) where D = directionindex(Val(D), direction)
 
 
 #* ===== linkelement =====
@@ -65,13 +57,9 @@ function linkelement(lattice::Lattice{D}, direction::Integer, position::Cartesia
 	end
 end
 
-function linkelement(lattice::Lattice{D}, direction::Integer, position::NTuple{D, Integer}) where D
-	linkelement(lattice, direction, CartesianIndex(position))
-end
+linkelement(lattice::Lattice{D}, direction::Integer, position::NTuple{D, Integer}) where D = linkelement(lattice, direction, CartesianIndex(position))
 
-function linkelement(lattice::Lattice{D}, direction::Integer, position::Vararg{Integer, D}) where D
-	linkelement(lattice, direction, CartesianIndex(position))
-end
+linkelement(lattice::Lattice{D}, direction::Integer, position::Vararg{Integer, D}) where D = linkelement(lattice, direction, CartesianIndex(position))
 
 
 #* ===== staple =====
@@ -110,6 +98,17 @@ function staple(lattice::Lattice{D}, link::Link{D}, direction::Integer) where D
 	U₃ = linkelement(lattice, -v, x + v̂)
 
 	U₁ * U₂ * U₃
+end
+
+function sumstaples(lattice::Lattice{D}, link::Link{D}) where D
+	total = zeros(ComplexF64, 4, 4)
+	u = link.direction
+	for v in mod1.(u+1:u+D-1, D) # generate all D dimensions except u
+		s₊ = staple(lattice, link, v) |> asmatrix
+		s₋ = staple(lattice, link, -v)  |> asmatrix
+		total += s₊ + s₋
+	end
+	total
 end
 
 #* ===== plaquette =====
