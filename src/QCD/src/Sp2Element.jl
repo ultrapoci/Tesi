@@ -67,28 +67,30 @@ struct Sp2ElementB <: Sp2Element
 	end
 end
 
-function Sp2Element(::Type{Sp2ElementA})
-	Sp2ElementA()
+Sp2Element(::Type{Sp2ElementA}) = Sp2ElementA()
+Sp2Element(::Type{Sp2ElementB}) = Sp2ElementB()
+Sp2Element(::Type{Sp2ElementA}, W, X) = Sp2ElementA(W, X)
+Sp2Element(::Type{Sp2ElementB}, W, X) = Sp2ElementB(W, X)
+
+J(::Type{Sp2ElementA}) = [0 0 1 0; 0 0 0 1; -1 0 0 0; 0 -1 0 0]
+J(::Type{Sp2ElementB}) = [0 0 0 1; 0 0 -1 0; 0 1 0 0; -1 0 0 0]
+
+asmatrix(S::Sp2ElementA) = [S.topleft S.topright; -conj(S.topright) conj(S.topleft)]
+
+function asmatrix(S::Sp2ElementB)
+	X = conj.([S.topright[2, 2] -S.topright[2, 1]; -S.topright[1, 2] S.topright[1, 1]])
+	W = conj.([S.topleft[2, 2] -S.topleft[2, 1]; -S.topleft[1, 2] S.topleft[1, 1]])
+	[S.topleft S.topright; X W]
 end
 
-function Sp2Element(::Type{Sp2ElementB})
-	Sp2ElementB()
-end
-
-function Sp2Element(::Type{Sp2ElementA}, W, X)
-	Sp2ElementA(W, X)
-end
-
-function Sp2Element(::Type{Sp2ElementB}, W, X)
-	Sp2ElementB(W, X)
-end
-
-function J(::Type{Sp2ElementA})
-	[0 0 1 0; 0 0 0 1; -1 0 0 0; 0 -1 0 0]
-end
-
-function J(::Type{Sp2ElementB})
-	[0 0 0 1; 0 0 -1 0; 0 1 0 0; -1 0 0 0]
+function Base.rand(T::Type{<:Sp2Element})
+	normalizeSp2(
+		Sp2Element(
+			T,
+			rand(ComplexF64, 2, 2) .- complex(0.5, 0.5), 
+			rand(ComplexF64, 2, 2) .- complex(0.5, 0.5)
+		)
+	)
 end
 
 """
@@ -137,63 +139,29 @@ function normalizeSp2(S::Sp2ElementB)
 	Sp2ElementB(W, X)
 end
 
-function asmatrix(S::Sp2ElementA)
-	[S.topleft S.topright; -conj(S.topright) conj(S.topleft)]
-end
-
-function asmatrix(S::Sp2ElementB)
-	X = conj.([S.topright[2, 2] -S.topright[2, 1]; -S.topright[1, 2] S.topright[1, 1]])
-	W = conj.([S.topleft[2, 2] -S.topleft[2, 1]; -S.topleft[1, 2] S.topleft[1, 1]])
-	[S.topleft S.topright; X W]
-end
-
-function Base.rand(T::Type{<:Sp2Element})
-	normalizeSp2(
-		Sp2Element(
-			T,
-			rand(ComplexF64, 2, 2) .- complex(0.5, 0.5), 
-			rand(ComplexF64, 2, 2) .- complex(0.5, 0.5)
-		)
-	)
-end
-
 function Base.:*(S::Sp2Type, T::Sp2Type) where Sp2Type <: Sp2Element
 	R = asmatrix(S) * asmatrix(T)
 	Sp2Element(Sp2Type, R[1:2, 1:2], R[1:2, 3:4])
 end
 
-function Base.:*(S::Sp2Element, T::Matrix{<:Number})
-	asmatrix(S) * T
-end
+Base.:*(S::Sp2Element, T::Matrix{<:Number}) = asmatrix(S) * T
 
-function Base.:*(S::Matrix{<:Number}, T::Sp2Element)
-	S * asmatrix(T)
-end
+Base.:*(S::Matrix{<:Number}, T::Sp2Element) = S * asmatrix(T)
 
 function Base.adjoint(S::Sp2Element)
 	R = adjoint(asmatrix(S))
 	Sp2Element(typeof(S), R[1:2, 1:2], R[1:2, 3:4])
 end
 
-function Base.getindex(S::Sp2Element, i...)
-	getindex(asmatrix(S), i...)
-end
+Base.getindex(S::Sp2Element, i...) = getindex(asmatrix(S), i...)
 
-function Base.setindex!(S::Sp2Element, v, i...)
-	setindex!(asmatrix(S), v, i...)
-end
+Base.setindex!(S::Sp2Element, v, i...) = setindex!(asmatrix(S), v, i...)
 
-function Base.firstindex(S::Sp2Element)
-	firstindex(asmatrix(S))
-end
+Base.firstindex(S::Sp2Element) = firstindex(asmatrix(S))
 
-function Base.lastindex(S::Sp2Element)
-	lastindex(asmatrix(S))
-end
+Base.lastindex(S::Sp2Element) = lastindex(asmatrix(S))
 
-function Base.size(::Sp2Element)
-	(4, 4)
-end
+Base.size(::Sp2Element) = (4, 4)
 
 function Base.zero(T::Type{<:Sp2Element})
 	z = zeros(ComplexF64, 2, 2)
@@ -205,6 +173,4 @@ function LinearAlgebra.inv(S::Sp2Element)
 	Sp2Element(typeof(S), R[1:2, 1:2], R[1:2, 3:4])
 end
 
-function LinearAlgebra.tr(S::Sp2Element)
-	2(real(S.topleft[1, 1]) + real(S.topleft[2, 2]))
-end
+LinearAlgebra.tr(S::Sp2Element) = 2(real(S.topleft[1, 1]) + real(S.topleft[2, 2]))
