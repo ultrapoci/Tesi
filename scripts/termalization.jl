@@ -37,10 +37,10 @@ end
 
 #* ===== TERMALIZATION =====
 
-function one_termalization!(L::Lattice, nover::Integer, β::Real, normalize::Bool = false)
-	lattice_overrelaxation!(L, nover)
-	lattice_heatbath!(L, β)
-	normalize && lattice_normalization!(L)
+function one_termalization!(L::Lattice, nover::Integer, β::Real, normalize::Bool = false; log = false)
+	lattice_overrelaxation!(L, nover, log = log)
+	lattice_heatbath!(L, β, log = log)
+	normalize && lattice_normalization!(L, log = log)
 end
 
 function termalization!(L::Lattice, params)
@@ -101,7 +101,7 @@ end
 #* ===== RUN =====
 
 function run(allparams::TermParams, obsparams::ObsParams)
-	@unpack observables, to_plot, save_dat, save_jld2, save_df = obsparams
+	@unpack observables, save_plot, display_plot, save_dat, save_jld2, save_df = obsparams
 	obsnames, obsfunctions = takeobservables(observables)
 
 	df = DataFrame()
@@ -120,13 +120,13 @@ function run(allparams::TermParams, obsparams::ObsParams)
 
 			println("mean $obsname = $(obsmean[end])")
 
-			if to_plot
+			if display_plot || save_plot
 				plottitle = savename(params, connector = ", ", sort = false)
 				p = plot(measurement, label = obsname, title = plottitle, titlefontsize = 10)
 				plot!(p, xrange, obsmean, label = "mean $obsname")
 				plotname = savename(obsname, params, "png", sort = false)	
-				safesave(plotsdir(plotname), p)
-				display(p)
+				save_plot && safesave(plotsdir(plotname), p)
+				display_plot && display(p)
 			end
 		end
 
