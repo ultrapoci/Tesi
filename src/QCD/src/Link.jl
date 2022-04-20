@@ -2,7 +2,7 @@ using LinearAlgebra: I
 
 export Link
 
-struct Link{D} <: AbstractMatrix{ComplexF64}
+struct Link{D}# <: AbstractMatrix{ComplexF64}
 	s::Sp2Element
 	direction::Integer
 	position::CartesianIndex{D}
@@ -51,22 +51,12 @@ function Base.show(io::IO, ::MIME"text/plain", link::Link{D}) where D
 	show(io, "text/plain", link.s)
 end
 
-function Base.getindex(link::Link, i...)
-	getindex(link.s, i...)
-end
+#= Base.getindex(link::Link, i...) = getindex(link.s, i...)
 
-function Base.setindex!(link::Link, v, i...)
-	setindex!(link.s, v, i...)
-end
+Base.setindex!(link::Link, v, i...) = setindex!(link.s, v, i...)
 
-function Base.firstindex(link::Link)
-	firstindex(link.s)
-end
+Base.firstindex(link::Link) = firstindex(link.s)
 
-function Base.lastindex(link::Link)
-	lastindex(link.s)
-end
+Base.lastindex(link::Link) = lastindex(link.s)
 
-function Base.size(link::Link)
-	size(link.s)
-end
+Base.size(link::Link) = size(link.s) =#
