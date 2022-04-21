@@ -2,7 +2,7 @@ using DrWatson
 @quickactivate "Tesi"
 
 using Distributed
-addprocs(4, exeflags="--project")
+nworkers() == 1 && addprocs(2, exeflags="--project")
 
 using QCD, Plots, Statistics, ProgressMeter, DataFrames
 import DelimitedFiles, CSV
