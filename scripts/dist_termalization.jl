@@ -120,8 +120,8 @@ function dist_run(allparams::TermParams, obsparams::ObsParams, folder = "")
 
 			if display_plot || save_plot
 				plottitle = savename(params, connector = ", ", sort = false)
-				p = plot(measurement, label = obsname, title = plottitle, titlefontsize = 10)
-				plot!(p, xrange, obsmean, label = "mean $obsname")
+				p = plot(measurement, label = obsname, title = plottitle, titlefontsize = 10);
+				plot!(p, xrange, obsmean, label = "mean $obsname");
 				plotname = savename(obsname, params, "png", sort = false)	
 				save_plot && safesave(plotsdir(folder, plotname), p)
 				display_plot && display(p)
