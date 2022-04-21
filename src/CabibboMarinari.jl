@@ -183,59 +183,6 @@ function lattice_normalization!(lattice::Lattice{D}; log = false) where D
 end
 
 
-#*===== DISTRIBUTED =====
-
-function dist_lattice_overrelaxation!(lattice::Lattice{D}, n::Integer) where D
-	#= for _ in 1:n, u in 1:D
-		newlinks = pmap([:even, :odd]) do parity
-			[overrelaxation(lattice, link) for link in iterlinks(lattice, u, parity)]
-		end
-		updatelattice!(lattice, reduce(vcat, newlinks))
-	end =#
-
-	for _ in 1:n
-		newlinks = pmap([:even, :odd]) do parity
-			new = Link{D}[]
-			for u in 1:D
-				tmp = Link{D}[]
-				for link in iterlinks(lattice, u, parity)
-					newlink = overrelaxation(lattice, link)
-					push!(tmp, newlink)
-					push!(new, newlink)
-				end
-				updatelattice!(lattice, tmp) # update local Lattice
-			end
-			new
-		end
-		updatelattice!(lattice, reduce(vcat, newlinks))
-	end
-end
-
-function dist_lattice_heatbath!(lattice::Lattice{D}, β::Real) where D
-	#= for u in 1:D
-		newlinks = pmap([:even, :odd]) do parity
-			[heatbath(lattice, link, β) for link in iterlinks(lattice, u, parity)]
-		end
-		updatelattice!(lattice, reduce(vcat, newlinks))
-	end =#
-
-	newlinks = pmap([:even, :odd]) do parity
-		new = Link{D}[]
-		for u in 1:D
-			tmp = Link{D}[]
-			for link in iterlinks(lattice, u, parity)
-				newlink = heatbath(lattice, link, β)
-				push!(tmp, newlink)
-				push!(new, newlink)
-			end
-			updatelattice!(lattice, tmp) # update local Lattice
-		end
-		new
-	end
-	updatelattice!(lattice, reduce(vcat, newlinks))
-end
-
-
 #* ===== OBSERVABLES =====
 
 function averageplaquette(lattice::Lattice{D}) where D
