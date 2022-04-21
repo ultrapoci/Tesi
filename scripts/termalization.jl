@@ -59,12 +59,13 @@ function termalization(params)
 end
 
 function termalization!(L::Lattice, params, observable::Function, v::Vector)
-	@unpack β, nterm, nover, nnorm = params
+	@unpack β, nterm, nover, nnorm, nobs = params
 	
 	@showprogress 1 "Termalization" for n in 1:nterm
 		one_termalization!(L, nover, β, n % nnorm == 0)
-		push!(v, observable(L))
+		n % nobs == 0 && push!(v, observable(L))
 	end
+	nterm % nobs ≠ 0 && push!(v, observable(L))
 end
 
 function termalization(params, observable::Function)
@@ -76,17 +77,15 @@ function termalization(params, observable::Function)
 end
 
 function termalization!(L::Lattice, params, observables, v)
-	@unpack β, nterm, nover, nnorm = params
+	@unpack β, nterm, nover, nnorm, nobs = params
 	
 	@showprogress 1 "Termalization" for n in 1:nterm
 		one_termalization!(L, nover, β, n % nnorm == 0)
 
-		w = []
-		for obs in observables
-			push!(w, obs(L))
-		end
-		push!(v, w)
+		n % nobs == 0 && push!(v, [obs(L) for obs in observables])
 	end
+
+	nterm % nobs ≠ 0 && push!(v, [obs(L) for obs in observables])
 end
 
 function termalization(params, observables)

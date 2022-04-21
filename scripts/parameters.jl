@@ -22,6 +22,8 @@ Base.@kwdef struct TermParams <: Params
 	nover = 3 # how many cycles of overrelaxation to do
 	
 	meanoffset = 10 # from which iteration to start calculating the mean
+
+	nobs = 5 # measure observables every nobs cycles
 end
 
 Params(::Type{TermParams}, x...) = TermParams(x...) 
