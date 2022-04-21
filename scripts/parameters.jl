@@ -21,7 +21,7 @@ Base.@kwdef struct TermParams <: Params
 	nnorm = 5 # after how many cycle to normalize lattice
 	nover = 3 # how many cycles of overrelaxation to do
 	
-	meanoffset = 50 # from which iteration to start calculating the mean
+	meanoffset = 10 # from which iteration to start calculating the mean
 end
 
 Params(::Type{TermParams}, x...) = TermParams(x...) 
