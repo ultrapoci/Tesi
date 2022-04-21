@@ -1,0 +1,7 @@
+name = "StaticQCD"
+uuid = "24eddd18-7351-47c8-9139-005f0efac71b"
+authors = ["Nicholas Pini <ultrapoci@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
