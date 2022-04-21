@@ -3,7 +3,7 @@ abstract type Params <: AbstractDict{String, Any} end
 Base.@kwdef struct ObsParams <: Params
 	observables = "avg_plaq" => averageplaquette
 	save_plot = true
-	display_plot = true
+	display_plot = false
 	save_dat = true
 	save_jld2 = true
 	save_df = true
@@ -12,13 +12,13 @@ end
 Params(::Type{ObsParams}, x...) = ObsParams(x...) 
 
 Base.@kwdef struct TermParams <: Params
-	dims = [(8, 8, 8), (8, 8, 8, 8)]
+	dims = (8, 8, 8, 8)
 	β = [i/2 for i in 1.0:15.0]
 	latticestart = :cold
 	sp2type = Sp2ElementB
 
-	nterm = 200
-	nnorm = 5 # after how many cycle to normalize lattice
+	nterm = 100
+	nnorm = 20 # after how many cycle to normalize lattice
 	nover = 3 # how many cycles of overrelaxation to do
 	
 	meanoffset = 10 # from which iteration to start calculating the mean
