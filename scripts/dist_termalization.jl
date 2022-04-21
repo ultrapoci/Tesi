@@ -99,8 +99,11 @@ end
 function dist_run(allparams::TermParams, obsparams::ObsParams, folder = "")
 	@unpack observables, save_plot, display_plot, save_dat, save_jld2, save_df = obsparams
 	obsnames, obsfunctions = takeobservables(observables)
-	niter = dict_list_count(allparams)
-	
+	niter = try
+		dict_list_count(allparams)
+	catch
+		1
+	end
 	v = pmap(enumerate(dict_list(allparams))) do (i, params)
 		@info "Iteration $i/$niter"
 
