@@ -2,7 +2,7 @@ using DrWatson
 @quickactivate "Tesi"
 
 using Distributed
-nworkers() == 1 && addprocs(4, exeflags="--project")
+nworkers() == 1 && addprocs(3, exeflags="--project")
 
 ##
 
