@@ -1,7 +1,7 @@
 using DrWatson
 @quickactivate "Tesi"
 
-using QCD, Plots, Statistics, ProgressMeter, DataFrames
+using QCD, Plots, Statistics, ProgressMeter, DataFrames, Measurements
 import DelimitedFiles, CSV
 include(srcdir("CabibboMarinari.jl"))
 include(scriptsdir("parameters.jl"))
@@ -31,7 +31,7 @@ function incrementalmean(v, offset::Integer = 1)
 		throw(ArgumentError("Given offset = $offset must be positive and less than or equal to length(v) = $(length(v))"))
 	end
 
-	[mean(v[offset:i]) for i in offset:length(v)], offset:length(v)
+	[mean(v[offset:i]) for i in offset:length(v)], [std(v[offset:i]) for i in offset:length(v)]
 end
 
 
@@ -111,18 +111,18 @@ function run(allparams::TermParams, obsparams::ObsParams, folder = "")
 		display(params)
 		d = Dict(params)
 
-		measurements, = termalization(params, obsfunctions)
+		obsmeasurements, = termalization(params, obsfunctions)
 
-		for (measurement, obsname) in zip(eachcol(measurements), obsnames)
-			obsmean, xrange = incrementalmean(measurement, meanoffset)
-			d[obsname] = obsmean[end] # add final mean to dictionary
+		for (obsmeasurement, obsname) in zip(eachcol(obsmeasurements), obsnames)
+			obsmean, obserror = incrementalmean(obsmeasurement, meanoffset)
+			d[obsname] = measurement(obsmean[end], obserror[end]) # add final mean and std to dictionary
 
-			println("mean $obsname = $(obsmean[end])")
+			println("$obsname = $(d[obsname])")
 
 			if display_plot || save_plot
 				plottitle = savename(params, connector = ", ", sort = false)
-				p = plot(measurement, label = obsname, title = plottitle, titlefontsize = 10);
-				plot!(p, xrange, obsmean, label = "mean $obsname");
+				p = plot(obsmeasurement, label = obsname, title = plottitle, titlefontsize = 10);
+				plot!(p, meanoffset:length(obsmeasurement), obsmean, label = "mean $obsname");
 				plotname = savename(obsname, params, "png", sort = false)	
 				save_plot && safesave(plotsdir(folder, plotname), p)
 				display_plot && display(p)
@@ -154,3 +154,4 @@ function run(allparams::TermParams, obsparams::ObsParams, folder = "")
 end
 
 run() = begin include(scriptsdir("parameters.jl")); run(TermParams(), ObsParams()) end
+run(s::String) = begin include(scriptsdir("parameters.jl")); run(TermParams(), ObsParams(), s) end
