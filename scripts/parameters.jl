@@ -12,18 +12,18 @@ end
 Params(::Type{ObsParams}, x...) = ObsParams(x...) 
 
 Base.@kwdef struct TermParams <: Params
-	dims = (8, 8, 8, 8)
+	dims = (8, 8, 8)
 	β = [i/2 for i in 1.0:15.0]
 	latticestart = :cold
 	sp2type = Sp2ElementB
 
-	nterm = 100
+	nterm = 200
 	nnorm = 20 # after how many cycle to normalize lattice
 	nover = 3 # how many cycles of overrelaxation to do
 	
 	meanoffset = 10 # from which iteration to start calculating the mean
 
-	nobs = 5 # measure observables every nobs cycles
+	nobs = 1 # measure observables every nobs cycles
 end
 
 Params(::Type{TermParams}, x...) = TermParams(x...) 
