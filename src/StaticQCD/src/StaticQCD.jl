@@ -1,6 +1,6 @@
 module StaticQCD
 
-export newlattice, Site, LocalLattice, Lattice, initprocs, getlink, addtuple
+export newlattice, Site, LocalLattice, Lattice, initprocs, getlink, addtuple, evenmask
 
 using Distributed, DistributedArrays, StaticArrays
 include("StaticSp2.jl")
@@ -52,5 +52,7 @@ function getlink(L::LocalLattice{D}, d::Int, p::NTuple{D, Int}) where D
 end
 getlink(L::LocalLattice{D}, d::Int, p::Vararg{Int, D}) where D = getlink(L, d, Tuple(p))
 getlink(L::LocalLattice{D}, d::Int, p::CartesianIndex{D}) where D = getlink(L, d, Tuple(p))
+
+evenmask(A) = [iseven(sum(Tuple(i))) for i in CartesianIndices(A)]
 
 end # module StaticQCD
