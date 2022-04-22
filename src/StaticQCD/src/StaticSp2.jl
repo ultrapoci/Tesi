@@ -1,10 +1,14 @@
 using StaticArrays, LinearAlgebra
 
+export Sp2, asmatrix, normalizeSp2
+
 struct Sp2 <: StaticMatrix{4, 4, ComplexF64}
 	topleft::SMatrix{2, 2, ComplexF64, 4}
 	topright::SMatrix{2, 2, ComplexF64, 4}
 
 	Sp2(W::SMatrix{2, 2, ComplexF64, 4}, X::SMatrix{2, 2, ComplexF64, 4}) = new(W, X)
+
+	Sp2() = Sp2(I[1:2, 1:2], zeros(2, 2))
 
 	function Sp2(W::Matrix{<:Number}, X::Matrix{<:Number})
 		Sp2(SMatrix{2, 2}(ComplexF64.(W)), SMatrix{2, 2}(ComplexF64.(X)))
@@ -49,6 +53,8 @@ function LinearAlgebra.inv(S::Sp2)::Sp2
 end
 
 LinearAlgebra.tr(S::Sp2) = 2(real(S.topleft[1, 1]) + real(S.topleft[2, 2]))
+
+Base.rand(::Type{Sp2}) = normalizeSp2(Sp2(rand(ComplexF64, 2, 2) .- complex(0.5, 0.5), rand(ComplexF64, 2, 2) .- complex(0.5, 0.5)))
 
 function normalizeSp2(S::Sp2)::Sp2
 	s = asmatrix(S)
