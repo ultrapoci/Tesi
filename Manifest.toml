@@ -821,7 +821,7 @@ uuid = "90137ffa-7385-5640-81b9-e52037218182"
 version = "1.4.3"
 
 [[deps.StaticQCD]]
-deps = ["Distributed", "DistributedArrays", "LinearAlgebra", "StaticArrays"]
+deps = ["Distributed", "DistributedArrays", "Distributions", "LinearAlgebra", "StaticArrays"]
 path = "src/StaticQCD"
 uuid = "24eddd18-7351-47c8-9139-005f0efac71c"
 version = "0.1.0"
