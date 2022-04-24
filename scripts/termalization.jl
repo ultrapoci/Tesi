@@ -5,7 +5,7 @@ using DistributedQCD
 nworkers() == 1 && initprocs(4)
 @everywhere using DistributedQCD
 
-using Plots, Statistics, ProgressMeter, DataFrames, Measurements
+using Plots, Statistics, DataFrames, Measurements
 
 include(srcdir("Utilities.jl"))
 include(scriptsdir("parameters.jl"))
@@ -15,9 +15,13 @@ include(scriptsdir("parameters.jl"))
 
 function termalization!(L, params)
 	@unpack β, nterm, nover, nnorm = params
-	
-	@showprogress 1 "Distributed Termalization" for n in 1:nterm
-		one_termalization!(L, nover, β, n % nnorm == 0)
+
+	pbar, job = getpbar(nterm, "Termalization...")	
+	progress.with(pbar) do
+		for n in 1:nterm
+			update!(job)
+			one_termalization!(L, nover, β, n % nnorm == 0)
+		end
 	end
 end
 
@@ -30,10 +34,14 @@ end
 
 function termalization!(L, params, observable::Function, v::Vector)
 	@unpack β, nterm, nover, nnorm, nobs = params
-	
-	@showprogress 1 "Distributed Termalization" for n in 1:nterm
-		one_termalization!(L, nover, β, n % nnorm == 0)
-		n % nobs == 0 && push!(v, observable(L))
+
+	pbar, job = getpbar(nterm, "Termalization...")
+	progress.with(pbar) do
+		for n in 1:nterm
+			update!(job)
+			one_termalization!(L, nover, β, n % nnorm == 0)
+			n % nobs == 0 && push!(v, observable(L))
+		end
 	end
 	
 	# make sure the last iteration is measured
@@ -50,10 +58,14 @@ end
 
 function termalization!(L, params, observables, v)
 	@unpack β, nterm, nover, nnorm, nobs = params
-	
-	@showprogress 1 "Distributed Termalization" for n in 1:nterm
-		one_termalization!(L, nover, β, n % nnorm == 0)
-		n % nobs == 0 && push!(v, [obs(L) for obs in observables])
+
+	pbar, job = getpbar(nterm, "Termalization...")
+	progress.with(pbar) do
+		for n in 1:nterm
+			update!(job)
+			one_termalization!(L, nover, β, n % nnorm == 0)
+			n % nobs == 0 && push!(v, [obs(L) for obs in observables])
+		end
 	end
 
 	# make sure the last iteration is measured
