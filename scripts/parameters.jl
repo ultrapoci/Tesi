@@ -15,8 +15,7 @@ Base.@kwdef struct TermParams <: Params
 	β = 1.0
 	latticestart = :cold
 	#sp2type = Sp2ElementB
-	sp2type = nothing
-
+	
 	nterm = 50
 	nnorm = 10 # after how many cycle to normalize lattice
 	nover = 3 # how many cycles of overrelaxation to do
