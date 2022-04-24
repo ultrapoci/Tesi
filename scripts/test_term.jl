@@ -15,7 +15,6 @@ completion after the loop finishes.
 =#
 function test1!(L::Lattice)
 	@track for i in 1:100
-		sleep(0.00001)
 		lattice_overrelaxation!(L, 3)
 		lattice_heatbath!(L, 1.0)
 		lattice_normalization!(L)
