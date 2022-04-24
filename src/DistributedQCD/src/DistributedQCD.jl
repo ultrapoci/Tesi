@@ -13,6 +13,7 @@ initprocs(n; kwargs...) = addprocs(n, exeflags="--project", kwargs...)
 """
 	with_workers(f)
 Spawn a task calling `f()` for each process in `workers()`. Useful with the `do end` statement to run a function on all processes exactly once.
+`f` takes the id of the worker as the only parameter.
 """
 with_workers(f) = @sync for w in workers()
 	@spawnat w f(w)
