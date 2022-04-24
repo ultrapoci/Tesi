@@ -1,4 +1,4 @@
-name = "StaticQCD"
+name = "DistributedQCD"
 uuid = "24eddd18-7351-47c8-9139-005f0efac71c"
 authors = ["Nicholas Pini <ultrapoci@gmail.com>"]
 version = "0.1.0"

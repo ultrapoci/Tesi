@@ -1,4 +1,4 @@
-module StaticQCD
+module DistributedQCD
 
 using Distributed, DistributedArrays, StaticArrays, LinearAlgebra, Distributions
 

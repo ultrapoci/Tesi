@@ -1,13 +1,9 @@
 using DrWatson
 @quickactivate "Tesi"
 
-using StaticQCD
-nworkers() == 1 && initprocs(4)
-@everywhere using StaticQCD
-
-using Plots, Statistics, ProgressMeter, DataFrames, Measurements
+using QCD, Plots, Statistics, ProgressMeter, DataFrames, Measurements
 import DelimitedFiles, CSV
-
+include(srcdir("CabibboMarinari.jl"))
 include(scriptsdir("parameters.jl"))
 
 
@@ -41,25 +37,31 @@ end
 
 #* ===== TERMALIZATION =====
 
-function termalization!(L, params)
+function one_termalization!(L::Lattice, nover::Integer, β::Real, normalize::Bool = false; log = false)
+	lattice_overrelaxation!(L, nover, log = log)
+	lattice_heatbath!(L, β, log = log)
+	normalize && lattice_normalization!(L, log = log)
+end
+
+function termalization!(L::Lattice, params)
 	@unpack β, nterm, nover, nnorm = params
 	
-	@showprogress 1 "Distributed Termalization" for n in 1:nterm
+	@showprogress 1 "Termalization" for n in 1:nterm
 		one_termalization!(L, nover, β, n % nnorm == 0)
 	end
 end
 
 function termalization(params)
-	@unpack dims, latticestart = params
-	L = Lattice(dims, start = latticestart)
-	termalization!(L, params)
-	L
+	@unpack dims, latticestart, sp2type = params
+	lattice = Lattice(dims, start = latticestart, type = sp2type)
+	termalization!(lattice, params)
+	lattice
 end
 
-function termalization!(L, params, observable::Function, v::Vector)
+function termalization!(L::Lattice, params, observable::Function, v::Vector)
 	@unpack β, nterm, nover, nnorm, nobs = params
 	
-	@showprogress 1 "Distributed Termalization" for n in 1:nterm
+	@showprogress 1 "Termalization" for n in 1:nterm
 		one_termalization!(L, nover, β, n % nnorm == 0)
 		n % nobs == 0 && push!(v, observable(L))
 	end
@@ -67,31 +69,31 @@ function termalization!(L, params, observable::Function, v::Vector)
 end
 
 function termalization(params, observable::Function)
-	@unpack dims, latticestart = params
-	L = newlattice(dims..., start = latticestart)
-	v = Float64[]
-	termalization!(L, params, observable, v)
-	v, L
+	@unpack dims, latticestart, sp2type = params
+	lattice = Lattice(dims..., start = latticestart, type = sp2type)
+	v = []
+	termalization!(lattice, params, observable, v)
+	v, lattice
 end
 
-function termalization!(L, params, observables, v)
+function termalization!(L::Lattice, params, observables, v)
 	@unpack β, nterm, nover, nnorm, nobs = params
 	
-	@showprogress 1 "Distributed Termalization" for n in 1:nterm
+	@showprogress 1 "Termalization" for n in 1:nterm
 		one_termalization!(L, nover, β, n % nnorm == 0)
+
 		n % nobs == 0 && push!(v, [obs(L) for obs in observables])
 	end
 
-	# make sure the last iteration is measured
 	nterm % nobs ≠ 0 && push!(v, [obs(L) for obs in observables])
 end
 
 function termalization(params, observables)
-	@unpack dims, latticestart = params
-	L = newlattice(dims..., start = latticestart)
-	v = Vector{Float64}[]
-	termalization!(L, params, observables, v)
-	reduce(hcat, v)', L
+	@unpack dims, latticestart, sp2type = params
+	lattice = Lattice(dims..., type = sp2type, start = latticestart)
+	v = []
+	termalization!(lattice, params, observables, v)
+	reduce(hcat, v)', lattice
 end
 
 

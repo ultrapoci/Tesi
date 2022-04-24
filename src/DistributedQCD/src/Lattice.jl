@@ -1,4 +1,5 @@
-export newlattice, Mask, Indices, Site, LocalLattice, Lattice, getlink, putlink!, addtuple, indices, oddmask, evenmask, staple, sumstaples, plaquette
+export Mask, Indices, Site, LocalLattice, Lattice
+export newlattice, getlink, addtuple, indices, oddmask, evenmask, staple, sumstaples, plaquette
 
 const Mask{D} = DArray{Bool, D, Array{Bool, D}}
 const Indices{D} = DArray{CartesianIndex{D}, D, Array{CartesianIndex{D}, D}}

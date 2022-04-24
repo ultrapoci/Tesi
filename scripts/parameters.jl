@@ -1,5 +1,3 @@
-abstract type Params <: AbstractDict{String, Any} end
-
 Base.@kwdef struct ObsParams <: Params
 	observables = "avg_plaq" => averageplaquette
 	save_plot = true
@@ -25,31 +23,9 @@ Base.@kwdef struct TermParams <: Params
 	nobs = 1 # measure observables every nobs cycles
 end
 
-
-#* ===== FUNCTIONS =====
-
 Params(::Type{ObsParams}, x...) = ObsParams(x...) 
 Params(::Type{TermParams}, x...) = TermParams(x...)
 
 DrWatson.default_allowed(::TermParams) = (Real, String, Tuple)
 DrWatson.allaccess(::TermParams) = (:dims, :β, :nterm, :nover, :nnorm)
 
-function Base.iterate(X::Params, state)
-	if length(state) > 0
-		k = state[begin]
-		return String(k) => getfield(X, k), Base.tail(state)
-	end
-	nothing
-end
-Base.iterate(X::Params) = Base.iterate(X, fieldnames(typeof(X)))
-Base.length(X::Params) = fieldcount(typeof(X))
-Base.get(X::Params, s::Symbol, ::Symbol) = Base.getproperty(X, s)
-Base.get(X::Params, s, ::Symbol) = Base.getproperty(X, Symbol(s))
-
-DrWatson.dict_list(p::Params) = [
-	Params(
-		typeof(p), 
-		[d[String(field)] for field in fieldnames(typeof(p))]...
-	)
-	for d in DrWatson.dict_list(Dict(p))
-]

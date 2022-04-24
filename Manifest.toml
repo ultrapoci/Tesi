@@ -173,6 +173,12 @@ git-tree-sha1 = "8b73f8289d73306e3fc04e8622a2db562e01cd07"
 uuid = "aaf54ef3-cdf8-58ed-94cc-d582ad619b94"
 version = "0.6.6"
 
+[[deps.DistributedQCD]]
+deps = ["Distributed", "DistributedArrays", "Distributions", "LinearAlgebra", "StaticArrays"]
+path = "src/DistributedQCD"
+uuid = "24eddd18-7351-47c8-9139-005f0efac71c"
+version = "0.1.0"
+
 [[deps.Distributions]]
 deps = ["ChainRulesCore", "DensityInterface", "FillArrays", "LinearAlgebra", "PDMats", "Printf", "QuadGK", "Random", "SparseArrays", "SpecialFunctions", "Statistics", "StatsBase", "StatsFuns", "Test"]
 git-tree-sha1 = "5a4168170ede913a2cd679e53c2123cb4b889795"
@@ -819,12 +825,6 @@ deps = ["LinearAlgebra", "Random", "Statistics"]
 git-tree-sha1 = "4f6ec5d99a28e1a749559ef7dd518663c5eca3d5"
 uuid = "90137ffa-7385-5640-81b9-e52037218182"
 version = "1.4.3"
-
-[[deps.StaticQCD]]
-deps = ["Distributed", "DistributedArrays", "Distributions", "LinearAlgebra", "StaticArrays"]
-path = "src/StaticQCD"
-uuid = "24eddd18-7351-47c8-9139-005f0efac71c"
-version = "0.1.0"
 
 [[deps.Statistics]]
 deps = ["LinearAlgebra", "SparseArrays"]
