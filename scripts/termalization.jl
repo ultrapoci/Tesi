@@ -35,6 +35,8 @@ function termalization!(L, params, observable::Function, v::Vector)
 		one_termalization!(L, nover, β, n % nnorm == 0)
 		n % nobs == 0 && push!(v, observable(L))
 	end
+	
+	# make sure the last iteration is measured
 	nterm % nobs ≠ 0 && push!(v, observable(L))
 end
 
