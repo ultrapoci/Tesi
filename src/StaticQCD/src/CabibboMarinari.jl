@@ -2,19 +2,19 @@ export subrepresentations, generate_a0, randomSU2, overrelaxation!, heatbath!, t
 
 const subrepresentations = [ 
 	(
-		to_su2 = x::StaticMatrix{4, 4, ComplexF64} -> SU2(x[1, 1], x[1, 3]) |> normalizeSU2det,
-		from_su2 = x::SU2 -> Sp2([x.t₁ 0; 0 1], [x.t₂ 0; 0 0])
+		to_su2 = x::StaticMatrix{4, 4, ComplexF64} -> SU2(x[1, 1], x[1, 4]) |> normalizeSU2det,
+		from_su2 = x::SU2 -> Sp2([x.t₁ 0; 0 1], [0 x.t₂; 0 0])
 	),
 	(
-		to_su2 = x::StaticMatrix{4, 4, ComplexF64} -> SU2(x[2, 2], x[2, 4]) |> normalizeSU2det,
-		from_su2 = x::SU2 -> Sp2([1 0; 0 x.t₁], [0 0; 0 x.t₂])
+		to_su2 = x::StaticMatrix{4, 4, ComplexF64} -> SU2(x[2, 2], x[2, 3]) |> normalizeSU2det,
+		from_su2 = x::SU2 -> Sp2([1 0; 0 x.t₁], [0 0; x.t₂ 0])
 	),
 	(
-		to_su2 = x::StaticMatrix{4, 4, ComplexF64} -> SU2(x[1, 1] + x[2, 2], x[1, 4] + x[2, 3]) |> normalizeSU2det,
-		from_su2 = x::SU2 -> Sp2([x.t₁ 0; 0 x.t₁], [0 x.t₂; x.t₂ 0])
+		to_su2 = x::StaticMatrix{4, 4, ComplexF64} -> SU2(x[1, 1] + x[2, 2], x[1, 3] - x[2, 4]) |> normalizeSU2det,
+		from_su2 = x::SU2 -> Sp2([x.t₁ 0; 0 x.t₁], [x.t₂ 0; 0 -x.t₂])
 	),
 	(
-		to_su2 = x::StaticMatrix{4, 4, ComplexF64} -> SU2(x[1, 1] + x[4, 4], x[1, 2] - x[4, 3]) |> normalizeSU2det,
+		to_su2 = x::StaticMatrix{4, 4, ComplexF64} -> SU2(x[1, 1] + x[3, 3], x[1, 2] + x[3, 4]) |> normalizeSU2det,
 		from_su2 = x::SU2 -> Sp2([x.t₁ x.t₂; -conj(x.t₂) conj(x.t₁)], [0 0; 0 0])
 	)
 ]
@@ -55,20 +55,22 @@ function randomSU2(k::Real, β::Real)
 end
 
 function touch_overrelaxation(S::Sp2, R::StaticMatrix{4, 4, ComplexF64})
+	U = S
 	for (to_su2, from_su2) in subrepresentations
-		a, _ = to_su2(S * R)
-		S = from_su2(a^-2) * S
+		a, _ = to_su2(U * R)
+		U = from_su2(a^-2) * U
 	end
-	S
+	U
 end
 
 function touch_heatbath(S::Sp2, R::StaticMatrix{4, 4, ComplexF64}, β::Real)
+	U = S
 	for (to_su2, from_su2) in subrepresentations
-		a, k = to_su2(S * R)
+		a, k = to_su2(U * R)
 		a = randomSU2(k, β) * a^-1
-		S = from_su2(a) * S
+		U = from_su2(a) * U
 	end
-	S
+	U
 end
 
 """
@@ -90,8 +92,7 @@ function overrelaxation!(L::Lattice{D}, evenmask::Mask{D}, inds::Indices{D}, nov
 			for x in CartesianIndices(L[:L])[mask]
 				link = L[:L][x][u]
 				R = sumstaples(L, u, inds[:L][x])
-				S = touch_overrelaxation(link, R)
-				L[:L][x][u] = S
+				L[:L][x][u] = touch_overrelaxation(link, R)
 			end
 		end
 	end
@@ -117,8 +118,7 @@ function heatbath!(L::Lattice{D}, evenmask::Mask{D}, inds::Indices{D}, β::Real;
 			for x in CartesianIndices(L[:L])[mask]
 				link = L[:L][x][u]
 				R = sumstaples(L, u, inds[:L][x])
-				S = touch_heatbath(link, R, β)
-				L[:L][x][u] = S
+				L[:L][x][u] = touch_heatbath(link, R, β)
 			end
 		end
 	end
