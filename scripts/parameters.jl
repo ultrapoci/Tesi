@@ -1,10 +1,10 @@
 Base.@kwdef struct ObsParams <: Params
-	observables = "avg_plaq" => averageplaquette
 	save_plot = true
 	display_plot = false
 	save_dat = true
 	save_jld2 = true
 	save_df = true
+	observables = "avg_plaq" => averageplaquette
 end
 
 Base.@kwdef struct TermParams <: Params
