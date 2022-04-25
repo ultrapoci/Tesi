@@ -1,7 +1,5 @@
 export Sp2Element, Sp2ElementA, Sp2ElementB, asmatrix, normalizeSp2, J
 
-using LinearAlgebra
-
 abstract type Sp2Element <: AbstractMatrix{ComplexF64} end
 
 struct Sp2ElementA <: Sp2Element

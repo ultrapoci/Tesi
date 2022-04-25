@@ -1,5 +1,3 @@
-using LinearAlgebra: I
-
 export Link
 
 struct Link{D}# <: AbstractMatrix{ComplexF64}

@@ -1,9 +1,12 @@
 module QCD
 
+using LinearAlgebra, Distributions
+
 include("SU2Element.jl")
 include("Sp2Element.jl")
 include("Link.jl")
 include("Lattice.jl")
+include("CabibboMarinari.jl")
 
 export linkelement, staple, plaquette, unittuple, directionindex, sumstaples
 

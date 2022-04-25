@@ -1,7 +1,5 @@
 export SU2Element, asmatrix, normalizeSU2, normalizeSU2det
 
-using LinearAlgebra
-
 struct SU2Element <: AbstractMatrix{ComplexF64}
 	t₁::ComplexF64
 	t₂::ComplexF64
