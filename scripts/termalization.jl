@@ -3,6 +3,8 @@ using DrWatson
 
 using DistributedQCD
 nworkers() == 1 && initprocs(4)
+@everywhere using DrWatson 
+@everywhere @quickactivate "Tesi"
 @everywhere using DistributedQCD
 
 using Plots, Statistics, DataFrames, Measurements, ProgressMeter

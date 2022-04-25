@@ -175,8 +175,8 @@ function lattice_heatbath!(lattice::Lattice{D}, β::Real; log = false) where D
 end
 
 function lattice_normalization!(lattice::Lattice{D}; log = false) where D
+	log && @info "normalizing..."
 	for x in CartesianIndices(lattice), u in 1:D
-		log && @info "normalization" position=Tuple(x) direction=u
 		s = normalizeSp2(linkelement(lattice, u, x))
 		updatelattice!(lattice, Link(s, u, x))
 	end

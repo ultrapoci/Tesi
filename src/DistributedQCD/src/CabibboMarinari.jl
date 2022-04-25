@@ -89,9 +89,9 @@ function overrelaxation!(L::Lattice{D}, evenmask::Mask{D}, inds::Indices{D}, nov
 			mask = parity == :even ? evenmask[:L] : .!evenmask[:L]
 
 			# filters indices using the mask `mask`
-			for x in CartesianIndices(L[:L])[mask]
+			@maybe_threaded for x in CartesianIndices(L[:L])[mask] # x is the position of the link in the local array
 				link = L[:L][x][u]
-				R = sumstaples(L, u, inds[:L][x])
+				R = sumstaples(L, u, inds[:L][x]) # inds[:L][x] is the position of the link in the global array 
 				L[:L][x][u] = touch_overrelaxation(link, R)
 			end
 		end
@@ -110,14 +110,14 @@ Same as `overrelaxation`, only it applies the heat-bath algorithm to the lattice
 """
 function heatbath!(L::Lattice{D}, evenmask::Mask{D}, inds::Indices{D}, β::Real; log = false) where D
 	for parity in (:even, :odd), u in 1:D
-		log && @info "Heat bath" parity u
+		log && @info "Heat-bath" parity u
 		with_workers() do _
 			mask = parity == :even ? evenmask[:L] : .!evenmask[:L]
 
 			# filters indices using the mask `mask`
-			for x in CartesianIndices(L[:L])[mask]
+			@maybe_threaded for x in CartesianIndices(L[:L])[mask] # x is the position of the link in the local array
 				link = L[:L][x][u]
-				R = sumstaples(L, u, inds[:L][x])
+				R = sumstaples(L, u, inds[:L][x]) # inds[:L][x] is the position of the link in the global array 
 				L[:L][x][u] = touch_heatbath(link, R, β)
 			end
 		end
@@ -130,23 +130,31 @@ heatbath!(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Ind
 	normalizelattice!(L::Lattice{D}; log = false) where D
 	normalizelattice!(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}; kwargs...) where D
 	normalizelattice!(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D
-Normalize all links in the lattice `L` to make sure they belong to ``Sp(2)`` and ``SU(4)``. It is possible to directly pass a tuple or named tuple containing the lattice. 
+Normalize all links in the lattice `L` to make sure they belong to ``\\mathrm{Sp(2)}`` and ``\\mathrm{SU(4)}``. It is possible to directly pass a tuple or named tuple containing the lattice. 
 """
 function normalizelattice!(L::Lattice{D}; log = false) where D
 	log && @info "Normalizing..."
 	with_workers() do _
-		for u in 1:D, x in eachindex(L[:L])
-			L[:L][x][u] = normalizeSp2(L[:L][x][u])
+		@maybe_threaded for u in 1:D
+			for x in eachindex(L[:L])
+				L[:L][x][u] = normalizeSp2(L[:L][x][u])
+			end
 		end
 	end
 end
 normalizelattice!(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}; kwargs...) where D = normalizelattice!(T[1]; kwargs...)
 normalizelattice!(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D = normalizelattice!(T.lattice; kwargs...)
 
+"""
+	one_termalization!(L::Lattice{D}, evenmask::Mask{D}, inds::Indices{D}, nover::Int, β::Real, do_normalization = false; log = false) where D
+	one_termalization!(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}, nover::Int, β::Real, do_normalization = false; kwargs...) where D
+	one_termalization!(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}, nover::Int, β::Real, do_normalization = false; kwargs...) where D
+Do one iteration of termalization, meaning `nover` cycles of overrelaxation, one cycle of heatbath and, if `do_normalization` is true, normalize all lattice.
+"""
 function one_termalization!(L::Lattice{D}, evenmask::Mask{D}, inds::Indices{D}, nover::Int, β::Real, do_normalization = false; log = false) where D
 	overrelaxation!(L, evenmask, inds, nover, log = log)
 	heatbath!(L, evenmask, inds, β, log = log)
-	do_normalization && normalizelattice!(L)
+	do_normalization && normalizelattice!(L, log = log)
 end
 one_termalization!(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}, nover::Int, β::Real, do_normalization = false; kwargs...) where D = one_termalization!(T..., nover, β, do_normalization; kwargs...)
 one_termalization!(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}, nover::Int, β::Real, do_normalization = false; kwargs...) where D = one_termalization!(T..., nover, β, do_normalization; kwargs...)

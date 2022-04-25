@@ -8,12 +8,13 @@ Base.@kwdef struct ObsParams <: Params
 end
 
 Base.@kwdef struct TermParams <: Params
-	dims = (8, 8, 8)
-	β = [i/2 for i in 1.0:15.0]
+	dims = (20, 20, 20)
+	#β = [i/2 for i in 1.0:15.0]
+	β = 1.0
 	latticestart = :cold
-	sp2type = Sp2ElementB
+	sp2type = try Sp2ElementB catch; missing end
 	
-	nterm = 200
+	nterm = 100
 	nnorm = 10 # after how many cycle to normalize lattice
 	nover = 3 # how many cycles of overrelaxation to do
 	
