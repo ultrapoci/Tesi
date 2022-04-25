@@ -11,7 +11,7 @@ Base.@kwdef struct TermParams <: Params
 	dims = (8, 8, 8)
 	β = [i/2 for i in 1.0:15.0]
 	latticestart = :cold
-	#sp2type = Sp2ElementB
+	sp2type = Sp2ElementB
 	
 	nterm = 200
 	nnorm = 10 # after how many cycle to normalize lattice
