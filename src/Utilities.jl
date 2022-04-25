@@ -1,14 +1,5 @@
-using DrWatson, Statistics, Term.progress
+using DrWatson, Statistics
 import CSV, DelimitedFiles
-import Term: install_term_logger
-
-install_term_logger()
-
-function getpbar(n::Int, desc::String)
-	pbar = ProgressBar(columns = :detailed, refresh_rate = 1, expand = true)
-	job = addjob!(pbar, N = n, description = desc)
-	pbar, job
-end
 
 function DrWatson._wsave(filename, data::Dict)
 	if splitext(filename)[2] == ".dat" 
