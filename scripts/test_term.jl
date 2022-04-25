@@ -8,16 +8,20 @@ using QCD
 using Term.progress
 import ProgressMeter
 
+function one_termalization!(L::Lattice)
+	lattice_overrelaxation!(L, 3)
+	lattice_heatbath!(L, 1.0)
+	lattice_normalization!(L)
+end
+
 #=
 when calling this function, the blue header shows up
 but the progress bar doesn't. The bar is shown at 100%
 completion after the loop finishes.
 =#
 function test1!(L::Lattice)
-	@track for i in 1:100
-		lattice_overrelaxation!(L, 3)
-		lattice_heatbath!(L, 1.0)
-		lattice_normalization!(L)
+	@track for i in 1:20
+		one_termalization!(L)
 	end
 end
 
