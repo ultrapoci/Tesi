@@ -9,38 +9,10 @@ nworkers() == 1 && addprocs(3, exeflags="--project")
 @everywhere using DrWatson
 
 @everywhere begin
-	using QCD, Plots, Statistics, ProgressMeter, DataFrames
-	import DelimitedFiles, CSV
+	using QCD, Plots, Statistics, DataFrames, Term.progress
 
-	include(srcdir("CabibboMarinari.jl"))
+	include(srcdir("Utilities.jl"))
 	include(scriptsdir("parameters.jl"))
-
-	#* ===== UTILITIES =====
-
-	function DrWatson._wsave(filename, data::Dict)
-		if splitext(filename)[2] == ".dat" 
-			DelimitedFiles.writedlm(filename, data, " = ")
-		else
-			save(filename, data)
-		end
-	end
-
-	function DrWatson._wsave(filename, data::DataFrame)
-		CSV.write(filename, data)
-	end
-
-	showall(x) = begin show(stdout, "text/plain", x); println() end
-
-	takeobservables(x::Pair) = (x.first,), (x.second,)
-	takeobservables(x) = first.(x), last.(x)
-
-	function incrementalmean(v, offset::Integer = 1)
-		if offset ∉ 1:length(v)
-			throw(ArgumentError("Given offset = $offset must be positive and less than or equal to length(v) = $(length(v))"))
-		end
-
-		[mean(v[offset:i]) for i in offset:length(v)], offset:length(v)
-	end
 
 	function nsteps(params)
 		@unpack nterm = params
@@ -97,11 +69,9 @@ end
 function dist_run(allparams::TermParams, obsparams::ObsParams, folder = "")
 	@unpack observables, save_plot, display_plot, save_dat, save_jld2, save_df = obsparams
 	obsnames, obsfunctions = takeobservables(observables)
-	niter = try
-		dict_list_count(allparams)
-	catch
-		1
-	end
+	niter = try dict_list_count(allparams) catch; 1	end
+
+	
 	v = pmap(enumerate(dict_list(allparams))) do (i, params)
 		@info "Iteration $i/$niter"
 
