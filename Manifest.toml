@@ -731,7 +731,7 @@ uuid = "92933f4c-e287-5a05-a399-4b506db050ca"
 version = "1.7.2"
 
 [[deps.QCD]]
-deps = ["LinearAlgebra"]
+deps = ["Distributions", "LinearAlgebra"]
 path = "src/QCD"
 uuid = "24eddd18-7351-47c8-9139-005f0efac71b"
 version = "0.1.0"
