@@ -24,11 +24,6 @@ git-tree-sha1 = "19a35467a82e236ff51bc17a3a44b69ef35185a2"
 uuid = "6e34b625-4abd-537c-b88f-471c36dfa7a0"
 version = "1.0.8+0"
 
-[[deps.CEnum]]
-git-tree-sha1 = "eb4cb44a499229b3b8426dcfb5dd85333951ff90"
-uuid = "fa961155-64e5-5f13-b03f-caf6b980ea82"
-version = "0.4.2"
-
 [[deps.CSV]]
 deps = ["CodecZlib", "Dates", "FilePathsBase", "InlineStrings", "Mmap", "Parsers", "PooledArrays", "SentinelArrays", "Tables", "Unicode", "WeakRefStrings"]
 git-tree-sha1 = "873fb188a4b9d76549b81465b1f75c82aaf59238"
@@ -82,12 +77,6 @@ git-tree-sha1 = "024fe24d83e4a5bf5fc80501a314ce0d1aa35597"
 uuid = "3da002f7-5984-5a60-b8a6-cbb66c0b333f"
 version = "0.11.0"
 
-[[deps.ColorVectorSpace]]
-deps = ["ColorTypes", "FixedPointNumbers", "LinearAlgebra", "SpecialFunctions", "Statistics", "TensorCore"]
-git-tree-sha1 = "3f1f500312161f1ae067abe07d13b40f78f32e07"
-uuid = "c3611d14-8923-5661-9e6a-0046d554d3a4"
-version = "0.9.8"
-
 [[deps.Colors]]
 deps = ["ColorTypes", "FixedPointNumbers", "Reexport"]
 git-tree-sha1 = "417b0ed7b8b838aa6ca0a87aadf1bb9eb111ce40"
@@ -103,12 +92,6 @@ version = "3.43.0"
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-
-[[deps.ConstructionBase]]
-deps = ["LinearAlgebra"]
-git-tree-sha1 = "f74e9d5388b8620b4cee35d4c5a618dd4dc547f4"
-uuid = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
-version = "1.3.0"
 
 [[deps.Contour]]
 deps = ["StaticArrays"]
@@ -261,23 +244,11 @@ git-tree-sha1 = "8339d61043228fdd3eb658d86c926cb282ae72a8"
 uuid = "59287772-0a20-5a39-b81b-1366585eb4c0"
 version = "0.4.2"
 
-[[deps.FreeType]]
-deps = ["CEnum", "FreeType2_jll"]
-git-tree-sha1 = "cabd77ab6a6fdff49bfd24af2ebe76e6e018a2b4"
-uuid = "b38be410-82b0-50bf-ab77-7b57e271db43"
-version = "4.0.0"
-
 [[deps.FreeType2_jll]]
 deps = ["Artifacts", "Bzip2_jll", "JLLWrappers", "Libdl", "Pkg", "Zlib_jll"]
 git-tree-sha1 = "87eb71354d8ec1a96d4a7636bd57a7347dde3ef9"
 uuid = "d7e528f0-a631-5988-bf34-fe36492bcfd7"
 version = "2.10.4+0"
-
-[[deps.FreeTypeAbstraction]]
-deps = ["ColorVectorSpace", "Colors", "FreeType", "GeometryBasics"]
-git-tree-sha1 = "b5c7fe9cea653443736d264b85466bad8c574f4a"
-uuid = "663a7486-cb36-511b-a19d-713bb74d65c9"
-version = "0.9.9"
 
 [[deps.FriBidi_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -347,18 +318,6 @@ deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll",
 git-tree-sha1 = "129acf094d168394e80ee1dc4bc06ec835e510a3"
 uuid = "2e76f6c2-a576-52d4-95c1-20adfe4de566"
 version = "2.8.1+1"
-
-[[deps.Highlights]]
-deps = ["DocStringExtensions", "InteractiveUtils", "REPL"]
-git-tree-sha1 = "d7e1d65e8599f2ee8df09c1461391e66ad9e2885"
-uuid = "eafb193a-b7ab-5a9e-9068-77385905fa72"
-version = "0.5.1"
-
-[[deps.InMemoryDatasets]]
-deps = ["Compat", "DataAPI", "Dates", "InvertedIndices", "IteratorInterfaceExtensions", "Markdown", "Missings", "PooledArrays", "PrettyTables", "Printf", "REPL", "Reexport", "Statistics", "TableTraits", "Tables"]
-git-tree-sha1 = "c1c1249b0fb2e99176f8f69063e036eaf719ee56"
-uuid = "5c01b14b-ab03-46ff-b164-14c663efdd9f"
-version = "0.7.2"
 
 [[deps.IniFile]]
 git-tree-sha1 = "f550e6e32074c939295eb5ea6de31849ac2c9625"
@@ -545,12 +504,6 @@ git-tree-sha1 = "3d3e902b31198a27340d0bf00d6ac452866021cf"
 uuid = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 version = "0.5.9"
 
-[[deps.MarchingCubes]]
-deps = ["StaticArrays"]
-git-tree-sha1 = "5f768e0a0c3875df386be4c036f78c8bd4b1a9b6"
-uuid = "299715c1-40a9-479a-aaf9-4a633d36f717"
-version = "0.1.2"
-
 [[deps.Markdown]]
 deps = ["Base64"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
@@ -587,11 +540,6 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[deps.MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
-
-[[deps.MyterialColors]]
-git-tree-sha1 = "01d8466fb449436348999d7c6ad740f8f853a579"
-uuid = "1c23619d-4212-4747-83aa-717207fae70f"
-version = "0.3.0"
 
 [[deps.NaNMath]]
 git-tree-sha1 = "737a5957f387b17e74d4ad2f440eb330b39a62c5"
@@ -649,12 +597,6 @@ deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse"]
 git-tree-sha1 = "e8185b83b9fc56eb6456200e873ce598ebc7f262"
 uuid = "90014a1f-27ba-587c-ab20-58faa44d9150"
 version = "0.11.7"
-
-[[deps.Parameters]]
-deps = ["OrderedCollections", "UnPack"]
-git-tree-sha1 = "34c0e9ad262e5f7fc75b10a9952ca7692cfc5fbe"
-uuid = "d96e819e-fc66-5662-9728-84c9c7592b0a"
-version = "0.12.3"
 
 [[deps.Parsers]]
 deps = ["Dates"]
@@ -717,12 +659,6 @@ version = "0.5.2"
 [[deps.Printf]]
 deps = ["Unicode"]
 uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
-
-[[deps.ProgressLogging]]
-deps = ["Logging", "SHA", "UUIDs"]
-git-tree-sha1 = "80d919dee55b9c50e8d9e2da5eeafff3fe58b539"
-uuid = "33c8b6b6-d38a-422a-b730-caa89a2f386c"
-version = "0.1.4"
 
 [[deps.ProgressMeter]]
 deps = ["Distributed", "Printf"]
@@ -901,18 +837,6 @@ version = "1.7.0"
 deps = ["ArgTools", "SHA"]
 uuid = "a4e569a6-e804-4fa4-b0f3-eef7a1d5b13e"
 
-[[deps.TensorCore]]
-deps = ["LinearAlgebra"]
-git-tree-sha1 = "1feb45f88d133a655e001435632f019a9a1bcdb6"
-uuid = "62fd8b95-f654-4bbd-a8a5-9c27f68ccd50"
-version = "0.1.1"
-
-[[deps.Term]]
-deps = ["Dates", "Highlights", "InteractiveUtils", "Logging", "MyterialColors", "OrderedCollections", "Parameters", "ProgressLogging", "UUIDs"]
-git-tree-sha1 = "e375a4c4e773c667a2bddf0a3c8c727ab81bcb91"
-uuid = "22787eb5-b846-44ae-b979-8e399b8463ab"
-version = "0.3.0"
-
 [[deps.Test]]
 deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
@@ -945,18 +869,6 @@ deps = ["REPL"]
 git-tree-sha1 = "53915e50200959667e78a92a418594b428dffddf"
 uuid = "1cfade01-22cf-5700-b092-accc4b62d6e1"
 version = "0.4.1"
-
-[[deps.UnicodePlots]]
-deps = ["ColorTypes", "Contour", "Crayons", "Dates", "FileIO", "FreeTypeAbstraction", "LinearAlgebra", "MarchingCubes", "NaNMath", "SparseArrays", "StaticArrays", "StatsBase", "Unitful"]
-git-tree-sha1 = "c3bab41f0910b8e3e70d88ee24a68ab952ec0a76"
-uuid = "b8865327-cd53-5732-bb35-84acbb429228"
-version = "2.10.3"
-
-[[deps.Unitful]]
-deps = ["ConstructionBase", "Dates", "LinearAlgebra", "Random"]
-git-tree-sha1 = "b649200e887a487468b71821e2644382699f1b0f"
-uuid = "1986cc42-f94f-5a68-af5c-568840ba703d"
-version = "1.11.0"
 
 [[deps.Unzip]]
 git-tree-sha1 = "34db80951901073501137bdbc3d5a8e7bbd06670"
