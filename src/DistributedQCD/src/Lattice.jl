@@ -7,11 +7,11 @@ const Site{D} = MVector{D, Sp2}
 const LocalLattice{D} = Array{Site{D}, D}
 const Lattice{D} = DArray{Site{D}, D, LocalLattice{D}}
 
-function newlattice(dims::NTuple{D, Int}; start = :cold) where D
+function newlattice(dims::NTuple{D, Int}; start = :cold, kwargs...) where D
 	lattice = if start == :cold
-		distribute([MVector{D}([Sp2() for _ in 1:D]) for _ in CartesianIndices(dims)])
+		distribute([MVector{D}([Sp2() for _ in 1:D]) for _ in CartesianIndices(dims)]; kwargs...)
 	elseif start == :hot
-		distribute([MVector{D}([rand(Sp2) for _ in 1:D]) for _ in CartesianIndices(dims)])
+		distribute([MVector{D}([rand(Sp2) for _ in 1:D]) for _ in CartesianIndices(dims)]; kwargs...)
 	else
 		throw(ArgumentError("start must be :hot or :cold, got :$start."))
 	end
