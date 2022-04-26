@@ -536,6 +536,12 @@ git-tree-sha1 = "3dacfc006764fe498515a022c3976b7e133c4008"
 uuid = "7cb0a576-ebde-5e09-9194-50597f1243b4"
 version = "4.0.2+0"
 
+[[deps.MPIClusterManagers]]
+deps = ["Distributed", "MPI", "Serialization", "Sockets"]
+git-tree-sha1 = "eb865823e19ca6bf7339662a10f6773d013847ec"
+uuid = "e7922434-ae4b-11e9-05c5-9780451d2c66"
+version = "0.2.3"
+
 [[deps.MPIQCD]]
 deps = ["MPI", "PencilArrays"]
 path = "src/MPIQCD"

@@ -1,7 +1,12 @@
-# examples/01-hello.jl
-using MPI
-MPI.Init()
+# to import MPIManager
+using MPIClusterManagers
 
-comm = MPI.COMM_WORLD
-println("Hello world, I am $(MPI.Comm_rank(comm)) of $(MPI.Comm_size(comm))")
-MPI.Barrier(comm)
+# need to also import Distributed to use addprocs()
+using Distributed
+
+# specify, number of mpi workers, launch cmd, etc.
+#manager=MPIWorkerManager(4)
+manager=MPIWorkerManager(4)
+
+# start mpi workers and add them as julia workers too.
+addprocs(manager, exeflags="--project")
