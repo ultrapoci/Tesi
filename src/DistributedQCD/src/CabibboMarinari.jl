@@ -1,5 +1,3 @@
-export subrepresentations, generate_a0, randomSU2, overrelaxation!, heatbath!, touch_overrelaxation, touch_heatbath, normalizelattice!, one_termalization!
-
 const subrepresentations = [ 
 	(
 		to_su2 = x::StaticMatrix{4, 4, ComplexF64} -> SU2(x[1, 1], x[1, 4]) |> normalizeSU2det,

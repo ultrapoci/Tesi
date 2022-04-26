@@ -1,5 +1,3 @@
-export averageplaquette
-
 function averageplaquette(L::Lattice{D}, inds::Indices{D}) where D
 	current_workers = [w for w in procs(L)]
 	n_current_workers = length(current_workers)
@@ -21,3 +19,5 @@ function averageplaquette(L::Lattice{D}, inds::Indices{D}) where D
 end
 averageplaquette(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}) where D = averageplaquette(T[1], T[3])
 averageplaquette(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}) where D = averageplaquette(T.lattice, T.inds)
+
+function ()

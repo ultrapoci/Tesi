@@ -1,5 +1,3 @@
-export Sp2, asmatrix, normalizeSp2
-
 struct Sp2 <: StaticMatrix{4, 4, ComplexF64}
 	topleft::SMatrix{2, 2, ComplexF64, 4}
 	topright::SMatrix{2, 2, ComplexF64, 4}

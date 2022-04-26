@@ -1,5 +1,3 @@
-export SU2, asmatrix, normalizeSU2, normalizeSU2det
-
 struct SU2 <: StaticMatrix{2, 2, ComplexF64}
 	t₁::ComplexF64
 	t₂::ComplexF64

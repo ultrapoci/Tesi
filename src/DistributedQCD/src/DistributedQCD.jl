@@ -3,6 +3,11 @@ module DistributedQCD
 using Distributed, DistributedArrays, StaticArrays, LinearAlgebra, Distributions
 
 export @everywhere, workers, nworkers, initprocs, with_workers, @maybe_threaded
+export SU2, asmatrix, normalizeSU2, normalizeSU2det
+export Sp2, asmatrix, normalizeSp2
+export Mask, Indices, Site, LocalLattice, Lattice, newlattice, evenmask, oddmask, indices
+export one_termalization!
+export averageplaquette, polyakovloop
 
 """
 	initprocs(n; threads = "1", kwargs...)
