@@ -21,3 +21,5 @@ averageplaquette(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}) where D = averagepla
 averageplaquette(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}) where D = averageplaquette(T.lattice, T.inds)
 
 function ()
+	
+end
