@@ -9,16 +9,15 @@ export @everywhere, workers, nworkers, initprocs, with_workers, @maybe_threaded
 Call `addprocs` with `n` processes and the flag `exeflags="--threads=..."`, where the value of `--threads` is decided by the `threads` argument. \
 All other `kwargs` are passed to `addprocs`.
 """
-function initprocs(n; threads = "1", kwargs...)
-    addprocs(n; exeflags = "--threads=$threads", kwargs...)
-end
+initprocs(n; threads = "1", kwargs...) = addprocs(n; exeflags = "--threads=$threads", kwargs...)
+
 """
 	with_workers(f)
 Spawn a task calling `f()` for each process in `workers()`. Useful with the `do end` statement to run a function on all processes exactly once.
 `f` takes the id of the worker as the only argument.
 """
-with_workers(f) = @sync for w in workers()
-	@spawnat w f(w)
+with_workers(f, args...) = @sync for w in workers()
+	@spawnat w f(w, args...)
 end
 
 """

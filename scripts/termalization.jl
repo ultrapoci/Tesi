@@ -117,6 +117,8 @@ function run(allparams::TermParams, obsparams::ObsParams, folder = "")
 		println()
 	end
 
+	# remove columns of missing values
+	df = df[!, (x->eltype(x)!=Missing).(eachcol(df))]
 	sort!(df, [:dims, :β])
 
 	if save_df

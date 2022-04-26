@@ -1,7 +1,10 @@
 export averageplaquette
 
 function averageplaquette(L::Lattice{D}, inds::Indices{D}) where D
-	partial = dzeros((nworkers(),), workers()[:], [nworkers()])
+	current_workers = [w for w in procs(L)]
+	n_current_workers = length(current_workers)
+	# initialize a vector with nworkers() elements, of which each worker owns one cell
+	partial = dzeros((n_current_workers,), current_workers, [n_current_workers])
 	with_workers() do _	
 		tot = 0.0
 		for x in CartesianIndices(L[:L]), u in 1:D-1, v in u+1:D
