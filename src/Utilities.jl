@@ -1,4 +1,4 @@
-using DrWatson, Statistics
+using DrWatson, Statistics, ProgressMeter
 import CSV, DelimitedFiles
 
 function DrWatson._wsave(filename, data::Dict)
@@ -9,9 +9,7 @@ function DrWatson._wsave(filename, data::Dict)
 	end
 end
 
-function DrWatson._wsave(filename, data::DataFrame)
-	CSV.write(filename, data)
-end
+DrWatson._wsave(filename, data::DataFrame) = CSV.write(filename, data)
 
 showall(x) = begin show(stdout, "text/plain", x); println() end
 
@@ -25,6 +23,9 @@ function incrementalmean(v, offset::Integer = 1)
 
 	[mean(v[offset:i]) for i in offset:length(v)], [std(v[offset:i]) for i in offset:length(v)]
 end
+
+getpbar(n; desc = "Progress: ", enabled = true) = Progress(n, dt = 1, desc = desc, enabled = enabled, showspeed = true)
+generate_showvalues(pairs...) = () -> [Tuple.(pairs)...]
 
 
 #* ===== PARAMETERS =====
