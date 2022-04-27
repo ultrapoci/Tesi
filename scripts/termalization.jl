@@ -19,14 +19,14 @@ end
 
 #* ===== TERMALIZATION =====
 
-function termalization!(L, params; log = false, kwargs...)
+function termalization!(L, params; log = false)
 	@unpack β, nterm, nover, nnorm = params
 
 	pbar = getpbar(nterm, desc = " Distributed Termalization", enabled = !log)
 
 	for n in 1:nterm
 		log && @info "Termalization" n nterm
-		one_termalization!(L, nover, β, n % nnorm == 0; log = log, kwargs...)
+		one_termalization!(L, nover, β, n % nnorm == 0; log = log, iter = n)
 		next!(pbar, showvalues = generate_showvalues(:iter => n, :total => nterm))
 	end
 end
@@ -38,14 +38,14 @@ function termalization(params; kwargs...)
 	L
 end
 
-function termalization!(L, params, observable::Function, v::Vector; log = false, kwargs...)
+function termalization!(L, params, observable::Function, v::Vector; log = false)
 	@unpack β, nterm, nover, nnorm, nobs = params
 
 	pbar = getpbar(nterm, desc = " Distributed Termalization", enabled = !log)
 
 	for n in 1:nterm
 		log && @info "Termalization" n nterm
-		one_termalization!(L, nover, β, n % nnorm == 0; log = log, kwargs...)
+		one_termalization!(L, nover, β, n % nnorm == 0; log = log, iter = n)
 		n % nobs == 0 && push!(v, observable(L))
 		next!(pbar, showvalues = generate_showvalues(:iter => n, :total => nterm))
 	end
@@ -62,14 +62,14 @@ function termalization(params, observable::Function; kwargs...)
 	v, L
 end
 
-function termalization!(L, params, observables, v; log = false, kwargs...)
+function termalization!(L, params, observables, v; log = false)
 	@unpack β, nterm, nover, nnorm, nobs = params
 
 	pbar = getpbar(nterm, desc = " Distributed Termalization", enabled = !log)
 
 	for n in 1:nterm
 		log && @info "Termalization" n nterm
-		one_termalization!(L, nover, β, n % nnorm == 0; log = log, kwargs...)
+		one_termalization!(L, nover, β, n % nnorm == 0; log = log, iter = n)
 		n % nobs == 0 && push!(v, [obs(L) for obs in observables])
 		next!(pbar, showvalues = generate_showvalues(:iter => n, :total => nterm))
 	end
