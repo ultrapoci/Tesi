@@ -7,66 +7,82 @@ nworkers() == 1 && initprocs(4)
 @everywhere @quickactivate "Tesi"
 @everywhere using DistributedQCD
 
-using Plots, Statistics, DataFrames, Measurements, ProgressMeter
+using Plots, DataFrames, Measurements
 
 include(srcdir("Utilities.jl"))
 include(scriptsdir("parameters.jl"))
 
+if "LOG_TERMALIZATION" ∉ keys(ENV)
+	ENV["LOG_TERMALIZATION"] = "0"
+end
+
 
 #* ===== TERMALIZATION =====
 
-function termalization!(L, params)
+function termalization!(L, params; log = false, kwargs...)
 	@unpack β, nterm, nover, nnorm = params
 
-	@showprogress 1 "Distributed Termalization" for n in 1:nterm
-		one_termalization!(L, nover, β, n % nnorm == 0)
+	pbar = getpbar(nterm, desc = " Distributed Termalization", enabled = !log)
+
+	for n in 1:nterm
+		log && @info "Termalization" n nterm
+		one_termalization!(L, nover, β, n % nnorm == 0; log = log, kwargs...)
+		next!(pbar, showvalues = generate_showvalues(:iter => n, :total => nterm))
 	end
 end
 
-function termalization(params)
+function termalization(params; kwargs...)
 	@unpack dims, latticestart = params
 	L = newlattice(dims..., start = latticestart)
-	termalization!(L, params)
+	termalization!(L, params; kwargs...)
 	L
 end
 
-function termalization!(L, params, observable::Function, v::Vector)
+function termalization!(L, params, observable::Function, v::Vector; log = false, kwargs...)
 	@unpack β, nterm, nover, nnorm, nobs = params
 
-	@showprogress 1 "Distributed Termalization" for n in 1:nterm
-		one_termalization!(L, nover, β, n % nnorm == 0)
+	pbar = getpbar(nterm, desc = " Distributed Termalization", enabled = !log)
+
+	for n in 1:nterm
+		log && @info "Termalization" n nterm
+		one_termalization!(L, nover, β, n % nnorm == 0; log = log, kwargs...)
 		n % nobs == 0 && push!(v, observable(L))
+		next!(pbar, showvalues = generate_showvalues(:iter => n, :total => nterm))
 	end
 	
 	# make sure the last iteration is measured
 	nterm % nobs ≠ 0 && push!(v, observable(L))
 end
 
-function termalization(params, observable::Function)
+function termalization(params, observable::Function; kwargs...)
 	@unpack dims, latticestart = params
 	L = newlattice(dims..., start = latticestart)
 	v = Float64[]
-	termalization!(L, params, observable, v)
+	termalization!(L, params, observable, v; kwargs...)
 	v, L
 end
 
-function termalization!(L, params, observables, v)
+function termalization!(L, params, observables, v; log = false, kwargs...)
 	@unpack β, nterm, nover, nnorm, nobs = params
 
-	@showprogress 1 "Distributed Termalization" for n in 1:nterm
-		one_termalization!(L, nover, β, n % nnorm == 0)
+	pbar = getpbar(nterm, desc = " Distributed Termalization", enabled = !log)
+
+	for n in 1:nterm
+		log && @info "Termalization" n nterm
+		one_termalization!(L, nover, β, n % nnorm == 0; log = log, kwargs...)
 		n % nobs == 0 && push!(v, [obs(L) for obs in observables])
+		next!(pbar, showvalues = generate_showvalues(:iter => n, :total => nterm))
 	end
 
 	# make sure the last iteration is measured
 	nterm % nobs ≠ 0 && push!(v, [obs(L) for obs in observables])
 end
 
-function termalization(params, observables)
+function termalization(params, observables; kwargs...)
 	@unpack dims, latticestart = params
 	L = newlattice(dims..., start = latticestart)
 	v = Vector{Float64}[]
-	termalization!(L, params, observables, v)
+	termalization!(L, params, observables, v; kwargs...)
 	reduce(hcat, v)', L
 end
 
@@ -85,7 +101,7 @@ function run(allparams::TermParams, obsparams::ObsParams, folder = "")
 		display(params)
 		d = Dict(params)
 
-		obsmeasurements, = termalization(params, obsfunctions)
+		obsmeasurements, = termalization(params, obsfunctions, log = ENV["LOG_TERMALIZATION"] == "1")
 
 		for (obsmeasurement, obsname) in zip(eachcol(obsmeasurements), obsnames)
 			obsmean, obserror = incrementalmean(obsmeasurement, meanoffset)
