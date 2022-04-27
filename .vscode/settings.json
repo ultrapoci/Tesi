@@ -1,3 +1,4 @@
 {
-	"fortran.ignoreWarning.fortls": true
+	"fortran.ignoreWarning.fortls": true,
+	"julia.persistentSession.alwaysCopy": true
 }
