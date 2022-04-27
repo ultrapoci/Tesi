@@ -1,13 +1,13 @@
 # TODO see if ploop and corr_loop can be done without calling all_ploops
 
 """
-	averageplaquette(L::Lattice{D}, inds::Indices{D}; log = false) where D
+	averageplaquette(L::Lattice{D}, inds::Indices{D}; log = false, iter = missing) where D
 	averageplaquette(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}; kwargs...) where D
 	averageplaquette(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D
 Return the value of the average plaquette of the lattice `L` divided by ``2N``, where ``N`` is the dimensions of ``Sp(N)``. In this case, ``N = 2``.
 """
-function averageplaquette(L::Lattice{D}, inds::Indices{D}; log = false) where D
-	log && @info "Measuring average plaquette..."
+function averageplaquette(L::Lattice{D}, inds::Indices{D}; log = false, iter = missing) where D
+	log && @info "Measuring average plaquette..." iter
 	current_workers = [w for w in procs(L)]
 	n_current_workers = length(current_workers)
 	# initialize a vector with nworkers() elements, of which each worker owns one cell
@@ -30,7 +30,7 @@ averageplaquette(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}; kwargs...) where D =
 averageplaquette(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D = averageplaquette(T.lattice, T.inds; kwargs...)
 
 """
-	susceptibility(L::Lattice{D}; log = false) where D
+	susceptibility(L::Lattice{D}; log = false, iter = missing) where D
 	susceptibility(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}; kwargs...) where D
 	susceptibility(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D
 Return the susceptibility χ of the lattice `L`, defined as \
@@ -38,8 +38,8 @@ Return the susceptibility χ of the lattice `L`, defined as \
 
 Can be called with the symbol `χ`.
 """
-function susceptibility(L::Lattice{D}; log = false) where D
-	log && @info "Measuring susceptibility..."
+function susceptibility(L::Lattice{D}; log = false, iter = missing) where D
+	log && @info "Measuring susceptibility..." iter
 	
 	sum(all_ploops(L) .^ 2)
 end
@@ -52,7 +52,7 @@ See `susceptibility`.
 χ = susceptibility
 
 """
-	binder(L::Lattice{D}; log = false) where D
+	binder(L::Lattice{D}; log = false, iter = missing) where D
 	binder(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}; kwargs...) where D
 	binder(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D.
 Return the Binder cumulant of the lattice `L`, defined as \
@@ -60,8 +60,8 @@ Return the Binder cumulant of the lattice `L`, defined as \
 
 Can be called with the symbol `gᵣ`.
 """
-function binder(L::Lattice{D}; log = false) where D
-	log && @info "Measuring Binder cumulant..."
+function binder(L::Lattice{D}; log = false, iter = missing) where D
+	log && @info "Measuring Binder cumulant..." iter
 	
 	loops = all_ploops(L)
 	Vₛ = length(loops) # spatial volume
@@ -79,13 +79,13 @@ See `binder`.
 gᵣ = binder
 
 """
-	expval_ploop(L::Lattice{D}; log = false) where D
+	expval_ploop(L::Lattice{D}; log = false, iter = missing) where D
 	expval_ploop(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}; kwargs...) where D
 	expval_ploop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D
 Return the expectation value of the Polyakov loop of the lattice `L`.
 """
 function expval_ploop(L::Lattice{D}; log = false) where D
-	log && @info "Measuring exp. value of Polyakov loops..."
+	log && @info "Measuring exp. value of Polyakov loops..." iter
 
 	res = sum((all_ploops(L))) # sum of the traces of all polyakov loops
 	Vₛ = prod(tail(size(L))) # volume of the space slice of the lattice L
@@ -96,13 +96,13 @@ expval_ploop(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}; kwargs...) where D = exp
 expval_ploop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D = expval_ploop(T.lattice; kwargs...)
 
 """
-	expval_modploop(L::Lattice{D}; log = false) where D
+	expval_modploop(L::Lattice{D}; log = false, iter = missing) where D
 	expval_modploop(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}; kwargs...) where D
 	expval_modploop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D
 Return the expectation value of the modulus the Polyakov loop of the lattice `L`.
 """
-function expval_modploop(L::Lattice{D}; log = false) where D
-	log && @info "Measuring exp. value of Polyakov loops..."
+function expval_modploop(L::Lattice{D}; log = false, iter = missing) where D
+	log && @info "Measuring exp. value of Polyakov loops..." iter
 
 	res = sum(abs.(all_ploops(L))) # sum of the absolute value of the traces of all polyakov loops
 	Vₛ = prod(tail(size(L))) # volume of the space slice of the lattice L
@@ -113,7 +113,7 @@ expval_modploop(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}; kwargs...) where D = 
 expval_modploop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D = expval_modploop(T.lattice; kwargs...)
 
 """
-	ploop(L::Lattice{D}, x::NTuple{Dm1, Int}; log = false) where {D, Dm1}
+	ploop(L::Lattice{D}, x::NTuple{Dm1, Int}; log = false, iter = missing) where {D, Dm1}
 	ploop(L, x; kwargs...) = ploop(L, Tuple(x); kwargs...)
 	ploop(L, x...; kwargs...) = ploop(L, Tuple(x); kwargs...)
 	ploop(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}, x; kwargs...) where D = ploop(T[1], x; kwargs...)
@@ -123,7 +123,7 @@ Return the Polyakov loop calculated at spatial point `x` of the lattice `L`. `x`
 function ploop(L::Lattice{D}, x::NTuple{Dm1, Int}; log = false) where {D, Dm1}
 	Dm1 ≠ D-1 && throw(TypeError(ploop, NTuple{D-1, Int}, NTuple{Dm1, Int}))
 
-	log && @info "Measuring Polyakov loop at $x..."
+	log && @info "Measuring Polyakov loop at $x..." iter
 
 	all_ploops(L)[x...]
 end
@@ -133,7 +133,7 @@ ploop(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}, x; kwargs...) where D = ploop(T
 ploop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}, x; kwargs...) where D = ploop(T.lattice, x; kwargs...)
 
 """
-	corr_ploop(L::Lattice{D}, x::NTuple{Dm1, Int}, y::NTuple{Dm1, Int}; log = false) where {D, Dm1}
+	corr_ploop(L::Lattice{D}, x::NTuple{Dm1, Int}, y::NTuple{Dm1, Int}; log = false, iter = missing) where {D, Dm1}
 	corr_ploop(L, x, y; kwargs...) = corr_ploop(L, Tuple(x), Tuple(y); kwargs...)
 	corr_ploop(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}, x, y; kwargs...) where D = corr_ploop(T[1], x, y; kwargs...)
 	corr_ploop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}, x, y; kwargs...) where D = corr_ploop(T.lattice, x, y; kwargs...)
@@ -142,7 +142,7 @@ Return the two point correlation function of the Polyakov loops at points `x` an
 function corr_ploop(L::Lattice{D}, x::NTuple{Dm1, Int}, y::NTuple{Dm1, Int}; log = false) where {D, Dm1}
 	Dm1 ≠ D-1 && throw(TypeError(ploop, NTuple{D-1, Int}, NTuple{Dm1, Int}))
 
-	log && @info "Measuring two point correlation function of Polyakov loops at $x and $y..."
+	log && @info "Measuring two point correlation function of Polyakov loops at $x and $y..." iter
 
 	loops = all_ploops(L)
 	loops[x...] * loops[y...]
