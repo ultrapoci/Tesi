@@ -1,13 +1,15 @@
 module DistributedQCD
 
 using Distributed, DistributedArrays, StaticArrays, LinearAlgebra, Distributions
+using Base: tail
+using BlockArrays: mortar
 
 export @everywhere, workers, nworkers, initprocs, with_workers, @maybe_threaded
 export SU2, asmatrix, normalizeSU2, normalizeSU2det
 export Sp2, asmatrix, normalizeSp2
 export Mask, Indices, Site, LocalLattice, Lattice, newlattice, evenmask, oddmask, indices
 export one_termalization!
-export averageplaquette, polyakovloop
+export averageplaquette, ploop, corr_ploop, expval_ploop, expval_modploop, susceptibility, χ, binder, gᵣ
 
 """
 	initprocs(n; threads = "1", kwargs...)
@@ -21,7 +23,7 @@ initprocs(n; threads = "1", kwargs...) = addprocs(n; exeflags = "--threads=$thre
 Spawn a task calling `f()` for each process in `workers()`. Useful with the `do end` statement to run a function on all processes exactly once.
 `f` takes the id of the worker as the only argument.
 """
-with_workers(f, args...) = @sync for w in workers()
+with_workers(f, args...; procs = workers()) = @sync for w in procs
 	@spawnat w f(w, args...)
 end
 
