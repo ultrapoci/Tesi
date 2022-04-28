@@ -9,7 +9,7 @@ export SU2, asmatrix, normalizeSU2, normalizeSU2det
 export Sp2, asmatrix, normalizeSp2
 export Mask, Indices, Site, LocalLattice, Lattice, newlattice, evenmask, oddmask, indices
 export one_termalization!
-export averageplaquette, ploop, corr_ploop, expval_ploop, expval_modploop, susceptibility, χ, binder, gᵣ
+export averageplaquette, polyloop, corr_polyloop, expval_polyloop, expval_modpolyloop, susceptibility, χ, binder, gᵣ
 
 """
 	initprocs(n; threads = "1", kwargs...)
