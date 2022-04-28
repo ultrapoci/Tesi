@@ -4,7 +4,10 @@ Base.@kwdef struct ObsParams <: Params
 	save_dat = true
 	save_jld2 = true
 	save_df = true
-	observables = "avg_plaq" => averageplaquette
+	observables = (
+		"avg_plaq" => averageplaquette,
+		"mod_polyloop" => expval_modpolyloop
+	)
 end
 
 Base.@kwdef struct TermParams <: Params
