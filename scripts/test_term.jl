@@ -1,61 +1,66 @@
 using DrWatson
 @quickactivate "Tesi"
 
-includet(srcdir("CabibboMarinari.jl"))
+# QCD and DistributedQCD are local packages
+import QCD as Q
+import DistributedQCD as DQ
+import Term.progress
+import Distributed: rmprocs
 
-# QCD is a local package
-using QCD
-using Term.progress
-import ProgressMeter
-
-function one_termalization!(L::Lattice)
-	lattice_overrelaxation!(L, 3)
-	lattice_heatbath!(L, 1.0)
-	lattice_normalization!(L)
+function one_termalization!(L::Q.Lattice)
+	Q.lattice_overrelaxation!(L, 3)
+	Q.lattice_heatbath!(L, 1.0)
+	Q.lattice_normalization!(L)
 end
 
-#=
-when calling this function, the blue header shows up
-but the progress bar doesn't. The bar is shown at 100%
-completion after the loop finishes.
-=#
-function test1!(L::Lattice)
-	@track for i in 1:20
+function testQ!(L)
+	progress.@track for i in 1:20
 		one_termalization!(L)
 	end
 end
 
-#=
-ProgressMeter.jl works as intended, and shows that the loop
-doesn't finish in so little time that the progress bar cannot
-appear fast enough. 
-=#
-function test2!(L::Lattice)
-	ProgressMeter.@showprogress 1 for n in 1:100
-		#lattice_overrelaxation!(L, 3)
-		lattice_heatbath!(L, 1.0)
-		lattice_normalization!(L)
+function testQsleep!(L)
+	progress.@track for i in 1:20
+		sleep(0.01)
+		one_termalization!(L)
 	end
 end
 
-##
-
-L = Lattice(4, 4, 4)
-test1!(L)
-#test2!(L)
-
-##
-
-very_slow_fn() = sleep(10)
-slow_fn() = sleep(1)
-
-function mytest()
-	@track for n in 1:10
-		n == 1 && very_slow_fn()
-		slow_fn()
+function testDQ!(L)
+	progress.@track for i in 1:20
+		DQ.one_termalization!(L, 3, 1.0, true)
 	end
 end
 
-##
+function testDQsleep!(L)
+	progress.@track for i in 1:20
+		sleep(0.01)
+		DQ.one_termalization!(L, 3, 1.0, true)
+	end
+end
 
-mytest()
+## Old algorithm
+
+LQ = Q.Lattice(4, 4, 4)
+@info "Without sleep"
+testQ!(LQ) # doesn't show the progress bar
+
+@info "With sleep"
+testQsleep!(LQ) # shows the progress bar
+
+## New algorithm
+
+DQ.nworkers() == 1 && DQ.initprocs(4)
+DQ.@everywhere using DrWatson
+DQ.@everywhere @quickactivate "Tesi"
+DQ.@everywhere import DistributedQCD
+
+LDQ = DQ.newlattice(4, 4, 4)
+
+@info "Without sleep"
+testDQ!(LDQ) # shows the progress bar
+
+@info "With sleep"
+testDQsleep!(LDQ) # shows the progress bar
+
+rmprocs(DQ.workers())
