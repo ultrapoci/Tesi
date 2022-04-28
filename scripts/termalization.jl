@@ -1,8 +1,16 @@
 using DrWatson
 @quickactivate "Tesi"
 
+if "TERMALIZATION_LOG" ∉ keys(ENV)
+	ENV["TERMALIZATION_LOG"] = "0"
+end
+
+if "TERMALIZATION_NPROCS" ∉ keys(ENV)
+	ENV["TERMALIZATION_NPROCS"] = "4"
+end
+
 using DistributedQCD
-nworkers() == 1 && initprocs(4)
+nworkers() == 1 && initprocs(parse(Int, ENV["TERMALIZATION_NPROCS"]))
 @everywhere using DrWatson 
 @everywhere @quickactivate "Tesi"
 @everywhere using DistributedQCD
@@ -11,10 +19,6 @@ using Plots, DataFrames, Measurements
 
 include(srcdir("Utilities.jl"))
 include(scriptsdir("parameters.jl"))
-
-if "LOG_TERMALIZATION" ∉ keys(ENV)
-	ENV["LOG_TERMALIZATION"] = "0"
-end
 
 
 #* ===== TERMALIZATION =====
@@ -46,12 +50,12 @@ function termalization!(L, params, observable::Function, v::Vector; log = false)
 	for n in 1:nterm
 		log && @info "Termalization" n nterm
 		one_termalization!(L, nover, β, n % nnorm == 0; log = log, iter = n)
-		n % nobs == 0 && push!(v, observable(L))
+		n % nobs == 0 && push!(v, observable(L; log = log, iter = n))
 		next!(pbar, showvalues = generate_showvalues(:iter => n, :total => nterm))
 	end
 	
 	# make sure the last iteration is measured
-	nterm % nobs ≠ 0 && push!(v, observable(L))
+	nterm % nobs ≠ 0 && push!(v, observable(L; log = log, iter = n))
 end
 
 function termalization(params, observable::Function; kwargs...)
@@ -70,12 +74,12 @@ function termalization!(L, params, observables, v; log = false)
 	for n in 1:nterm
 		log && @info "Termalization" n nterm
 		one_termalization!(L, nover, β, n % nnorm == 0; log = log, iter = n)
-		n % nobs == 0 && push!(v, [obs(L) for obs in observables])
+		n % nobs == 0 && push!(v, [obs(L; log = log, iter = n) for obs in observables])
 		next!(pbar, showvalues = generate_showvalues(:iter => n, :total => nterm))
 	end
 
 	# make sure the last iteration is measured
-	nterm % nobs ≠ 0 && push!(v, [obs(L) for obs in observables])
+	nterm % nobs ≠ 0 && push!(v, [obs(L; log = log, iter = n) for obs in observables])
 end
 
 function termalization(params, observables; kwargs...)
@@ -101,7 +105,7 @@ function run(allparams::TermParams, obsparams::ObsParams, folder = "")
 		display(params)
 		d = Dict(params)
 
-		obsmeasurements, = termalization(params, obsfunctions, log = ENV["LOG_TERMALIZATION"] == "1")
+		obsmeasurements, = termalization(params, obsfunctions, log = ENV["TERMALIZATION_LOG"] == "1")
 
 		for (obsmeasurement, obsname) in zip(eachcol(obsmeasurements), obsnames)
 			obsmean, obserror = incrementalmean(obsmeasurement, meanoffset)
