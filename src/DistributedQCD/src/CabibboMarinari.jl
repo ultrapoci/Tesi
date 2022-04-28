@@ -80,7 +80,8 @@ The named tuple returned by the function `newlattice` can be passed directly as 
 function overrelaxation!(L::Lattice{D}, evenmask::Mask{D}, inds::Indices{D}, nover::Int; log = false, iter = missing) where D
 	for i in 1:nover, parity in (:even, :odd), u in 1:D
 		log && @info "Overrelaxation" iter cycle=i parity direction=u
-		with_workers() do _
+		
+		with_workers(procs = vec(procs(L))) do _
 			mask = parity == :even ? evenmask[:L] : .!evenmask[:L]
 
 			# filters indices using the mask `mask`
@@ -106,7 +107,8 @@ Same as `overrelaxation`, only it applies the heat-bath algorithm to the lattice
 function heatbath!(L::Lattice{D}, evenmask::Mask{D}, inds::Indices{D}, β::Real; log = false, iter = missing) where D
 	for parity in (:even, :odd), u in 1:D
 		log && @info "Heat-bath" iter parity direction=u
-		with_workers() do _
+
+		with_workers(procs = vec(procs(L))) do _
 			mask = parity == :even ? evenmask[:L] : .!evenmask[:L]
 
 			# filters indices using the mask `mask`
@@ -129,7 +131,8 @@ Normalize all links in the lattice `L` to make sure they belong to ``\\mathrm{Sp
 """
 function normalizelattice!(L::Lattice{D}; log = false, iter = missing) where D
 	log && @info "Normalizing..." iter
-	with_workers() do _
+
+	with_workers(procs = vec(procs(L))) do _
 		@maybe_threaded for u in 1:D
 			for x in eachindex(L[:L])
 				L[:L][x][u] = normalizeSp2(L[:L][x][u])
