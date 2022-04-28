@@ -119,14 +119,14 @@ expval_modpolyloop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mas
 	polyloop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}, x; kwargs...) where D = polyloop(T.lattice, x; kwargs...)
 Return the Polyakov loop calculated at spatial point `x` of the lattice `L`. `x` must be compatible with `L`'s spatial dimensions.
 """
-function polyloop(L::Lattice{D}, x::NTuple{Dm1, Int}; log = false) where {D, Dm1}
+function polyloop(L::Lattice{D}, x::NTuple{Dm1, Int}; log = false, iter = missing) where {D, Dm1}
 	Dm1 ≠ D-1 && throw(TypeError(corr_loop, CartesianIndex{D-1}, CartesianIndex{Dm1}))
 
-	log && @info "Measuring Polyakov loop at $x..."
+	log && @info "Measuring Polyakov loop at $x..." iter
 
 	current_workers = vec(procs(L)) # vector of workers that own L
 	dist = size(procs(L)) # how are partitions distributed among workers
-	X = distribute(Array{Union{Sp2, Missing}}(undef, dist...), procs = current_workers, dist = [dist...])
+	X = distribute(Array{Union{Sp2, Missing}}(undef, dist...), procs = current_workers, dist = collect(dist))
 	
 	with_workers(procs = current_workers) do _
 		if all(x .∈ tail(localindices(L)))
@@ -156,15 +156,15 @@ polyloop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indi
 	corr_polyloop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}, x, y; kwargs...) where D = corr_polyloop(T.lattice, x, y; kwargs...)
 Return the two point correlation function of the Polyakov loops at points `x` and `y`, which must be compatible with the spatial dimensions of the lattice `L`.
 """
-function corr_polyloop(L::Lattice{D}, x::NTuple{Dm1, Int}, y::NTuple{Dm1, Int}; log = false) where {D, Dm1}
+function corr_polyloop(L::Lattice{D}, x::NTuple{Dm1, Int}, y::NTuple{Dm1, Int}; log = false, iter = missing) where {D, Dm1}
 	Dm1 ≠ D-1 && throw(TypeError(corr_loop, CartesianIndex{D-1}, CartesianIndex{Dm1}))
 
-	log && @info "Measuring Polyakov loop at $x..."
+	log && @info "Measuring Polyakov loop at $x..." iter
 
 	current_workers = vec(procs(L)) # vector of workers that own L
 	dist = size(procs(L)) # how are partitions distributed among workers
-	X = distribute(Array{Union{Sp2, Missing}}(undef, dist...), procs = current_workers, dist = [dist...])
-	Y = distribute(Array{Union{Sp2, Missing}}(undef, dist...), procs = current_workers, dist = [dist...])
+	X = distribute(Array{Union{Sp2, Missing}}(undef, dist...), procs = current_workers, dist = collect(dist))
+	Y = distribute(Array{Union{Sp2, Missing}}(undef, dist...), procs = current_workers, dist = collect(dist))
 	
 	with_workers(procs = current_workers) do _
 		time_direction = [l[1] for l in L[:L]]
