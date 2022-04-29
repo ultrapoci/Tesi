@@ -23,12 +23,13 @@ newlattice(dims::Vararg{Int, D}; kwargs...) where D = newlattice(Tuple(dims); kw
 addtuple(n::Int, d::Int, p::Tuple{Vararg{Int}}) = tuple(p[begin:d-1]..., p[d]+n, p[d+1:end]...)
 addtuple(n::Int, d::Int, p::Vararg{Int}) = addtuple(n, d, Tuple(p))
 
-function getlink(L::Lattice{D}, u::Int, x::NTuple{D, Int}) where D
+function getlink(L::Lattice{D}, u::Int, x::NTuple{D, Int})::Sp2 where D
 	if u ∈ 1:D
 		p = CartesianIndex(mod1.(x, size(L)))
 		@inbounds L[p][u]
 	elseif u ∈ -D:-1
-		p = CartesianIndex(mod1.(addtuple(-1, -u, x), size(L)))
+		x̄::NTuple{D, Int} = addtuple(-1, -u, x)
+		p = CartesianIndex(mod1.(x̄, size(L)))
 		@inbounds L[p][-u]'
 	else
 		throw(ArgumentError("Link direction for lattice must be in range [1, $D] or [-$D, -1]. Got u = $u"))
@@ -79,7 +80,7 @@ end
 staple(L::Lattice{D}, v::Int, u::Int, x::Vararg{Int, D}) where D = staple(L, v, u, Tuple(x))
 staple(L::Lattice{D}, v::Int, u::Int, x::CartesianIndex{D}) where D = staple(L, v, u, Tuple(x))
 
-function sumstaples(L::Lattice{D}, u::Int, x::NTuple{D, Int}) where D
+function sumstaples(L::Lattice{D}, u::Int, x::NTuple{D, Int})::MMatrix{4, 4, ComplexF64} where D
 	if u ∉ 1:D
 		throw(ArgumentError("Link's direction u must be in range [1, D], got $u."))	
 	end

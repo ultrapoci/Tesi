@@ -35,7 +35,7 @@ function generate_a0(k::Real, β::Real)
 	a₀
 end
 
-function randomSU2(k::Real, β::Real)
+function randomSU2(k::Real, β::Real)::SU2
 	a₀ = generate_a0(k, β)
 	ϕ = rand(Uniform(0.0, 2π))
 	θ = acos(rand(Uniform(-1.0, 1.0)))
@@ -49,19 +49,19 @@ function randomSU2(k::Real, β::Real)
 	SU2(complex(a₀, a₃), complex(a₂, a₁))
 end
 
-function touch_overrelaxation(S::Sp2, R::StaticMatrix{4, 4, ComplexF64})
-	U = S
+function touch_overrelaxation(S::Sp2, R::StaticMatrix{4, 4, ComplexF64})::Sp2
+	U::Sp2 = S
 	for (to_su2, from_su2) in subrepresentations
-		a, _ = to_su2(U * R)
+		a::SU2, _ = to_su2(U * R)
 		U = from_su2(a^-2) * U
 	end
 	U
 end
 
-function touch_heatbath(S::Sp2, R::StaticMatrix{4, 4, ComplexF64}, β::Real)
-	U = S
+function touch_heatbath(S::Sp2, R::StaticMatrix{4, 4, ComplexF64}, β::Real)::Sp2
+	U::Sp2 = S
 	for (to_su2, from_su2) in subrepresentations
-		a, k = to_su2(U * R)
+		a::SU2, k::Real = to_su2(U * R)
 		a = randomSU2(k, β) * a^-1
 		U = from_su2(a) * U
 	end
@@ -86,7 +86,7 @@ function overrelaxation!(L::Lattice{D}, evenmask::Mask{D}, inds::Indices{D}, nov
 
 			# filters indices using the mask `mask`
 			@maybe_threaded for x in CartesianIndices(L[:L])[mask] # x is the position of the link in the local array
-				link = L[:L][x][u]
+				link::Sp2 = L[:L][x][u]
 				R = sumstaples(L, u, inds[:L][x]) # inds[:L][x] is the position of the link in the global array 
 				L[:L][x][u] = touch_overrelaxation(link, R)
 			end
@@ -113,7 +113,7 @@ function heatbath!(L::Lattice{D}, evenmask::Mask{D}, inds::Indices{D}, β::Real;
 
 			# filters indices using the mask `mask`
 			@maybe_threaded for x in CartesianIndices(L[:L])[mask] # x is the position of the link in the local array
-				link = L[:L][x][u]
+				link::Sp2 = L[:L][x][u]
 				R = sumstaples(L, u, inds[:L][x]) # inds[:L][x] is the position of the link in the global array 
 				L[:L][x][u] = touch_heatbath(link, R, β)
 			end
