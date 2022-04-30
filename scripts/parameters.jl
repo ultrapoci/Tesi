@@ -1,16 +1,14 @@
 Base.@kwdef struct ObsParams <: Params
 	save_plot = false
-	display_plot = true
+	display_plot = false
 	save_dat = false
 	save_jld2 = false
 	save_df = false
 	observables = (
 		#"avg_plaq" => averageplaquette,
 		#"mod_polyloop" => expval_modpolyloop,
-		"sum * V" => (L; kwargs...) -> sum(DistributedQCD.all_polyloops(L) .^ 2) * 512,
-		"sum" => (L; kwargs...) -> sum(DistributedQCD.all_polyloops(L) .^ 2),
-		"sum / V" => (L; kwargs...) -> sum(DistributedQCD.all_polyloops(L) .^ 2) / 512,
-		"sum / V²" => (L; kwargs...) -> sum(DistributedQCD.all_polyloops(L) .^ 2) / 512^2,
+		"χ" => susceptibility,
+		"χᵥ" => susceptibility_pervolume,
 	)
 end
 

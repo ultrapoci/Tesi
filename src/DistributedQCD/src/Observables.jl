@@ -39,8 +39,9 @@ Can be called with the symbol `χ`.
 """
 function susceptibility(L::Lattice{D}; log = false, iter = missing) where D
 	log && @info "Measuring susceptibility..." iter
-	
-	sum(all_polyloops(L) .^ 2) / (prod(tail(size(L))))
+	#sum(all_polyloops(L) .^ 2) #/ (prod(tail(size(L))))
+	loops = all_polyloops(L)
+	sum(loops[begin] * loops[x] for x in eachindex(loops))
 end
 susceptibility(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}; kwargs...) where D = susceptibility(T[1]; kwargs...)
 susceptibility(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D = susceptibility(T.lattice; kwargs...)
@@ -60,8 +61,8 @@ Can be called with the symbol `χᵥ`.
 """
 function susceptibility_pervolume(L::Lattice{D}; log = false, iter = missing) where D
 	log && @info "Measuring susceptibility per volume..." iter
-	
-	sum(all_polyloops(L) .^ 2) / (prod(tail(size(L))))^2
+	# sum(all_polyloops(L) .^ 2) / (prod(tail(size(L))))#^2
+	susceptibility(L) / prod(tail(size(L)))
 end
 susceptibility_pervolume(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}; kwargs...) where D = susceptibility_pervolume(T[1]; kwargs...)
 susceptibility_pervolume(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D = susceptibility_pervolume(T.lattice; kwargs...)
@@ -168,8 +169,8 @@ function polyloop(L::Lattice{D}, inds::Indices{D}, x::NTuple{Dm1, Int}; log = fa
 end
 polyloop(L, inds, x; kwargs...) = polyloop(L, inds, Tuple(x); kwargs...)
 polyloop(L, inds, x...; kwargs...) = polyloop(L, inds, Tuple(x); kwargs...)
-polyloop(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}, x; kwargs...) where D = polyloop(T[1], T[3], x; kwargs...)
-polyloop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}, x; kwargs...) where D = polyloop(T.lattice, T.inds, x; kwargs...)
+polyloop(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}, x...; kwargs...) where D = polyloop(T[1], T[3], x...; kwargs...)
+polyloop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}, x...; kwargs...) where D = polyloop(T.lattice, T.inds, x...; kwargs...)
 
 """
 	corr_polyloop(L::Lattice{D}, x::NTuple{Dm1, Int}, y::NTuple{Dm1, Int}; log = false, iter = missing) where {D, Dm1}
