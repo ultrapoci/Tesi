@@ -9,19 +9,20 @@ export SU2, asmatrix, normalizeSU2, normalizeSU2det
 export Sp2, asmatrix, normalizeSp2
 export Mask, Indices, Site, LocalLattice, Lattice, newlattice, evenmask, oddmask, indices
 export one_termalization!
-export averageplaquette, polyloop, corr_polyloop, expval_polyloop, expval_modpolyloop, susceptibility, χ, binder, gᵣ
+export averageplaquette, polyloop, corr_polyloop, expval_polyloop, expval_modpolyloop, susceptibility, χ, susceptibility_pervolume, χᵥ, binder, gᵣ
 
 """
-	initprocs(n; threads = "1", kwargs...)
+	initprocs(n; threads = 1, kwargs...)
 Call `addprocs` with `n` processes and the flag `exeflags="--threads=..."`, where the value of `--threads` is decided by the `threads` argument. \
 All other `kwargs` are passed to `addprocs`.
 """
-initprocs(n; threads = "1", kwargs...) = addprocs(n; exeflags = "--threads=$threads", kwargs...)
+initprocs(n; threads = 1, kwargs...) = addprocs(n; exeflags = "--threads=$threads", kwargs...)
 
 """
-	with_workers(f)
-Spawn a task calling `f()` for each process in `workers()`. Useful with the `do end` statement to run a function on all processes exactly once.
-`f` takes the id of the worker as the only argument.
+	with_workers(f, args...; procs = workers())
+Spawn a task calling `f(w, args...)` for each process in `workers()`. Useful with the `do end` statement to run a function on all processes exactly once.
+`f` takes `w`, the id of the worker,  as the first argument. `procs` is the list of processes that run `f`, defaults to all processes. The main worker will wait for all \
+processes to finish before continuing.
 """
 with_workers(f, args...; procs = workers()) = @sync for w in procs
 	@spawnat w f(w, args...)
@@ -45,4 +46,4 @@ include("Lattice.jl")
 include("CabibboMarinari.jl")
 include("Observables.jl")
 
-end # module StaticQCD
+end # module DistributedQCD
