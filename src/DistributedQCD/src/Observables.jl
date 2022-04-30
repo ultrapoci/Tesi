@@ -40,7 +40,7 @@ Can be called with the symbol `χ`.
 function susceptibility(L::Lattice{D}; log = false, iter = missing) where D
 	log && @info "Measuring susceptibility..." iter
 	
-	sum(all_polyloops(L) .^ 2)
+	sum(all_polyloops(L) .^ 2) / (prod(tail(size(L))))
 end
 susceptibility(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}; kwargs...) where D = susceptibility(T[1]; kwargs...)
 susceptibility(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D = susceptibility(T.lattice; kwargs...)
@@ -49,6 +49,27 @@ susceptibility(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}
 See `susceptibility`.
 """
 χ = susceptibility
+
+"""
+	susceptibility_pervolume(L::Lattice{D}; log = false, iter = missing) where D
+	susceptibility_pervolume(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}; kwargs...) where D
+	susceptibility_pervolume(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D
+Return the susceptibility χ of the lattice `L` divided by the lattice spatial volume.
+
+Can be called with the symbol `χᵥ`.
+"""
+function susceptibility_pervolume(L::Lattice{D}; log = false, iter = missing) where D
+	log && @info "Measuring susceptibility per volume..." iter
+	
+	sum(all_polyloops(L) .^ 2) / (prod(tail(size(L))))^2
+end
+susceptibility_pervolume(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}; kwargs...) where D = susceptibility_pervolume(T[1]; kwargs...)
+susceptibility_pervolume(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D = susceptibility_pervolume(T.lattice; kwargs...)
+
+"""
+See `susceptibility_pervolume`.
+"""
+χᵥ = susceptibility_pervolume
 
 """
 	binder(L::Lattice{D}; log = false, iter = missing) where D
@@ -119,7 +140,7 @@ expval_modpolyloop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mas
 	polyloop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}, x; kwargs...) where D = polyloop(T.lattice, x; kwargs...)
 Return the Polyakov loop calculated at spatial point `x` of the lattice `L`. `x` must be compatible with `L`'s spatial dimensions.
 """
-function polyloop(L::Lattice{D}, x::NTuple{Dm1, Int}; log = false, iter = missing) where {D, Dm1}
+function polyloop(L::Lattice{D}, inds::Indices{D}, x::NTuple{Dm1, Int}; log = false, iter = missing) where {D, Dm1}
 	Dm1 ≠ D-1 && throw(TypeError(corr_loop, CartesianIndex{D-1}, CartesianIndex{Dm1}))
 
 	log && @info "Measuring Polyakov loop at $x..." iter
@@ -131,7 +152,8 @@ function polyloop(L::Lattice{D}, x::NTuple{Dm1, Int}; log = false, iter = missin
 	with_workers(procs = current_workers) do _
 		if all(x .∈ tail(localindices(L)))
 			time_direction = [l[1] for l in L[:L]]
-			X[:L][begin] = prod(time_direction[:, x...])
+			local_x = tail(Tuple(findfirst(i -> tail(Tuple(i)) == x, inds[:L])))
+			X[:L][begin] = prod(time_direction[:, local_x...])
 		end
 	end
 	loc = convert(Array, X)
@@ -144,10 +166,10 @@ function polyloop(L::Lattice{D}, x::NTuple{Dm1, Int}; log = false, iter = missin
 		end
 	end
 end
-polyloop(L, x; kwargs...) = polyloop(L, Tuple(x); kwargs...)
-polyloop(L, x...; kwargs...) = polyloop(L, Tuple(x); kwargs...)
-polyloop(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}, x; kwargs...) where D = polyloop(T[1], x; kwargs...)
-polyloop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}, x; kwargs...) where D = polyloop(T.lattice, x; kwargs...)
+polyloop(L, inds, x; kwargs...) = polyloop(L, inds, Tuple(x); kwargs...)
+polyloop(L, inds, x...; kwargs...) = polyloop(L, inds, Tuple(x); kwargs...)
+polyloop(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}, x; kwargs...) where D = polyloop(T[1], T[3], x; kwargs...)
+polyloop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}, x; kwargs...) where D = polyloop(T.lattice, T.inds, x; kwargs...)
 
 """
 	corr_polyloop(L::Lattice{D}, x::NTuple{Dm1, Int}, y::NTuple{Dm1, Int}; log = false, iter = missing) where {D, Dm1}
@@ -156,10 +178,10 @@ polyloop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indi
 	corr_polyloop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}, x, y; kwargs...) where D = corr_polyloop(T.lattice, x, y; kwargs...)
 Return the two point correlation function of the Polyakov loops at points `x` and `y`, which must be compatible with the spatial dimensions of the lattice `L`.
 """
-function corr_polyloop(L::Lattice{D}, x::NTuple{Dm1, Int}, y::NTuple{Dm1, Int}; log = false, iter = missing) where {D, Dm1}
+function corr_polyloop(L::Lattice{D}, inds::Indices{D}, x::NTuple{Dm1, Int}, y::NTuple{Dm1, Int}; log = false, iter = missing) where {D, Dm1}
 	Dm1 ≠ D-1 && throw(TypeError(corr_loop, CartesianIndex{D-1}, CartesianIndex{Dm1}))
 
-	log && @info "Measuring Polyakov loop at $x..." iter
+	log && @info "Measuring correlation function of Polyakov loops at $x and $y..." iter
 
 	current_workers = vec(procs(L)) # vector of workers that own L
 	dist = size(procs(L)) # how are partitions distributed among workers
@@ -169,10 +191,12 @@ function corr_polyloop(L::Lattice{D}, x::NTuple{Dm1, Int}, y::NTuple{Dm1, Int}; 
 	with_workers(procs = current_workers) do _
 		time_direction = [l[1] for l in L[:L]]
 		if all(x .∈ tail(localindices(L)))
-			X[:L][begin] = prod(time_direction[:, x...])
+			local_x = tail(Tuple(findfirst(i -> tail(Tuple(i)) == x, inds[:L])))
+			X[:L][begin] = prod(time_direction[:, local_x...])
 		end
 		if all(y .∈ tail(localindices(L)))
-			Y[:L][begin] = prod(time_direction[:, y...])
+			local_y = tail(Tuple(findfirst(i -> tail(Tuple(i)) == y, inds[:L])))
+			Y[:L][begin] = prod(time_direction[:, local_y...])
 		end
 	end
 	locX = convert(Array, X)
@@ -193,9 +217,9 @@ function corr_polyloop(L::Lattice{D}, x::NTuple{Dm1, Int}, y::NTuple{Dm1, Int}; 
 
 	trX * trY
 end
-corr_polyloop(L, x, y; kwargs...) = corr_polyloop(L, Tuple(x), Tuple(y); kwargs...)
-corr_polyloop(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}, x, y; kwargs...) where D = corr_polyloop(T[1], x, y; kwargs...)
-corr_polyloop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}, x, y; kwargs...) where D = corr_polyloop(T.lattice, x, y; kwargs...)
+corr_polyloop(L, inds, x, y; kwargs...) = corr_polyloop(L, inds, Tuple(x), Tuple(y); kwargs...)
+corr_polyloop(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}, x, y; kwargs...) where D = corr_polyloop(T[1], T[3], x, y; kwargs...)
+corr_polyloop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}, x, y; kwargs...) where D = corr_polyloop(T.lattice, T.inds, x, y; kwargs...)
 
 """
 	all_polyloops(L::Lattice{D}) where D
@@ -218,10 +242,11 @@ function all_polyloops(L::Lattice{D}) where D
 	end
 	loc = convert(Array, partial) # bring partial into local process
 	spacedist = tail(dist) # distrbutions of the space indices
+	Vₛ = prod(tail(size(L))) # spatial volume
 
 	# product of each matrix of space points along the time axes. This is done because the time axes could be 
-	# divide into different processes, and we need to multiply every partial polyakov loop.
-	# w will be an array of arrays, one for each process, and each of these arrays
+	# divided into different processes, and we need to multiply every partial polyakov loop.
+	# list comprehension will be an array of arrays, one for each process, and each of these arrays
 	# contains the product of time-link link in each lattice's position belonging to that process.
 	# "mortar" transforms the array of arrays into a single array that corresponds to the spatial slice of L
 	tr.(convert(Array, mortar([reduce(.*, loc[:, x]) for x in CartesianIndices(spacedist)])))
