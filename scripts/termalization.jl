@@ -18,7 +18,7 @@ nworkers() == 1 && initprocs(parse(Int, ENV["TERMALIZATION_NPROCS"]))
 using Plots, DataFrames, Measurements
 
 include(srcdir("Utilities.jl"))
-include(scriptsdir("parameters.jl"))
+try includet(scriptsdir("parameters.jl")) catch; include(scriptsdir("parameters.jl")) end
 
 
 #* ===== TERMALIZATION =====
@@ -149,5 +149,5 @@ function run(allparams::TermParams, obsparams::ObsParams, folder = "")
 	df
 end
 
-run() = begin include(scriptsdir("parameters.jl")); run(TermParams(), ObsParams()) end
-run(s::String) = begin include(scriptsdir("parameters.jl")); run(TermParams(), ObsParams(), s) end
+run() = run(TermParams(), ObsParams())
+run(s::String) = run(TermParams(), ObsParams(), s)
