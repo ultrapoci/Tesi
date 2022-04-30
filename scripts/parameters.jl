@@ -1,19 +1,23 @@
 Base.@kwdef struct ObsParams <: Params
-	save_plot = true
-	display_plot = false
-	save_dat = true
-	save_jld2 = true
-	save_df = true
+	save_plot = false
+	display_plot = true
+	save_dat = false
+	save_jld2 = false
+	save_df = false
 	observables = (
-		"avg_plaq" => averageplaquette,
-		"mod_polyloop" => expval_modpolyloop
+		#"avg_plaq" => averageplaquette,
+		#"mod_polyloop" => expval_modpolyloop,
+		"sum * V" => (L; kwargs...) -> sum(DistributedQCD.all_polyloops(L) .^ 2) * 512,
+		"sum" => (L; kwargs...) -> sum(DistributedQCD.all_polyloops(L) .^ 2),
+		"sum / V" => (L; kwargs...) -> sum(DistributedQCD.all_polyloops(L) .^ 2) / 512,
+		"sum / V²" => (L; kwargs...) -> sum(DistributedQCD.all_polyloops(L) .^ 2) / 512^2,
 	)
 end
 
 Base.@kwdef struct TermParams <: Params
-	dims = (20, 20, 20)
+	dims = (2, 8, 8, 8)
 	#β = [i/2 for i in 1.0:15.0]
-	β = 1.0
+	β = 6.45 / 2
 	latticestart = :cold
 	sp2type = try Sp2ElementB catch; missing end
 	
