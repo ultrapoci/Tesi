@@ -9,7 +9,8 @@ Base.@kwdef struct ObsParams <: Params
 		"mod_polyloop" => expval_modpolyloop,
 		"χ" => susceptibility,
 		"χᵥ" => susceptibility_pervolume,
-		"polyloop squared over volume" => (L; kwargs...) -> sum(DistributedQCD.all_polyloops(L) .^ 2) / 8^3,
+		"action" => action,
+		"action_squared" => actionsquared,
 	)
 end
 
