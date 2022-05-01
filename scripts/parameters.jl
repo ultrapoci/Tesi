@@ -1,10 +1,10 @@
 Base.@kwdef struct ObsParams <: Params
-	save_plot = true
-	display_plot = true
-	save_dat = true
-	save_jld2 = true
-	save_df = true
-	observables = (
+	save_plot    = false
+	display_plot = false
+	save_dat     = false
+	save_jld2    = false
+	save_df      = false
+	observables  = (
 		"avg_plaq" => averageplaquette,
 		"mod_polyloop" => expval_modpolyloop,
 		"χ" => susceptibility,
@@ -16,7 +16,7 @@ end
 Base.@kwdef struct TermParams <: Params
 	dims = (2, 8, 8, 8)
 	#β = [i/2 for i in 1.0:15.0]
-	β = 6.45
+	β = 1.0
 	latticestart = :hot
 	sp2type = try Sp2ElementB catch; missing end
 	
