@@ -4,7 +4,7 @@
 	averageplaquette(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D
 Return the value of the average plaquette of the lattice `L` divided by ``2N``, where ``N`` is the dimensions of ``Sp(N)``. In this case, ``N = 2``.
 """
-function averageplaquette(L::Lattice{D}, inds::Indices{D}; log = false, iter = missing) where D
+function averageplaquette(L::Lattice{D}, inds::Indices{D}; log = false, iter = missing, kwargs...) where D
 	log && @info "Measuring average plaquette..." iter
 
 	current_workers = vec(procs(L))
@@ -36,7 +36,7 @@ Return the action for β = 8/g², defined as -2/g² times the sum over all trace
 """
 function action(L::Lattice{D}, inds::Indices{D}; β, log = false, iter = missing, kwargs...) where D
 	log && @info "Measuring action..." iter
-
+	
 	current_workers = vec(procs(L))
 	n_current_workers = length(current_workers)
 	# initialize a vector with nworkers() elements, of which each worker owns one cell
@@ -80,6 +80,7 @@ Can be called with the symbol `χ`.
 """
 function susceptibility(L::Lattice{D}; log = false, iter = missing, kwargs...) where D
 	log && @info "Measuring susceptibility..." iter
+
 	sum(all_polyloops(L) .^ 2)
 end
 susceptibility(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}; kwargs...) where D = susceptibility(T[1]; kwargs...)
@@ -100,7 +101,7 @@ Can be called with the symbol `χᵥ`.
 """
 function susceptibility_pervolume(L::Lattice{D}; log = false, iter = missing, kwargs...) where D
 	log && @info "Measuring susceptibility per volume..." iter
-	# sum(all_polyloops(L) .^ 2) / (prod(tail(size(L))))#^2
+
 	susceptibility(L) / prod(tail(size(L)))
 end
 susceptibility_pervolume(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}; kwargs...) where D = susceptibility_pervolume(T[1]; kwargs...)
