@@ -1,3 +1,7 @@
+#=
+* Observables accept any kwarg without throwing error, so that they can be called with a common interface.
+=#
+
 """
 	averageplaquette(L::Lattice{D}, inds::Indices{D}; log = false, iter = missing) where D
 	averageplaquette(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}; kwargs...) where D
