@@ -8,7 +8,7 @@
 	averageplaquette(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D
 Return the value of the average plaquette of the lattice `L` divided by ``2N``, where ``N`` is the dimensions of ``Sp(N)``. In this case, ``N = 2``.
 """
-function averageplaquette(L::Lattice{D}, inds::Indices{D}; log = false, iter = missing, kwargs...) where D
+function averageplaquette(L::Lattice{D}, inds::Indices{D}; log = false, iter = missing) where D
 	log && @info "Measuring average plaquette..." iter
 
 	current_workers = vec(procs(L))
@@ -38,7 +38,7 @@ averageplaquette(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{
 	action(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D
 Return the action for β = 8/g², defined as -2/g² times the sum over all traces of plaquettes.
 """
-function action(L::Lattice{D}, inds::Indices{D}; β, log = false, iter = missing, kwargs...) where D
+function action(L::Lattice{D}, inds::Indices{D}, β::Real; log = false, iter = missing) where D
 	log && @info "Measuring action..." iter
 	
 	current_workers = vec(procs(L))
@@ -56,22 +56,22 @@ function action(L::Lattice{D}, inds::Indices{D}; β, log = false, iter = missing
 
 	-β * res / 4 # 4 is due to trace normalization 
 end
-action(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}; kwargs...) where D = action(T[1], T[3]; kwargs...)
-action(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D = action(T.lattice, T.inds; kwargs...)
+action(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}, β::Real; kwargs...) where D = action(T[1], T[3], β; kwargs...)
+action(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}, β::Real; kwargs...) where D = action(T.lattice, T.inds, β; kwargs...)
 
 """
-	actionsquared(L::Lattice{D}, inds::Indices{D}; β, log = false, iter = missing) where D
-	actionsquared(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}; kwargs...) where D
-	actionsquared(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D
+	actionsquared(L::Lattice{D}, inds::Indices{D}, β; log = false, iter = missing) where D
+	actionsquared(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}, β; kwargs...) where D
+	actionsquared(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}, β; kwargs...) where D
 Return the action squared for β = 8/g², defined as -2/g² times the sum over all traces of plaquettes.
 """
-function actionsquared(L::Lattice{D}, inds::Indices{D}; β, log = false, iter = missing, kwargs...) where D
+function actionsquared(L::Lattice{D}, inds::Indices{D}, β::Real; log = false, iter = missing) where D
 	log && @info "Measuring action squared..." iter
 
-	action(L, inds; β = β)^2
+	action(L, inds, β)^2
 end
-actionsquared(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}; kwargs...) where D = actionsquared(T[1], T[3]; kwargs...)
-actionsquared(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D = actionsquared(T.lattice, T.inds; kwargs...)
+actionsquared(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}, β; kwargs...) where D = actionsquared(T[1], T[3], β; kwargs...)
+actionsquared(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}, β; kwargs...) where D = actionsquared(T.lattice, T.inds, β; kwargs...)
 
 """
 	susceptibility(L::Lattice{D}; log = false, iter = missing) where D
@@ -82,10 +82,10 @@ Return the susceptibility χ of the lattice `L`, defined as \
 
 Can be called with the symbol `χ`.
 """
-function susceptibility(L::Lattice{D}; log = false, iter = missing, kwargs...) where D
+function susceptibility(L::Lattice{D}; log = false, iter = missing) where D
 	log && @info "Measuring susceptibility..." iter
 
-	sum(all_polyloops(L) .^ 2)
+	sum(all_polyloops(L) .^ 2) / prod(tail(size(L)))
 end
 susceptibility(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}; kwargs...) where D = susceptibility(T[1]; kwargs...)
 susceptibility(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D = susceptibility(T.lattice; kwargs...)
@@ -103,7 +103,7 @@ Return the susceptibility χ of the lattice `L` divided by the lattice spatial v
 
 Can be called with the symbol `χᵥ`.
 """
-function susceptibility_pervolume(L::Lattice{D}; log = false, iter = missing, kwargs...) where D
+function susceptibility_pervolume(L::Lattice{D}; log = false, iter = missing) where D
 	log && @info "Measuring susceptibility per volume..." iter
 
 	susceptibility(L) / prod(tail(size(L)))
@@ -125,7 +125,7 @@ Return the Binder cumulant of the lattice `L`, defined as \
 
 Can be called with the symbol `gᵣ`.
 """
-function binder(L::Lattice{D}; log = false, iter = missing, kwargs...) where D
+function binder(L::Lattice{D}; log = false, iter = missing) where D
 	log && @info "Measuring Binder cumulant..." iter
 	
 	loops = all_polyloops(L)
@@ -149,7 +149,7 @@ gᵣ = binder
 	expval_polyloop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D
 Return the expectation value of the Polyakov loop of the lattice `L`.
 """
-function expval_polyloop(L::Lattice{D}; log = false, iter = missing, kwargs...) where D
+function expval_polyloop(L::Lattice{D}; log = false, iter = missing) where D
 	log && @info "Measuring exp. value of Polyakov loops..." iter
 
 	res = sum((all_polyloops(L))) # sum of the traces of all polyakov loops
@@ -166,7 +166,7 @@ expval_polyloop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D
 	expval_modpolyloop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}; kwargs...) where D
 Return the expectation value of the modulus the Polyakov loop of the lattice `L`.
 """
-function expval_modpolyloop(L::Lattice{D}; log = false, iter = missing, kwargs...) where D
+function expval_modpolyloop(L::Lattice{D}; log = false, iter = missing) where D
 	log && @info "Measuring exp. value of Polyakov loops..." iter
 
 	res = sum(abs.(all_polyloops(L))) # sum of the absolute value of the traces of all polyakov loops
@@ -185,7 +185,7 @@ expval_modpolyloop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mas
 	polyloop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}, x; kwargs...) where D = polyloop(T.lattice, x; kwargs...)
 Return the Polyakov loop calculated at spatial point `x` of the lattice `L`. `x` must be compatible with `L`'s spatial dimensions.
 """
-function polyloop(L::Lattice{D}, inds::Indices{D}, x::NTuple{Dm1, Int}; log = false, iter = missing, kwargs...) where {D, Dm1}
+function polyloop(L::Lattice{D}, inds::Indices{D}, x::NTuple{Dm1, Int}; log = false, iter = missing) where {D, Dm1}
 	Dm1 ≠ D-1 && throw(TypeError(corr_loop, CartesianIndex{D-1}, CartesianIndex{Dm1}))
 
 	log && @info "Measuring Polyakov loop at $x..." iter
@@ -223,7 +223,7 @@ polyloop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indi
 	corr_polyloop(T::NamedTuple{(:lattice, :mask, :inds), Tuple{Lattice{D}, Mask{D}, Indices{D}}}, x, y; kwargs...) where D = corr_polyloop(T.lattice, x, y; kwargs...)
 Return the two point correlation function of the Polyakov loops at points `x` and `y`, which must be compatible with the spatial dimensions of the lattice `L`.
 """
-function corr_polyloop(L::Lattice{D}, inds::Indices{D}, x::NTuple{Dm1, Int}, y::NTuple{Dm1, Int}; log = false, iter = missing, kwargs...) where {D, Dm1}
+function corr_polyloop(L::Lattice{D}, inds::Indices{D}, x::NTuple{Dm1, Int}, y::NTuple{Dm1, Int}; log = false, iter = missing) where {D, Dm1}
 	Dm1 ≠ D-1 && throw(TypeError(corr_loop, CartesianIndex{D-1}, CartesianIndex{Dm1}))
 
 	log && @info "Measuring correlation function of Polyakov loops at $x and $y..." iter

@@ -50,7 +50,7 @@ function termalization!(L, params, observable::Function, v::Vector; log = false)
 	for n in 1:nterm
 		log && @info "Termalization" n nterm
 		one_termalization!(L, nover, β, n % nnorm == 0; log = log, iter = n)
-		n % nobs == 0 && push!(v, observable(L; β = β, log = log, iter = n))
+		n % nobs == 0 && push!(v, observable(L; log = log, iter = n, to_symbol(params)...))
 		next!(pbar, showvalues = generate_showvalues(:iter => n, :total => nterm))
 	end
 	
@@ -74,7 +74,7 @@ function termalization!(L, params, observables, v; log = false)
 	for n in 1:nterm
 		log && @info "Termalization" n nterm
 		one_termalization!(L, nover, β, n % nnorm == 0; log = log, iter = n)
-		n % nobs == 0 && push!(v, [obs(L; β = β, log = log, iter = n) for obs in observables])
+		n % nobs == 0 && push!(v, [obs(L; log = log, iter = n, to_symbol(params)...) for obs in observables])
 		next!(pbar, showvalues = generate_showvalues(:iter => n, :total => nterm))
 	end
 

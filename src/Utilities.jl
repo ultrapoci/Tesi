@@ -1,4 +1,4 @@
-using DrWatson, Statistics, ProgressMeter
+using DrWatson, Statistics, ProgressMeter, DataFrames
 import CSV, DelimitedFiles
 
 function DrWatson._wsave(filename, data::Dict)
@@ -15,6 +15,8 @@ showall(x) = begin show(stdout, "text/plain", x); println() end
 
 takeobservables(x::Pair) = (x.first,), (x.second,)
 takeobservables(x) = first.(x), last.(x)
+
+to_symbol(d) = Dict(Symbol.(keys(d)) .=> values(d))
 
 function incrementalmean(v, offset::Integer = 1)
 	if offset ∉ 1:length(v)
