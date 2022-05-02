@@ -4,15 +4,6 @@ Base.@kwdef struct ObsParams <: Params
 	save_dat     = false
 	save_jld2    = false
 	save_df      = false
-	observables  = (
-		"avg_plaq" => (L; kwargs...) -> averageplaquette(L, log = kwargs[:log], iter = kwargs[:iter]),
-		"polyloop" => (L; kwargs...) -> expval_polyloop(L, log = kwargs[:log], iter = kwargs[:iter]),
-		"mod_polyloop" => (L; kwargs...) -> expval_modpolyloop(L, log = kwargs[:log], iter = kwargs[:iter]),
-		"χ" => (L; kwargs...) -> susceptibility(L, log = kwargs[:log], iter = kwargs[:iter]),
-		"χᵥ" => (L; kwargs...) -> susceptibility_pervolume(L, log = kwargs[:log], iter = kwargs[:iter]),
-		"action" => (L; kwargs...) -> action(L, kwargs[:β], log = kwargs[:log], iter = kwargs[:iter]),
-		"action_squared" => (L; kwargs...) -> actionsquared(L, kwargs[:β], log = kwargs[:log], iter = kwargs[:iter]),
-	)
 end
 
 Base.@kwdef struct TermParams <: Params
@@ -27,8 +18,18 @@ Base.@kwdef struct TermParams <: Params
 	nover = 3 # how many cycles of overrelaxation to do
 	
 	meanoffset = 10 # from which iteration to start calculating the mean
-
+	
 	nobs = 1 # measure observables every nobs cycles
+	
+	observables  = (
+		"avg_plaq"       => averageplaquette,
+		"polyloop"       => expval_polyloop,
+		"mod_polyloop"   => expval_modpolyloop,
+		"χ"              => susceptibility,
+		"χᵥ"           	 => susceptibility_pervolume,
+		"action"         => (L; kwargs...) -> action(L, β; kwargs...),
+		"action_squared" => (L; kwargs...) -> actionsquared(L, β; kwargs...),
+	)
 end
 
 Params(::Type{ObsParams}, x...) = ObsParams(x...) 
