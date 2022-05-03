@@ -8,7 +8,7 @@ end
 
 Base.@kwdef struct TermParams <: Params
 	dims = (2, 8, 8, 8)
-	#β = [i/2 for i in 1.0:15.0]
+	#β = [i for i in 1.0:15.0]
 	β = 1.0
 	latticestart = :hot
 	sp2type = try Sp2ElementB catch; missing end
@@ -21,14 +21,14 @@ Base.@kwdef struct TermParams <: Params
 	
 	nobs = 1 # measure observables every nobs cycles
 	
-	observables  = (
+	observables = (
 		"avg_plaq"       => averageplaquette,
 		"polyloop"       => expval_polyloop,
 		"mod_polyloop"   => expval_modpolyloop,
 		"χ"              => susceptibility,
 		"χᵥ"           	 => susceptibility_pervolume,
-		"action"         => (L; kwargs...) -> action(L, β; kwargs...),
-		"action_squared" => (L; kwargs...) -> actionsquared(L, β; kwargs...),
+		"action"         => action,
+		"action_squared" => actionsquared,
 	)
 end
 
