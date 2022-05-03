@@ -9,16 +9,19 @@ if "TERMALIZATION_NPROCS" ∉ keys(ENV)
 	ENV["TERMALIZATION_NPROCS"] = "4"
 end
 
-using DistributedQCD
+using DistributedQCD, Plots, DataFrames, Measurements
 nworkers() == 1 && initprocs(parse(Int, ENV["TERMALIZATION_NPROCS"]))
 @everywhere using DrWatson 
 @everywhere @quickactivate "Tesi"
 @everywhere using DistributedQCD
 
-using Plots, DataFrames, Measurements
-
 include(srcdir("Utilities.jl"))
-try includet(scriptsdir("parameters.jl")) catch; include(scriptsdir("parameters.jl")) end
+try 
+	includet(scriptsdir("parameters.jl")) 
+catch 
+	@warn "Including parameters without Revise.jl"
+	include(scriptsdir("parameters.jl")) 
+end
 
 
 #* ===== TERMALIZATION =====
@@ -50,7 +53,8 @@ function termalization!(L, params, observable::Function, v::Vector; log = false)
 	for n in 1:nterm
 		log && @info "Termalization" n nterm
 		one_termalization!(L, nover, β, n % nnorm == 0; log = log, iter = n)
-		n % nobs == 0 && push!(v, observable(L; log = log, iter = n))
+		T = (L..., β = β) # used to pass β to observables that require it
+		n % nobs == 0 && push!(v, observable(T; log = log, iter = n))
 		next!(pbar, showvalues = generate_showvalues(:iter => n, :total => nterm))
 	end
 	
@@ -74,7 +78,8 @@ function termalization!(L, params, observables, v; log = false)
 	for n in 1:nterm
 		log && @info "Termalization" n nterm
 		one_termalization!(L, nover, β, n % nnorm == 0; log = log, iter = n)
-		n % nobs == 0 && push!(v, [obs(L; log = log, iter = n) for obs in observables])
+		T = (L..., β = β) # used to pass β to observables that require it
+		n % nobs == 0 && push!(v, [obs(T; log = log, iter = n) for obs in observables])
 		next!(pbar, showvalues = generate_showvalues(:iter => n, :total => nterm))
 	end
 
@@ -93,7 +98,7 @@ end
 
 #* ===== RUN =====
 
-function run(allparams::TermParams, obsparams::ObsParams, folder = "")
+function run(allparams, obsparams, folder = "")
 	@unpack save_plot, display_plot, save_dat, save_jld2, save_df = obsparams
 	@unpack observables = allparams
 
