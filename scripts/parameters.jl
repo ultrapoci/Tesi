@@ -1,6 +1,6 @@
 Base.@kwdef struct ObsParams <: Params
 	save_plot    = false
-	display_plot = false
+	display_plot = true
 	save_dat     = false
 	save_jld2    = false
 	save_df      = false
@@ -9,31 +9,29 @@ end
 Base.@kwdef struct TermParams <: Params
 	dims = (2, 8, 8, 8)
 	#β = [i for i in 1.0:15.0]
-	β = 1.0
-	latticestart = :hot
+	β = 6.45
+	latticestart = :cold
 	sp2type = try Sp2ElementB catch; missing end
 	
-	nterm = 50
+	nterm = 20
 	nnorm = 10 # after how many cycle to normalize lattice
 	nover = 3 # how many cycles of overrelaxation to do
 	
-	meanoffset = 10 # from which iteration to start calculating the mean
-	
+	startobs = 10 # from which iteration to start taking measurements	
 	nobs = 1 # measure observables every nobs cycles
 	
 	observables = (
 		"avg_plaq"       => averageplaquette,
 		"polyloop"       => expval_polyloop,
 		"mod_polyloop"   => expval_modpolyloop,
-		"χ"              => susceptibility,
-		"χᵥ"           	 => susceptibility_pervolume,
+		"χ_sum_squared"  => susceptibility,
+		"χ_product"      => susceptibility2,
+		"χᵥ_sum_squared" => susceptibility_pervolume,
+		"χᵥ_product" 	 => susceptibility_pervolume2,
 		"action"         => action,
 		"action_squared" => actionsquared,
 	)
 end
-
-Params(::Type{ObsParams}, x...) = ObsParams(x...) 
-Params(::Type{TermParams}, x...) = TermParams(x...)
 
 DrWatson.default_allowed(::TermParams) = (Real, String, Tuple)
 DrWatson.allaccess(::TermParams) = (:dims, :β, :nterm, :nover, :nnorm)
