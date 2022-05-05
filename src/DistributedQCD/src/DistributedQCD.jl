@@ -10,11 +10,12 @@ export Sp2, asmatrix, normalizeSp2
 export Mask, Indices, Site, LocalLattice, Lattice, newlattice, evenmask, oddmask, indices
 export one_termalization!
 export averageplaquette, polyloop, corr_polyloop, expval_polyloop, expval_modpolyloop, susceptibility, χ, susceptibility_pervolume, χᵥ, binder, gᵣ, action, actionsquared
+export susceptibility2, susceptibility_pervolume2 # temp exports
 
 """
 	initprocs(n; threads = 1, kwargs...)
 Call `addprocs` with `n` processes and the flag `exeflags="--threads=..."`, where the value of `--threads` is decided by the `threads` argument. \
-All other `kwargs` are passed to `addprocs`.
+All other `kwargs` are passed to `addprocs`. If `threads` is not passed, `initprocs` is equivalent to `addprocs`.
 """
 initprocs(n; threads = 1, kwargs...) = addprocs(n; exeflags = "--threads=$threads", kwargs...)
 
