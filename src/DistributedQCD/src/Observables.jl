@@ -52,9 +52,17 @@ Can be called with the symbol `χ`.
 """
 function susceptibility(L::Lattice{D}; log = false, iter = missing) where D
 	log && @info "Measuring susceptibility..." iter
-	sum(all_polyloops(L) .^ 2) / prod(tail(size(L)))
+	sum(all_polyloops(L) .^ 2)  
 end
 susceptibility(T::NamedTuple; kwargs...) = susceptibility(T.lattice; kwargs...)
+
+function susceptibility2(L::Lattice{D}; log = false, iter = missing) where D
+	log && @info "Measuring susceptibility..." iter
+	loops = all_polyloops(L)
+	φ₀ = loops[begin]
+	sum([φ₀ * loop for loop in loops])  
+end
+susceptibility2(T::NamedTuple; kwargs...) = susceptibility2(T.lattice; kwargs...)
 
 """
 See `susceptibility`.
@@ -70,9 +78,15 @@ Can be called with the symbol `χᵥ`.
 """
 function susceptibility_pervolume(L::Lattice{D}; log = false, iter = missing) where D
 	log && @info "Measuring susceptibility per volume..." iter
-	susceptibility(L) / prod(tail(size(L)))
+	susceptibility(L) / spatialvolume(L)
 end
 susceptibility_pervolume(T::NamedTuple; kwargs...) = susceptibility_pervolume(T.lattice; kwargs...)
+
+function susceptibility_pervolume2(L::Lattice{D}; log = false, iter = missing) where D
+	log && @info "Measuring susceptibility per volume..." iter
+	susceptibility2(L) / spatialvolume(L)
+end
+susceptibility_pervolume2(T::NamedTuple; kwargs...) = susceptibility_pervolume2(T.lattice; kwargs...)
 
 """
 See `susceptibility_pervolume`.
@@ -93,7 +107,7 @@ function binder(L::Lattice{D}; log = false, iter = missing) where D
 	log && @info "Measuring Binder cumulant..." iter
 	
 	loops = all_polyloops(L)
-	Vₛ = length(loops) # spatial volume
+	Vₛ = spatialvolume(L)
 	φ⁴ = sum(loops .^ 4)
 	φ² = sum(loops .^ 2)
 	
@@ -115,11 +129,7 @@ Return the expectation value of the Polyakov loop of the lattice `L`.
 """
 function expval_polyloop(L::Lattice{D}; log = false, iter = missing) where D
 	log && @info "Measuring exp. value of Polyakov loops..." iter
-
-	res = sum((all_polyloops(L))) # sum of the traces of all polyakov loops
-	Vₛ = prod(tail(size(L))) # volume of the space slice of the lattice L
-
-	res / Vₛ
+	sum((all_polyloops(L))) / spatialvolume(L) # sum of the traces of all polyakov loops
 end
 expval_polyloop(T::NamedTuple; kwargs...) = expval_polyloop(T.lattice; kwargs...)
 
@@ -129,12 +139,8 @@ expval_polyloop(T::NamedTuple; kwargs...) = expval_polyloop(T.lattice; kwargs...
 Return the expectation value of the modulus the Polyakov loop of the lattice `L`.
 """
 function expval_modpolyloop(L::Lattice{D}; log = false, iter = missing) where D
-	log && @info "Measuring exp. value of Polyakov loops..." iter
-
-	res = sum(abs.(all_polyloops(L))) # sum of the absolute value of the traces of all polyakov loops
-	Vₛ = prod(tail(size(L))) # volume of the space slice of the lattice L
-
-	res / Vₛ
+	log && @info "Measuring exp. value of modulus of Polyakov loops..." iter
+	sum(abs.(all_polyloops(L))) / spatialvolume(L) # sum of the absolute value of the traces of all polyakov loops
 end
 expval_modpolyloop(T::NamedTuple; kwargs...) = expval_modpolyloop(T.lattice; kwargs...)
 
@@ -142,8 +148,8 @@ expval_modpolyloop(T::NamedTuple; kwargs...) = expval_modpolyloop(T.lattice; kwa
 #* ===== Polyakov loops =====
 """
 	polyloop(L::Lattice{D}, x::NTuple{Dm1, Int}; log = false, iter = missing) where {D, Dm1}
-	polyloop(L, x; kwargs...) = polyloop(L, Tuple(x); kwargs...)
-	polyloop(L, x...; kwargs...) = polyloop(L, Tuple(x); kwargs...)
+	polyloop(L, x; kwargs...)
+	polyloop(L, x...; kwargs...)
 	polyloop(T::NamedTuple, x; kwargs...)
 Return the Polyakov loop calculated at spatial point `x` of the lattice `L`. `x` must be compatible with `L`'s spatial dimensions.
 """
@@ -228,9 +234,15 @@ corr_polyloop(T::NamedTuple, x, y; kwargs...) = corr_polyloop(T.lattice, T.inds,
 
 #* ===== intermediate useful functions =====
 """
+	spatialvolume(L::Lattice)
+Return the volume of the spatial portion of the lattice (which corresponds to all dimensions except the first one which is time).
+"""
+spatialvolume(L::Lattice) = prod(tail(size(L)))
+
+"""
 	plaquettesum(L::Lattice{D}, inds::Indices{D}) where D
 	plaquettesum(T::NamedTuple; kwargs...)
-Return the sum overof the traces of all plaquettes. 
+Return the sum over the traces of all plaquettes. 
 """
 function plaquettesum(L::Lattice{D}, inds::Indices{D}) where D
 	current_workers = vec(procs(L))
@@ -268,8 +280,7 @@ function all_polyloops(L::Lattice{D}) where D
 	end
 	loc = convert(Array, partial) # bring partial into local process
 	spacedist = tail(dist) # distrbutions of the space indices
-	Vₛ = prod(tail(size(L))) # spatial volume
-
+	
 	# product of each matrix of space points along the time axes. This is done because the time axes could be 
 	# divided into different processes, and we need to multiply every partial polyakov loop.
 	# list comprehension will be an array of arrays, one for each process, and each of these arrays
