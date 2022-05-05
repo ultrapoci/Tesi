@@ -9,7 +9,7 @@ if "TERMALIZATION_NPROCS" ∉ keys(ENV)
 	ENV["TERMALIZATION_NPROCS"] = "4"
 end
 
-using DistributedQCD, Plots, DataFrames, Measurements
+using DistributedQCD, Plots, DataFrames
 nworkers() == 1 && initprocs(parse(Int, ENV["TERMALIZATION_NPROCS"]))
 @everywhere using DrWatson 
 @everywhere @quickactivate "Tesi"
@@ -107,7 +107,7 @@ function run(allparams, obsparams, folder = "")
 	df = DataFrame()
 
 	for params in dict_list(allparams)
-		@unpack meanoffset = params
+		@unpack startobs = params
 
 		display(params)
 		d = Dict(params)
@@ -115,15 +115,15 @@ function run(allparams, obsparams, folder = "")
 		obsmeasurements, = termalization(params, obsfunctions, log = ENV["TERMALIZATION_LOG"] == "1")
 
 		for (obsmeasurement, obsname) in zip(eachcol(obsmeasurements), obsnames)
-			obsmean, obserror = incrementalmean(obsmeasurement, meanoffset)
-			d[obsname] = measurement(obsmean[end], obserror[end]) # add final mean and std to dictionary
+			obsresult = incremental_measurement(obsmeasurement[startobs:end])
+			d[obsname] = obsresult[end] # add final measurement to dictionary
 
 			println("$obsname = $(d[obsname])")
 
 			if display_plot || save_plot
 				plottitle = savename(params, connector = ", ", sort = false)
 				p = plot(obsmeasurement, label = obsname, title = plottitle, titlefontsize = 10);
-				plot!(p, meanoffset:length(obsmeasurement), obsmean, label = "mean $obsname");
+				plot!(p, startobs:length(obsmeasurement), obsresult, label = "mean $obsname");
 				plotname = savename(obsname, params, "png", sort = false)	
 				save_plot && safesave(plotsdir(folder, plotname), p)
 				display_plot && display(p)

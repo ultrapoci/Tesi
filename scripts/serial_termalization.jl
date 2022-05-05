@@ -78,7 +78,7 @@ function run(allparams::TermParams, obsparams::ObsParams, folder = "")
 	df = DataFrame()
 
 	for params in dict_list(allparams)
-		@unpack meanoffset = params
+		@unpack startobs = params
 
 		display(params)
 		d = Dict(params)
@@ -86,7 +86,7 @@ function run(allparams::TermParams, obsparams::ObsParams, folder = "")
 		obsmeasurements, = termalization(params, obsfunctions)
 
 		for (obsmeasurement, obsname) in zip(eachcol(obsmeasurements), obsnames)
-			obsmean, obserror = incrementalmean(obsmeasurement, meanoffset)
+			obsmean, obserror = incremental_measurement(obsmeasurement, startobs)
 			d[obsname] = measurement(obsmean[end], obserror[end]) # add final mean and std to dictionary
 
 			println("$obsname = $(d[obsname])")
@@ -94,7 +94,7 @@ function run(allparams::TermParams, obsparams::ObsParams, folder = "")
 			if display_plot || save_plot
 				plottitle = savename(params, connector = ", ", sort = false)
 				p = plot(obsmeasurement, label = obsname, title = plottitle, titlefontsize = 10);
-				plot!(p, meanoffset:length(obsmeasurement), obsmean, label = "mean $obsname");
+				plot!(p, startobs:length(obsmeasurement), obsmean, label = "mean $obsname");
 				plotname = savename(obsname, params, "png", sort = false)	
 				save_plot && safesave(plotsdir(folder, plotname), p)
 				display_plot && display(p)

@@ -75,14 +75,14 @@ function dist_run(allparams::TermParams, obsparams::ObsParams, folder = "")
 	v = pmap(enumerate(dict_list(allparams))) do (i, params)
 		@info "Iteration $i/$niter"
 
-		@unpack meanoffset = params
+		@unpack startobs = params
 
 		d = Dict(params)
 
 		measurements, = termalization(params, obsfunctions)
 
 		for (measurement, obsname) in zip(eachcol(measurements), obsnames)
-			obsmean, xrange = incrementalmean(measurement, meanoffset)
+			obsmean, xrange = incremental_measurement(measurement, startobs)
 
 			d[obsname] = obsmean[end] # add final mean to dictionary
 

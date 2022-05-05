@@ -1,4 +1,4 @@
-using DrWatson, Statistics, ProgressMeter, DataFrames
+using DrWatson, Statistics, ProgressMeter, DataFrames, Measurements
 import CSV, DelimitedFiles
 
 function DrWatson._wsave(filename, data::Dict)
@@ -18,13 +18,7 @@ takeobservables(x) = first.(x), last.(x)
 
 to_symbol(d) = Dict(Symbol.(keys(d)) .=> values(d))
 
-function incrementalmean(v, offset::Integer = 1)
-	if offset ∉ 1:length(v)
-		throw(ArgumentError("Given offset = $offset must be positive and less than or equal to length(v) = $(length(v))"))
-	end
-
-	[mean(v[offset:i]) for i in offset:length(v)], [std(v[offset:i]) for i in offset:length(v)]
-end
+incremental_measurement(v) = [measurement(mean(v[1:i]), std(v[1:i])) for i in 1:length(v)]
 
 getpbar(n; desc = "Progress: ", enabled = true) = Progress(n, dt = 1, desc = desc, enabled = enabled, showspeed = true)
 generate_showvalues(pairs...) = () -> [Tuple.(pairs)...]
@@ -41,16 +35,13 @@ function Base.iterate(X::Params, state)
 	end
 	nothing
 end
-Base.iterate(X::Params) = Base.iterate(X, fieldnames(typeof(X)))
-Base.length(X::Params) = fieldcount(typeof(X))
+Base.iterate(X::T) where T <: Params = Base.iterate(X, fieldnames(T))
+Base.length(::T) where T <: Params = fieldcount(T)
 Base.get(X::Params, s::Symbol, ::Symbol) = Base.getproperty(X, s)
 Base.get(X::Params, s, ::Symbol) = Base.getproperty(X, Symbol(s))
 
-DrWatson.dict_list(p::Params) = [
-	Params(
-		typeof(p), 
-		[d[String(field)] for field in fieldnames(typeof(p))]...
-	)
+DrWatson.dict_list(p::T) where T <: Params = [
+	T([d[String(field)] for field in fieldnames(T)]...)
 	for d in DrWatson.dict_list(Dict(p))
 ]
 
