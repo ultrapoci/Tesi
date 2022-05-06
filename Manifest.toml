@@ -14,6 +14,12 @@ git-tree-sha1 = "af92965fb30777147966f58acb05da51c5616b5f"
 uuid = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
 version = "3.3.3"
 
+[[deps.Alert]]
+deps = ["Base64", "Dates", "Logging", "MacroTools", "Printf", "REPL"]
+git-tree-sha1 = "89a6ecff5408002c45e04db5aab395ba5915c81e"
+uuid = "28312eec-4d86-447d-83ad-bc2b262de792"
+version = "1.2.0"
+
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
 
