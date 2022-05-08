@@ -23,6 +23,7 @@ catch
 	include(scriptsdir("parameters.jl")) 
 end
 
+
 #* ===== TERMALIZATION =====
 
 function termalization!(L, params; log = false)
@@ -97,22 +98,63 @@ end
 
 #* ===== RUN =====
 
-function run(allparams)
+function run(allparams, obsparams, folder = "")
+	@unpack save_plot, display_plot, save_dat, save_jld2, save_df = obsparams
 	@unpack observables = allparams
+
 	obsnames, obsfunctions = takeobservables(observables)
-	dicts = Dict[]
+
+	df = DataFrame()
 
 	for params in dict_list(allparams)
 		@unpack startobs = params
+
 		display(params)
 		d = Dict(params)
-		obsmeasurements, L = termalization(params, obsfunctions, log = ENV["TERMALIZATION_LOG"] == "1")
-		d["df"] = DataFrame(obsmeasurements[startobs:end, :], [obsnames...])
-		d["L"] = L
-		push!(dicts, d)
+
+		obsmeasurements, = termalization(params, obsfunctions, log = ENV["TERMALIZATION_LOG"] == "1")
+
+		for (obsmeasurement, obsname) in zip(eachcol(obsmeasurements), obsnames)
+			obsresult = incremental_measurement(obsmeasurement[startobs:end])
+			d[obsname] = obsresult[end] # add final measurement to dictionary
+
+			println("$obsname = $(d[obsname])")
+
+			if display_plot || save_plot
+				plottitle = savename(params, connector = ", ", sort = false)
+				p = plot(obsmeasurement, label = obsname, title = plottitle, titlefontsize = 10);
+				plot!(p, startobs:length(obsmeasurement), obsresult, label = "mean $obsname");
+				plotname = savename(obsname, params, "png", sort = false)	
+				save_plot && safesave(plotsdir(folder, plotname), p)
+				display_plot && display(p)
+			end
+		end
+
+		if save_jld2
+			jld2name = savename(params, "jld2", sort = false)
+			safesave(datadir(folder, "jld2", jld2name), d)
+		end 
+
+		if save_dat
+			datname = savename(params, "dat", sort = false)
+			safesave(datadir(folder, "dat", datname), d)
+		end
+
+		append!(df, d)
+		println()
 	end
 
-	dicts
+	# remove columns of missing values
+	df = df[!, (x->eltype(x)!=Missing).(eachcol(df))]
+	sort!(df, [:dims, :β])
+
+	if save_df
+		dfname = savename(allparams, "csv")
+		safesave(datadir(folder, dfname), df)
+	end
+
+	df
 end
 
-run() = run(TermParams())
+run() = run(TermParams(), ObsParams())
+run(s::String) = run(TermParams(), ObsParams(), s)
