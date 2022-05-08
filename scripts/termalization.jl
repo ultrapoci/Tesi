@@ -9,7 +9,7 @@ if "TERMALIZATION_NPROCS" ∉ keys(ENV)
 	ENV["TERMALIZATION_NPROCS"] = "4"
 end
 
-using DistributedQCD, Plots, DataFrames
+using DistributedQCD, Plots, DataFrames, Suppressor
 nworkers() == 1 && initprocs(parse(Int, ENV["TERMALIZATION_NPROCS"]))
 @everywhere using DrWatson 
 @everywhere @quickactivate "Tesi"
@@ -22,7 +22,6 @@ catch
 	@warn "Including parameters without Revise.jl"
 	include(scriptsdir("parameters.jl")) 
 end
-
 
 #* ===== TERMALIZATION =====
 
@@ -46,7 +45,7 @@ function termalization(params; kwargs...)
 end
 
 function termalization!(L, params, observable::Function, v::Vector; log = false)
-	@unpack β, nterm, nover, nnorm, nobs = params
+	@unpack β, nterm, nover, nnorm, nobs, startobs = params
 
 	pbar = getpbar(nterm, desc = " Distributed Termalization", enabled = !log)
 
@@ -54,7 +53,9 @@ function termalization!(L, params, observable::Function, v::Vector; log = false)
 		log && @info "Termalization" n nterm
 		one_termalization!(L, nover, β, n % nnorm == 0; log = log, iter = n)
 		T = (L..., β = β) # used to pass β to observables that require it
-		n % nobs == 0 && push!(v, observable(T; log = log, iter = n))
+		if n ≥ startobs && n % nobs == 0
+			push!(v, observable(T; log = log, iter = n))
+		end
 		next!(pbar, showvalues = generate_showvalues(:iter => n, :total => nterm))
 	end
 	
@@ -71,7 +72,7 @@ function termalization(params, observable::Function; kwargs...)
 end
 
 function termalization!(L, params, observables, v; log = false)
-	@unpack β, nterm, nover, nnorm, nobs = params
+	@unpack β, nterm, nover, nnorm, startobs, nobs = params
 
 	pbar = getpbar(nterm, desc = " Distributed Termalization", enabled = !log)
 
@@ -79,7 +80,9 @@ function termalization!(L, params, observables, v; log = false)
 		log && @info "Termalization" n nterm
 		one_termalization!(L, nover, β, n % nnorm == 0; log = log, iter = n)
 		T = (L..., β = β) # used to pass β to observables that require it
-		n % nobs == 0 && push!(v, [obs(T; log = log, iter = n) for obs in observables])
+		if n ≥ startobs && n % nobs == 0
+			push!(v, [obs(T; log = log, iter = n) for obs in observables])
+		end
 		next!(pbar, showvalues = generate_showvalues(:iter => n, :total => nterm))
 	end
 
@@ -98,63 +101,31 @@ end
 
 #* ===== RUN =====
 
-function run(allparams, obsparams, folder = "")
-	@unpack save_plot, display_plot, save_dat, save_jld2, save_df = obsparams
+function run(allparams, folder = ""; save = true)
+	!save && @warn "Current simulation is not going to be saved!"
+
 	@unpack observables = allparams
-
 	obsnames, obsfunctions = takeobservables(observables)
-
-	df = DataFrame()
+	dicts = Dict[]
 
 	for params in dict_list(allparams)
 		@unpack startobs = params
-
 		display(params)
 		d = Dict(params)
-
-		obsmeasurements, = termalization(params, obsfunctions, log = ENV["TERMALIZATION_LOG"] == "1")
-
-		for (obsmeasurement, obsname) in zip(eachcol(obsmeasurements), obsnames)
-			obsresult = incremental_measurement(obsmeasurement[startobs:end])
-			d[obsname] = obsresult[end] # add final measurement to dictionary
-
-			println("$obsname = $(d[obsname])")
-
-			if display_plot || save_plot
-				plottitle = savename(params, connector = ", ", sort = false)
-				p = plot(obsmeasurement, label = obsname, title = plottitle, titlefontsize = 10);
-				plot!(p, startobs:length(obsmeasurement), obsresult, label = "mean $obsname");
-				plotname = savename(obsname, params, "png", sort = false)	
-				save_plot && safesave(plotsdir(folder, plotname), p)
-				display_plot && display(p)
-			end
-		end
-
-		if save_jld2
+		obsmeasurements, L = termalization(params, obsfunctions, log = ENV["TERMALIZATION_LOG"] == "1")
+		d[:df] = DataFrame(obsmeasurements, [obsnames...])
+		d[:L] = (lattice = convert(Array, L.lattice), mask = convert(Array, L.mask), inds = convert(Array, L.inds))
+		if save
 			jld2name = savename(params, "jld2", sort = false)
-			safesave(datadir(folder, "jld2", jld2name), d)
-		end 
-
-		if save_dat
-			datname = savename(params, "dat", sort = false)
-			safesave(datadir(folder, "dat", datname), d)
+			@info "Saving jld2 file $jld2name in $(datadir(folder))..."
+			@suppress_err safesave(datadir(folder, jld2name), d) # suppress warnings about symbols converted to strings
 		end
-
-		append!(df, d)
-		println()
+		push!(dicts, d)
+		println("="^displaysize(stdout)[2])
 	end
 
-	# remove columns of missing values
-	df = df[!, (x->eltype(x)!=Missing).(eachcol(df))]
-	sort!(df, [:dims, :β])
-
-	if save_df
-		dfname = savename(allparams, "csv")
-		safesave(datadir(folder, dfname), df)
-	end
-
-	df
+	dicts
 end
 
-run() = run(TermParams(), ObsParams())
-run(s::String) = run(TermParams(), ObsParams(), s)
+run(; kwargs...) = run(TermParams(); kwargs...)
+run(s::String; kwargs...) = run(TermParams(), s; kwargs...)
