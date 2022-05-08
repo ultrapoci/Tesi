@@ -9,7 +9,7 @@ if "TERMALIZATION_NPROCS" ∉ keys(ENV)
 	ENV["TERMALIZATION_NPROCS"] = "4"
 end
 
-using DistributedQCD, Plots, DataFrames, Suppressor
+using DistributedQCD, DataFrames, Suppressor
 nworkers() == 1 && initprocs(parse(Int, ENV["TERMALIZATION_NPROCS"]))
 @everywhere using DrWatson 
 @everywhere @quickactivate "Tesi"
@@ -22,6 +22,7 @@ catch
 	@warn "Including parameters without Revise.jl"
 	include(scriptsdir("parameters.jl")) 
 end
+
 
 #* ===== TERMALIZATION =====
 
@@ -113,7 +114,7 @@ function run(allparams, folder = ""; save = true)
 		display(params)
 		d = Dict(params)
 		obsmeasurements, L = termalization(params, obsfunctions, log = ENV["TERMALIZATION_LOG"] == "1")
-		d[:df] = DataFrame(obsmeasurements, [obsnames...])
+		d[:data] = DataFrame(obsmeasurements, [obsnames...])
 		d[:L] = (lattice = convert(Array, L.lattice), mask = convert(Array, L.mask), inds = convert(Array, L.inds))
 		if save
 			jld2name = savename(params, "jld2", sort = false)
