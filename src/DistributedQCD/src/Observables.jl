@@ -286,7 +286,8 @@ function all_polyloops(L::Lattice{D}) where D
 	# list comprehension will be an array of arrays, one for each process, and each of these arrays
 	# contains the product of time-link link in each lattice's position belonging to that process.
 	# "mortar" transforms the array of arrays into a single array that corresponds to the spatial slice of L
-	tr.(convert(Array, mortar([reduce(.*, loc[:, x]) for x in CartesianIndices(spacedist)])))
+	res = convert(Array, mortar([reduce(.*, loc[:, x]) for x in CartesianIndices(spacedist)]))
+	tr.(res) ./ 4 # trace normalization
 end
 all_polyloops(T::NamedTuple; kwargs...) = all_polyloops(T.lattice; kwargs...)
 

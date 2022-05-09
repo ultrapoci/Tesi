@@ -7,29 +7,29 @@ Base.@kwdef struct ObsParams <: Params
 end
 
 Base.@kwdef struct TermParams <: Params
-	dims = (2, 40, 40)
+	dims = (2, 8, 8, 8)
 	#β = [i for i in 1.0:15.0]
-	β = 10.3
+	β = 6.45
 	latticestart = :cold
 	sp2type = try Sp2ElementB catch; missing end
 	
-	nterm = 20
-	nnorm = 10 # after how many cycle to normalize lattice
+	nterm = 400
+	nnorm = 10 # after how many cycle to normalize lattic40, 40e
 	nover = 3 # how many cycles of overrelaxation to do
 	
-	startobs = 5 # from which iteration to start taking measurements	
+	startobs = 100 # from which iteration to start taking measurements	
 	nobs = 1 # measure observables every nobs cycles
 	
 	observables = (
-		:avg_plaq			=> averageplaquette,
-		:polyloop			=> expval_polyloop,
-		:mod_polyloop		=> expval_modpolyloop,
-		#"χ_sum_squared"  => susceptibility,
-		#"χ_product"      => susceptibility2,
-		#"χᵥ_sum_squared" => susceptibility_pervolume,
-		#"χᵥ_product" 	 => susceptibility_pervolume2,
-		#"action"         => action,
-		#"action_squared" => actionsquared,
+		:avg_plaq		=> averageplaquette,
+		:polyloop		=> expval_polyloop,
+		:mod_polyloop	=> expval_modpolyloop,
+		:χ_product		=> susceptibility,
+		:χᵥ				=> susceptibility_pervolume,
+		:action			=> action,
+		:action_squared	=> actionsquared,
+		#:χ_product		=> susceptibility2,
+		#:χᵥ_product	=> susceptibility_pervolume2,
 	)
 end
 
