@@ -5,7 +5,7 @@ if "TERMALIZATION_LOG" ∉ keys(ENV)
 	ENV["TERMALIZATION_LOG"] = "0"
 end
 
-using Distributed, DistributedQCD, DataFrames, Suppressor
+using Distributed, DistributedQCD, DataFrames, Suppressor, Term.progress
 
 include(srcdir("Utilities.jl"))
 try 
@@ -95,7 +95,42 @@ function run(allparams, folder = ""; save = true)
 
 	nodes = parse(Int, ENV["JULIA_NODES"])
 	wp = WorkerPool(workers()[begin:nodes])
-	pbar = Progress(totaliter(allparams))
+	pbar = ProgressBar(expand = true, columns = :detailed, refresh_rate = 1)
+	job = addjob!(pbar, N = totaliter(allparams), description = "Termalization using $nodes nodes...")
+	channel = RemoteChannel(()->Channel{Bool}(), 1)
+
+	@async while take!(channel)
+		update!(job)
+	end
+
+	@unpack observables = allparams
+	obsnames, obsfunctions = takeobservables(observables)
+	start!(pbar)
+	dicts = pmap(wp, dict_list(allparams)) do params
+		@info "Starting new termalization..."
+		@unpack startobs = params
+		d = Dict(params)
+		obsmeasurements, L = termalization(params, obsfunctions, channel, procs = procs(myid()), log = ENV["TERMALIZATION_LOG"] == "1")
+		d[:data] = DataFrame(obsmeasurements, [obsnames...])
+		d[:L] = (lattice = convert(Array, L.lattice), mask = convert(Array, L.mask), inds = convert(Array, L.inds))
+		if save
+			jld2name = savename(params, "jld2", sort = false)
+			@info "Saving jld2 file $jld2name in $(datadir(folder))..."
+			@suppress_err safesave(datadir(folder, jld2name), d) # suppress warnings about symbols converted to strings
+		end
+		d
+	end
+	put!(channel, false)
+	stop!(pbar)
+	dicts
+end
+
+function oldrun(allparams, folder = ""; save = true)
+	!save && @warn "Current simulation is not going to be saved!"
+
+	nodes = parse(Int, ENV["JULIA_NODES"])
+	wp = WorkerPool(workers()[begin:nodes])
+	pbar = Progress(totaliter(allparams), dt = 1)
 	channel = RemoteChannel(()->Channel{Bool}(), 1)
 
 	@async while take!(channel)
