@@ -20,8 +20,8 @@ function newlattice(dims::NTuple{D, Int}; start = :cold, kwargs...) where D
 end
 newlattice(dims::Vararg{Int, D}; kwargs...) where D = newlattice(Tuple(dims); kwargs...)
 
-addtuple(n::Int, d::Int, p::Tuple{Vararg{Int}}) = tuple(p[begin:d-1]..., p[d]+n, p[d+1:end]...)
-addtuple(n::Int, d::Int, p::Vararg{Int}) = addtuple(n, d, Tuple(p))
+addtuple(n::Int, d::Int, p::NTuple{D, Int}) where D = ntuple(i -> i == d ? p[i]+n : p[i], D)::NTuple{D, Int}
+addtuple(n::Int, d::Int, p::Vararg{Int, D}) where D = addtuple(n, d, Tuple(p))::NTuple{D, Int}
 
 function getlink(L::Lattice{D}, u::Int, x::NTuple{D, Int})::Sp2 where D
 	if u ∈ 1:D
