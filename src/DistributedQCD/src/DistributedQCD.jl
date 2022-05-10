@@ -18,8 +18,8 @@ Call `addprocs` with `n` processes passing the flags `--project --threads=...`, 
 """
 initprocs(n; threads = 1, kwargs...) = addprocs(n; exeflags = ["--project", "--threads=$threads"], kwargs...)
 function initprocs(p::Vector; threads = 1, kwargs...) 
-    addprocs(p; exeflags = ["--project", "--threads=$threads"], kwargs...)
     ENV["JULIA_NODES"] = length(p)
+    addprocs(p; exeflags = ["--project", "--threads=$threads"], kwargs...)
 end
 
 """
