@@ -14,7 +14,7 @@ function newlattice(dims::NTuple{D, Int}; start = :cold, kwargs...) where D
 	end
 
 	mask = distribute(evenmask(lattice), lattice)
-	inds = distribute(indices(lattice), lattice)
+	inds = distribute(CartesianIndices(lattice), lattice)
 
 	(lattice = lattice, mask = mask, inds = inds)
 end
@@ -40,7 +40,6 @@ getlink(L::Lattice{D}, u::Int, x::CartesianIndex{D}) where D = getlink(L, u, Tup
 
 evenmask(A) = [iseven(sum(Tuple(i))) for i in CartesianIndices(A)]
 oddmask(A) = [isodd(sum(Tuple(i))) for i in CartesianIndices(A)]
-indices(A) = [i for i in CartesianIndices(A)]
 
 """
 	staple(L::Lattice{D}, d::Int, u::Int, x::NTuple{D, Int}) where D
