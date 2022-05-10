@@ -1,15 +1,14 @@
-using DrWatson, Statistics, ProgressMeter, DataFrames, Measurements
-import CSV, DelimitedFiles
+import DrWatson, Statistics, DataFrames, Measurements, CSV, DelimitedFiles, ProgressMeter
 
 function DrWatson._wsave(filename, data::Dict)
 	if splitext(filename)[2] == ".dat" 
 		DelimitedFiles.writedlm(filename, data, " = ")
 	else
-		save(filename, data)
+		DrWatson.save(filename, data)
 	end
 end
 
-DrWatson._wsave(filename, data::DataFrame) = CSV.write(filename, data)
+DrWatson._wsave(filename, data::DataFrames.DataFrame) = CSV.write(filename, data)
 
 showall(x) = begin show(stdout, "text/plain", x); println() end
 
@@ -19,12 +18,13 @@ takeobservables(x) = first.(x), last.(x)
 keys_to_symbol(d::Dict) = Dict(Symbol.(keys(d)) .=> values(d))
 keys_to_string(d::Dict) = Dict(String.(keys(d)) .=> values(d))
 
-incremental_measurement(v) = [measurement(mean(v[1:i]), std(v[1:i])) for i in 1:length(v)]
+incremental_measurement(v) = [Measurements.measurement(Statistics.mean(v[1:i]), Statistics.std(v[1:i])) for i in 1:length(v)]
 
-getpbar(n; desc = "Progress: ", enabled = true) = Progress(n, dt = 1, desc = desc, enabled = enabled, showspeed = true)
+getpbar(n; desc = "Progress: ", enabled = true) = ProgressMeter.Progress(n, dt = 1, desc = desc, enabled = enabled, showspeed = true)
 generate_showvalues(pairs...) = () -> [Tuple.(pairs)...]
 
-totaliter(allparams) = sum((p[:nterm] for p in dict_list(allparams)))
+totaliter(allparams) = sum((p[:nterm] for p in DrWatson.dict_list(allparams)))
+
 
 #* ===== PARAMETERS =====
 
