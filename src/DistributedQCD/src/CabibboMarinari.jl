@@ -49,24 +49,25 @@ function randomSU2(k::Real, β::Real)::SU2
 	SU2(complex(a₀, a₃), complex(a₂, a₁))
 end
 
-function touch_overrelaxation(S::Sp2, R::StaticMatrix{4, 4, ComplexF64})::Sp2
+function touch_overrelaxation(S::Sp2, R::SMatrix{4, 4, ComplexF64})::Sp2
 	U::Sp2 = S
 	for (to_su2, from_su2) in subrepresentations
-		a::SU2, _ = to_su2(U * R)
+		a::SU2, _ = to_su2(U * R)::Tuple{SU2, Real}
 		U = from_su2(a^-2) * U
 	end
 	U
 end
 
-function touch_heatbath(S::Sp2, R::StaticMatrix{4, 4, ComplexF64}, β::Real)::Sp2
+function touch_heatbath(S::Sp2, R::SMatrix{4, 4, ComplexF64}, β::Real)::Sp2
 	U::Sp2 = S
 	for (to_su2, from_su2) in subrepresentations
-		a::SU2, k::Real = to_su2(U * R)
+		a::SU2, k::Real = to_su2(U * R)::Tuple{SU2, Real}
 		a = randomSU2(k, β) * a^-1
 		U = from_su2(a) * U
 	end
 	U
 end
+
 
 """
 	overrelaxation!(L::Lattice{D}, evenmask::Mask{D}, inds::Indices{D}, nover::Int; log = false, iter = missing) where D
