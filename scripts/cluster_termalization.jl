@@ -115,7 +115,7 @@ function run(allparams, folder = ""; save = true)
 		d[:L] = (lattice = convert(Array, L.lattice), mask = convert(Array, L.mask), inds = convert(Array, L.inds))
 		if save
 			jld2name = savename(params, "jld2", sort = false)
-			@info "Saving jld2 file $jld2name in $(datadir(folder))..."
+			@info "Saving jld2 file `$jld2name` in $(datadir(folder))..."
 			@suppress_err safesave(datadir(folder, jld2name), d) # suppress warnings about symbols converted to strings
 		end
 		d
