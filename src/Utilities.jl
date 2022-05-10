@@ -24,6 +24,7 @@ incremental_measurement(v) = [measurement(mean(v[1:i]), std(v[1:i])) for i in 1:
 getpbar(n; desc = "Progress: ", enabled = true) = Progress(n, dt = 1, desc = desc, enabled = enabled, showspeed = true)
 generate_showvalues(pairs...) = () -> [Tuple.(pairs)...]
 
+totaliter(allparams) = sum((p[:nterm] for p in dict_list(allparams)))
 
 #* ===== PARAMETERS =====
 
