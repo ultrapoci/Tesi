@@ -9,7 +9,7 @@ if "TERMALIZATION_NPROCS" ∉ keys(ENV)
 	ENV["TERMALIZATION_NPROCS"] = "4"
 end
 
-using DistributedQCD, DataFrames, Suppressor
+using DistributedQCD, DataFrames, Suppressor, ProgressMeter
 nworkers() == 1 && initprocs(parse(Int, ENV["TERMALIZATION_NPROCS"]))
 @everywhere using DistributedQCD
 
@@ -116,7 +116,7 @@ function run(allparams, folder = ""; save = true)
 		d[:L] = (lattice = convert(Array, L.lattice), mask = convert(Array, L.mask), inds = convert(Array, L.inds))
 		if save
 			jld2name = savename(params, "jld2", sort = false)
-			@info "Saving jld2 file $jld2name in $(datadir(folder))..."
+			@info "Saving jld2 file '$jld2name' in $(datadir(folder))..."
 			@suppress_err safesave(datadir(folder, jld2name), d) # suppress warnings about symbols converted to strings
 		end
 		push!(dicts, d)
