@@ -4,7 +4,7 @@ using Distributed, DistributedArrays, StaticArrays, LinearAlgebra, Distributions
 using Base: tail
 using BlockArrays: mortar
 
-export @everywhere, workers, nworkers, initprocs, with_workers, @maybe_threaded
+export @everywhere, procs, workers, nworkers, initprocs, with_workers, @maybe_threaded
 export SU2, asmatrix, normalizeSU2, normalizeSU2det
 export Sp2, asmatrix, normalizeSp2
 export Mask, Indices, Site, LocalLattice, Lattice, newlattice, evenmask, oddmask
@@ -14,10 +14,13 @@ export susceptibility2, susceptibility_pervolume2 # temp exports
 
 """
 	initprocs(n; threads = 1, kwargs...)
-Call `addprocs` with `n` processes and the flag `exeflags="--threads=..."`, where the value of `--threads` is decided by the `threads` argument. \
-All other `kwargs` are passed to `addprocs`. If `threads` is not passed, `initprocs` is equivalent to `addprocs`.
+Call `addprocs` with `n` processes passing the flags `--project --threads=...`, where the number of threads is decided by the `threads` argument.
 """
-initprocs(n; threads = 1, kwargs...) = addprocs(n; exeflags = "--threads=$threads", kwargs...)
+initprocs(n; threads = 1, kwargs...) = addprocs(n; exeflags = ["--project", "--threads=$threads"], kwargs...)
+function initprocs(p::Vector; threads = 1, kwargs...) 
+    addprocs(p; exeflags = ["--project", "--threads=$threads"], kwargs...)
+    ENV["JULIA_NODES"] = length(p)
+end
 
 """
 	with_workers(f, args...; procs = workers())
