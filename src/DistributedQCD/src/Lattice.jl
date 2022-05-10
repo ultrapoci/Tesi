@@ -79,7 +79,7 @@ end
 staple(L::Lattice{D}, v::Int, u::Int, x::Vararg{Int, D}) where D = staple(L, v, u, Tuple(x))
 staple(L::Lattice{D}, v::Int, u::Int, x::CartesianIndex{D}) where D = staple(L, v, u, Tuple(x))
 
-function sumstaples(L::Lattice{D}, u::Int, x::NTuple{D, Int})::MMatrix{4, 4, ComplexF64} where D
+function sumstaples(L::Lattice{D}, u::Int, x::NTuple{D, Int})::SMatrix{4, 4, ComplexF64} where D
 	if u ∉ 1:D
 		throw(ArgumentError("Link's direction u must be in range [1, D], got $u."))	
 	end
@@ -88,7 +88,7 @@ function sumstaples(L::Lattice{D}, u::Int, x::NTuple{D, Int})::MMatrix{4, 4, Com
 	for v in mod1.(u+1:u+D-1, D) # generate all D directions except u
 		total += staple(L, v, u, x) + staple(L, -v, u, x)
 	end
-	total
+	SMatrix(total)
 end
 sumstaples(L::Lattice{D}, u::Int, x::Vararg{Int, D}) where D = sumstaples(L, u, Tuple(x))
 sumstaples(L::Lattice{D}, u::Int, x::CartesianIndex{D}) where D = sumstaples(L, u, Tuple(x))
