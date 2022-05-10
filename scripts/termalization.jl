@@ -11,8 +11,6 @@ end
 
 using DistributedQCD, DataFrames, Suppressor
 nworkers() == 1 && initprocs(parse(Int, ENV["TERMALIZATION_NPROCS"]))
-@everywhere using DrWatson 
-@everywhere @quickactivate "Tesi"
 @everywhere using DistributedQCD
 
 include(srcdir("Utilities.jl"))
@@ -38,9 +36,9 @@ function termalization!(L, params; log = false)
 	end
 end
 
-function termalization(params; kwargs...)
+function termalization(params; procs = workers(), kwargs...)
 	@unpack dims, latticestart = params
-	L = newlattice(dims..., start = latticestart)
+	L = newlattice(dims..., start = latticestart, procs = procs)
 	termalization!(L, params; kwargs...)
 	L
 end
@@ -64,9 +62,9 @@ function termalization!(L, params, observable::Function, v::Vector; log = false)
 	nterm % nobs ≠ 0 && push!(v, observable(L; log = log, iter = n))
 end
 
-function termalization(params, observable::Function; kwargs...)
+function termalization(params, observable::Function; procs = workers(), kwargs...)
 	@unpack dims, latticestart = params
-	L = newlattice(dims..., start = latticestart)
+	L = newlattice(dims..., start = latticestart, procs = procs)
 	v = Float64[]
 	termalization!(L, params, observable, v; kwargs...)
 	v, L
@@ -91,9 +89,9 @@ function termalization!(L, params, observables, v; log = false)
 	nterm % nobs ≠ 0 && push!(v, [obs(L; log = log, iter = n) for obs in observables])
 end
 
-function termalization(params, observables; kwargs...)
+function termalization(params, observables; procs = workers(), kwargs...)
 	@unpack dims, latticestart = params
-	L = newlattice(dims..., start = latticestart)
+	L = newlattice(dims..., start = latticestart, procs = procs)
 	v = Vector{Float64}[]
 	termalization!(L, params, observables, v; kwargs...)
 	reduce(hcat, v)', L
