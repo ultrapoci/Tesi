@@ -5,6 +5,11 @@ if "TERMALIZATION_LOG" ∉ keys(ENV)
 	ENV["TERMALIZATION_LOG"] = "0"
 end
 
+try
+	using OhMyREPL, Revise
+catch e
+	@warn "Failed importing OhMyREPL, Revise: " e
+end
 using Distributed, DistributedQCD, DataFrames, Suppressor, Term.progress
 
 include(srcdir("Utilities.jl"))
@@ -18,7 +23,7 @@ end
 
 #* ===== TERMALIZATION =====
 
-function termalization!(L, params; log = false)
+function termalization!(L, params, channel; log = false)
 	@unpack β, nterm, nover, nnorm = params
 
 	pbar = getpbar(nterm, desc = " Distributed Termalization", enabled = !log)
@@ -26,14 +31,14 @@ function termalization!(L, params; log = false)
 	for n in 1:nterm
 		log && @info "Termalization" n nterm
 		one_termalization!(L, nover, β, n % nnorm == 0; log = log, iter = n)
-		next!(pbar, showvalues = generate_showvalues(:iter => n, :total => nterm))
+		put!(channel, true)
 	end
 end
 
-function termalization(params; procs = workers(), kwargs...)
+function termalization(params, channel; procs = workers(), kwargs...)
 	@unpack dims, latticestart = params
 	L = newlattice(dims..., start = latticestart, procs = procs)
-	termalization!(L, params; kwargs...)
+	termalization!(L, params, channel; kwargs...)
 	L
 end
 
@@ -90,15 +95,25 @@ end
 
 #* ===== RUN =====
 
-function run(allparams, folder = ""; save = true)
+function run(allparams; n = nothing, strategy = :atleast, folder = "", save = true)
+	strategy ∉ [:atleast, :atmost] && throw(ArgumentError("strategy must be :atleast or :atmost, got :$strategy."))
 	!save && @warn "Current simulation is not going to be saved!"
 
-	nodes = parse(Int, ENV["JULIA_NODES"])
-	wp = WorkerPool(workers()[begin:nodes])
-	pbar = ProgressBar(expand = true, columns = :detailed, refresh_rate = 1)
-	job = addjob!(pbar, N = totaliter(allparams), description = "Termalization using $nodes nodes...")
-	channel = RemoteChannel(()->Channel{Bool}(), 1)
+	# setup workers pool
+	wp, pool, pbardesc = if isnothing(n)
+		@info "Dividing workers according to the node they belong."
+		nodes = parse(Int, ENV["JULIA_NODES"])
+		WorkerPool(workers()[begin:nodes]), procs.(workers()[begin:nodes]), "Termalization using $nodes nodes..."
+	else
+		p = partition_workers(workers(), n, strategy = strategy)
+		WorkerPool(first.(p)), p, "Termalization using $(length(p)) groups of workers..."
+	end
+	getpool(id) = pool[id .∈ pool][begin]
 
+	# setup progress bar
+	pbar = ProgressBar(expand = true, columns = :detailed, refresh_rate = 1)
+	job = addjob!(pbar, N = totaliter(allparams), description = pbardesc)
+	channel = RemoteChannel(()->Channel{Bool}(), 1)
 	@async while take!(channel)
 		update!(job)
 	end
@@ -107,15 +122,14 @@ function run(allparams, folder = ""; save = true)
 	obsnames, obsfunctions = takeobservables(observables)
 	start!(pbar)
 	dicts = pmap(wp, dict_list(allparams)) do params
-		@info "Starting new termalization..."
-		@unpack startobs = params
+		@info "Starting new termalization: workers = $(getpool(myid()))"
 		d = Dict(params)
-		obsmeasurements, L = termalization(params, obsfunctions, channel, procs = procs(myid()), log = ENV["TERMALIZATION_LOG"] == "1")
-		d[:data] = DataFrame(obsmeasurements, [obsnames...])
+		obsmeasurements, L = termalization(params, obsfunctions, channel, procs = getpool(myid()), log = ENV["TERMALIZATION_LOG"] == "1")
+		d[:data] = DataFrame(obsmeasurements, collect(obsnames))
 		d[:L] = (lattice = convert(Array, L.lattice), mask = convert(Array, L.mask), inds = convert(Array, L.inds))
 		if save
 			jld2name = savename(params, "jld2", sort = false)
-			@info "Saving jld2 file `$jld2name` in $(datadir(folder))..."
+			@info "Saving jld2 file '$jld2name' in $(datadir(folder))..."
 			@suppress_err safesave(datadir(folder, jld2name), d) # suppress warnings about symbols converted to strings
 		end
 		d
@@ -124,7 +138,9 @@ function run(allparams, folder = ""; save = true)
 	stop!(pbar)
 	dicts
 end
+run(; kwargs...) = run(TermParams(); kwargs...)
 
+#=
 function oldrun(allparams, folder = ""; save = true)
 	!save && @warn "Current simulation is not going to be saved!"
 
@@ -156,6 +172,4 @@ function oldrun(allparams, folder = ""; save = true)
 	put!(channel, false)
 	dicts
 end
-
-run(; kwargs...) = run(TermParams(); kwargs...)
-run(s::String; kwargs...) = run(TermParams(), s; kwargs...)
+=#
