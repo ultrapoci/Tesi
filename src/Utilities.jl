@@ -25,6 +25,30 @@ generate_showvalues(pairs...) = () -> [Tuple.(pairs)...]
 
 totaliter(allparams) = sum((p[:nterm] for p in DrWatson.dict_list(allparams)))
 
+function partition_workers(w, n; strategy = :atleast)
+	par = convert.(Array, collect(Iterators.partition(w, n)))
+	l = length(par[begin:end-1])
+	if strategy == :atleast
+		if length(par[end]) < length(par[begin])
+			for (i, elem) in enumerate(par[end])
+				push!(par[mod1(i, l)], elem)
+			end
+			par[begin:end-1]
+		else
+			par
+		end
+	elseif strategy == :atmost
+		i = firstindex(par)
+		while length(par[end]) < length(par[begin])
+			push!(par[end], pop!(par[mod1(i, l)]))
+			i += 1
+		end
+		par
+	else
+		throw(ArgumentError("strategy must be :atleast or :atmost, got :$strategy."))
+	end
+end
+
 
 #* ===== PARAMETERS =====
 
