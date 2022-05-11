@@ -11,7 +11,6 @@ Base.@kwdef struct TermParams <: Params
 	#β = [i for i in 1.0:15.0]
 	β = [1.0, 2.0, 6.45]
 	latticestart = :cold
-	sp2type = try Sp2ElementB catch; missing end
 	
 	nterm = 20
 	nnorm = 10 # after how many cycle to normalize lattic40, 40e
