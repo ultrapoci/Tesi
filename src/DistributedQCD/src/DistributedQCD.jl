@@ -16,8 +16,7 @@ export susceptibility2, susceptibility_pervolume2 # temp exports
 	initprocs(n; threads = 1, kwargs...)
 Call `addprocs` with `n` processes passing the flags `--project --threads=...`, where the number of threads is decided by the `threads` argument.
 """
-initprocs(n; threads = 1, kwargs...) = addprocs(n; exeflags = ["--project", "--threads=$threads"], kwargs...)
-function initprocs(p::Vector; threads = 1, kwargs...) 
+function initprocs(p; threads = 1, kwargs...) 
     ENV["JULIA_NODES"] = length(p)
     addprocs(p; exeflags = ["--project", "--threads=$threads"], kwargs...)
 end
