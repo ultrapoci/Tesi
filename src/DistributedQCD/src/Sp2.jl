@@ -6,9 +6,7 @@ struct Sp2 <: StaticMatrix{4, 4, ComplexF64}
 
 	Sp2() = Sp2(I[1:2, 1:2], zeros(2, 2))
 
-	function Sp2(W::Matrix{<:Number}, X::Matrix{<:Number})
-		Sp2(SMatrix{2, 2}(ComplexF64.(W)), SMatrix{2, 2}(ComplexF64.(X)))
-	end
+	Sp2(W::Matrix{<:Number}, X::Matrix{<:Number}) = Sp2(SMatrix{2, 2}(ComplexF64.(W)), SMatrix{2, 2}(ComplexF64.(X)))
 end
 
 function asmatrix(S::Sp2)::SMatrix{4, 4, ComplexF64, 16}
@@ -35,8 +33,13 @@ Base.getindex(S::Sp2, i) = getindex(asmatrix(S), i)
 
 function Base.:*(S::Sp2, T::Sp2)::Sp2
 	R = asmatrix(S) * asmatrix(T)
-	Sp2(R[1:2, 1:2], R[1:2, 3:4])
+	@inbounds Sp2(R[1:2, 1:2], R[1:2, 3:4])
 end
+
+Base.:*(S::Sp2, T::AbstractMatrix) = asmatrix(S) * T
+Base.:*(T::AbstractMatrix, S::Sp2) = T * asmatrix(S)
+Base.:*(S::Sp2, T::StaticMatrix) = asmatrix(S) * T
+Base.:*(T::StaticMatrix, S::Sp2) = T * asmatrix(S)
 
 function Base.adjoint(S::Sp2)::Sp2
 	R = adjoint(asmatrix(S))
@@ -50,7 +53,10 @@ end
 
 LinearAlgebra.tr(S::Sp2) = 2(real(S.topleft[1, 1]) + real(S.topleft[2, 2]))
 
-Base.rand(::Type{Sp2}) = normalizeSp2(Sp2(complex.(rand(Uniform(-1, 1), 2, 2), rand(Uniform(-1, 1), 2, 2)), complex.(rand(Uniform(-1, 1), 2, 2), rand(Uniform(-1, 1), 2, 2))))
+Base.rand(::Type{Sp2}) = normalizeSp2(Sp2(
+	complex.(rand(Uniform(-1, 1), 2, 2), rand(Uniform(-1, 1), 2, 2)), 
+	complex.(rand(Uniform(-1, 1), 2, 2), rand(Uniform(-1, 1), 2, 2))
+))
 
 function normalizeSp2(S::Sp2)::Sp2
 	s = asmatrix(S)
