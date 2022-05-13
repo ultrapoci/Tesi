@@ -5,15 +5,11 @@ if "TERMALIZATION_LOG" ∉ keys(ENV)
 	ENV["TERMALIZATION_LOG"] = "0"
 end
 
-try
-	using OhMyREPL, Revise
-catch e
-	@warn "Failed importing OhMyREPL, Revise: " e
-end
 using Distributed, DistributedQCD, DataFrames, Suppressor, Term.progress
 
 include(srcdir("Utilities.jl"))
 try 
+	using Revise
 	includet(scriptsdir("parameters.jl")) 
 catch 
 	@warn "Including parameters without Revise.jl"
