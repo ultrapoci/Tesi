@@ -35,11 +35,16 @@ function Base.:*(S::Sp2, T::Sp2)::Sp2
 	R = asmatrix(S) * asmatrix(T)
 	@inbounds Sp2(R[1:2, 1:2], R[1:2, 3:4])
 end
-
 Base.:*(S::Sp2, T::AbstractMatrix) = asmatrix(S) * T
 Base.:*(T::AbstractMatrix, S::Sp2) = T * asmatrix(S)
 Base.:*(S::Sp2, T::StaticMatrix) = asmatrix(S) * T
 Base.:*(T::StaticMatrix, S::Sp2) = T * asmatrix(S)
+
+Base.:+(S::Sp2, T::Sp2) = asmatrix(S) + asmatrix(T)
+Base.:+(S::Sp2, T::AbstractMatrix) = asmatrix(S) + T
+Base.:+(T::AbstractMatrix, S::Sp2) = T + asmatrix(S)
+Base.:+(S::Sp2, T::StaticMatrix) = asmatrix(S) + T
+Base.:+(T::StaticMatrix, S::Sp2) = T + asmatrix(S)
 
 function Base.adjoint(S::Sp2)::Sp2
 	R = adjoint(asmatrix(S))
