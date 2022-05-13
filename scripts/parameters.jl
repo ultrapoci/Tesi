@@ -8,7 +8,6 @@ end
 
 Base.@kwdef struct TermParams <: Params
 	dims = (8, 8, 8)
-	#β = [i for i in 1.0:15.0]
 	β = [1.0, 2.0, 6.45]
 	latticestart = :cold
 	
@@ -23,12 +22,10 @@ Base.@kwdef struct TermParams <: Params
 		:avg_plaq		=> averageplaquette,
 		:polyloop		=> expval_polyloop,
 		:mod_polyloop	=> expval_modpolyloop,
-		:χ_product		=> susceptibility,
+		:χ				=> susceptibility,
 		:χᵥ				=> susceptibility_pervolume,
 		:action			=> action,
 		:action_squared	=> actionsquared,
-		#:χ_product		=> susceptibility2,
-		#:χᵥ_product	=> susceptibility_pervolume2,
 	)
 end
 
