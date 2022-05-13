@@ -152,7 +152,7 @@ function polyloop(L::Lattice{D}, inds::Indices{D}, x::NTuple{Dm1, Int}; log = fa
 	dist = size(procs(L)) # how are partitions distributed among workers
 	X = distribute(Array{Union{Sp2, Missing}}(undef, dist...), procs = current_workers, dist = collect(dist))
 	
-	with_workers(procs = current_workers) do _
+	with_workers(procs = current_workers) do
 		if all(x .∈ tail(localindices(L)))
 			time_direction = [l[1] for l in L[:L]]
 			local_x = tail(Tuple(findfirst(i -> tail(Tuple(i)) == x, inds[:L])))
@@ -189,7 +189,7 @@ function corr_polyloop(L::Lattice{D}, inds::Indices{D}, x::NTuple{Dm1, Int}, y::
 	X = distribute(Array{Union{Sp2, Missing}}(undef, dist...), procs = current_workers, dist = collect(dist))
 	Y = distribute(Array{Union{Sp2, Missing}}(undef, dist...), procs = current_workers, dist = collect(dist))
 	
-	with_workers(procs = current_workers) do _
+	with_workers(procs = current_workers) do
 		time_direction = [l[1] for l in L[:L]]
 		if all(x .∈ tail(localindices(L)))
 			local_x = tail(Tuple(findfirst(i -> tail(Tuple(i)) == x, inds[:L])))
@@ -239,7 +239,7 @@ function plaquettesum(L::Lattice{D}, inds::Indices{D}) where D
 	n_current_workers = length(current_workers)
 	# initialize a vector with nworkers() elements, of which each worker owns one cell
 	partial = dzeros((n_current_workers,), current_workers, [n_current_workers])
-	with_workers(procs = current_workers) do _	
+	with_workers(procs = current_workers) do
 		tot = 0.0
 		for x in CartesianIndices(L[:L]), u in 1:D-1, v in u+1:D
 			tot += tr(L[:L][x][u] * staple(L, v, u, inds[:L][x]))
@@ -262,7 +262,7 @@ function all_polyloops(L::Lattice{D}) where D
 	# initialize an empty array of array: each cell belongs to a worker, and it contains a D-1 dimensional array to store partial product of time-like link 
 	partial = DArray(I -> Array{Array{Sp2, D-1}}(undef, length.(I)...), dist, current_workers, dist);
 	
-	with_workers(procs = current_workers) do _
+	with_workers(procs = current_workers) do
 		localspacedims = tail(size(L[:L])) # size of the space part of local L
 		# product along time direction for each space point
 		time_direction = [l[1] for l in L[:L]] # links pointing in time direction

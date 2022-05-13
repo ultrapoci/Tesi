@@ -82,7 +82,7 @@ function overrelaxation!(L::Lattice{D}, evenmask::Mask{D}, inds::Indices{D}, nov
 	for i in 1:nover, parity in (:even, :odd), u in 1:D
 		log && @info "Overrelaxation" iter cycle=i parity direction=u
 		
-		with_workers(procs = vec(procs(L))) do _
+		with_workers(procs = vec(procs(L))) do
 			mask = parity == :even ? evenmask[:L] : .!evenmask[:L]
 
 			# filters indices using the mask `mask`
@@ -109,7 +109,7 @@ function heatbath!(L::Lattice{D}, evenmask::Mask{D}, inds::Indices{D}, β::Real;
 	for parity in (:even, :odd), u in 1:D
 		log && @info "Heat-bath" iter parity direction=u
 
-		with_workers(procs = vec(procs(L))) do _
+		with_workers(procs = vec(procs(L))) do
 			mask = parity == :even ? evenmask[:L] : .!evenmask[:L]
 
 			# filters indices using the mask `mask`
@@ -133,7 +133,7 @@ Normalize all links in the lattice `L` to make sure they belong to ``\\mathrm{Sp
 function normalizelattice!(L::Lattice{D}; log = false, iter = missing) where D
 	log && @info "Normalizing..." iter
 
-	with_workers(procs = vec(procs(L))) do _
+	with_workers(procs = vec(procs(L))) do
 		@maybe_threaded for u in 1:D
 			for x in eachindex(L[:L])
 				L[:L][x][u] = normalizeSp2(L[:L][x][u])

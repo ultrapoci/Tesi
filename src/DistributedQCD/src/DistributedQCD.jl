@@ -13,8 +13,8 @@ export averageplaquette, polyloop, corr_polyloop, expval_polyloop, expval_modpol
 export susceptibility2, susceptibility_pervolume2 # temp exports
 
 """
-	initprocs(n; threads = 1, kwargs...)
-Call `addprocs` with `n` processes passing the flags `--project --threads=...`, where the number of threads is decided by the `threads` argument.
+	initprocs(p; threads = 1, kwargs...)
+Call `addprocs` with `p` processes passing the flags `--project --threads=...`, where the number of threads is decided by the `threads` argument.
 """
 function initprocs(p; threads = 1, kwargs...) 
     ENV["JULIA_NODES"] = length(p)
@@ -24,11 +24,11 @@ end
 """
 	with_workers(f, args...; procs = workers())
 Spawn a task calling `f(w, args...)` for each process in `workers()`. Useful with the `do end` statement to run a function on all processes exactly once.
-`f` takes `w`, the id of the worker,  as the first argument. `procs` is the list of processes that run `f`, defaults to all processes. The main worker will wait for all \
+`procs` is the list of processes that run `f`, defaults to all processes. The main worker will wait for all \
 processes to finish before continuing.
 """
 with_workers(f, args...; procs = workers()) = @sync for w in procs
-	@spawnat w f(w, args...)
+	@spawnat w f(args...)
 end
 
 """
