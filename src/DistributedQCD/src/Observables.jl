@@ -52,26 +52,21 @@ Can be called with the symbol `χ`.
 """
 function susceptibility(L::Lattice{D}; log = false, iter = missing) where D
 	log && @info "Measuring susceptibility..." iter
-	sum(all_polyloops(L) .^ 2)  
+	loops = all_polyloops(L)
+	sum(loops .^ 2) - sum(loops)^2 / spatialvolume(L) # subtracting the condensate   
 end
 susceptibility(T::NamedTuple; kwargs...) = susceptibility(T.lattice; kwargs...)
 
-function susceptibility2(L::Lattice{D}; log = false, iter = missing) where D
-	log && @info "Measuring susceptibility..." iter
-	loops = all_polyloops(L)
-	φ₀ = loops[begin]
-	sum([φ₀ * loop for loop in loops])  
-end
-susceptibility2(T::NamedTuple; kwargs...) = susceptibility2(T.lattice; kwargs...)
 
 """
 See `susceptibility`.
 """
 χ = susceptibility
 
+
 """
-	susceptibility_pervolume(L::Lattice{D}; log = false, iter = missing) where D
-	susceptibility_pervolume(T::NamedTuple; kwargs...)
+susceptibility_pervolume(L::Lattice{D}; log = false, iter = missing) where D
+susceptibility_pervolume(T::NamedTuple; kwargs...)
 Return the susceptibility χ of the lattice `L` divided by the lattice spatial volume.
 
 Can be called with the symbol `χᵥ`.
@@ -82,11 +77,6 @@ function susceptibility_pervolume(L::Lattice{D}; log = false, iter = missing) wh
 end
 susceptibility_pervolume(T::NamedTuple; kwargs...) = susceptibility_pervolume(T.lattice; kwargs...)
 
-function susceptibility_pervolume2(L::Lattice{D}; log = false, iter = missing) where D
-	log && @info "Measuring susceptibility per volume..." iter
-	susceptibility2(L) / spatialvolume(L)
-end
-susceptibility_pervolume2(T::NamedTuple; kwargs...) = susceptibility_pervolume2(T.lattice; kwargs...)
 
 """
 See `susceptibility_pervolume`.
@@ -294,6 +284,23 @@ all_polyloops(T::NamedTuple; kwargs...) = all_polyloops(T.lattice; kwargs...)
 
 
 #* ===== LEGACY FUNCTIONS (they are probably slower for large lattices) =====
+
+#=
+
+function susceptibility2(L::Lattice{D}; log = false, iter = missing) where D
+	log && @info "Measuring susceptibility..." iter
+	loops = all_polyloops(L)
+	φ₀ = loops[begin]
+	sum([φ₀ * loop for loop in loops])  
+end
+susceptibility2(T::NamedTuple; kwargs...) = susceptibility2(T.lattice; kwargs...)
+
+function susceptibility_pervolume2(L::Lattice{D}; log = false, iter = missing) where D
+	log && @info "Measuring susceptibility per volume..." iter
+	susceptibility2(L) / spatialvolume(L)
+end
+susceptibility_pervolume2(T::NamedTuple; kwargs...) = susceptibility_pervolume2(T.lattice; kwargs...)
+=#
 
 #= function polyloop2(L::Lattice{D}, x::NTuple{Dm1, Int}; log = false, iter = missing) where {D, Dm1}
 	Dm1 ≠ D-1 && throw(TypeError(polyloop, NTuple{D-1, Int}, NTuple{Dm1, Int}))
