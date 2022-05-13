@@ -58,10 +58,12 @@ end
 
 LinearAlgebra.tr(S::Sp2) = 2(real(S.topleft[1, 1]) + real(S.topleft[2, 2]))
 
-Base.rand(::Type{Sp2}) = normalizeSp2(Sp2(
-	complex.(rand(Uniform(-1, 1), 2, 2), rand(Uniform(-1, 1), 2, 2)), 
-	complex.(rand(Uniform(-1, 1), 2, 2), rand(Uniform(-1, 1), 2, 2))
-))
+Base.rand(::Type{Sp2}) = normalizeSp2(
+	Sp2(
+		complex.(rand(Uniform(-1, 1), 2, 2), rand(Uniform(-1, 1), 2, 2)), 
+		complex.(rand(Uniform(-1, 1), 2, 2), rand(Uniform(-1, 1), 2, 2))
+	)
+)
 
 function normalizeSp2(S::Sp2)::Sp2
 	s = asmatrix(S)
