@@ -4,6 +4,23 @@ const Site{D} = MVector{D, Sp2}
 const LocalLattice{D} = Array{Site{D}, D}
 const Lattice{D} = DArray{Site{D}, D, LocalLattice{D}}
 
+"""
+	newlattice(dims::NTuple{D, Int}; start = :cold, kwargs...) where D
+	newlattice(dims::Vararg{Int, D}; kwargs...) where D
+Create a D-dimensional lattice of dimensions `dims`, where each cell contains a `MVector` (mutable, static vector) of \
+length `D`. Each entry of the vector contains an `Sp2` object and represents a link of the lattice pointing in a given \
+direction. The first entry is the time direction, while the entries from 2 to `D` are the spatial directions. 
+
+Returns a `NamedTuple` containing:
+- `lattice`, which is a `DArray` built as explained above
+- `mask`, which is a `DArray` of booleans, where `true` indicates the corresponding site is even, and `false` indicates the \
+corresponding site is odd
+- `inds`, which is a `DArray` of `CartesianIndex` objects, which describes the index position of the cell they belong to
+
+`mask` and `inds` are distributed among processes as `lattice` and have the same dimensions.
+
+Any keyword argument passed to `newlattice` is passed to the function `distribute` from DistributedArrays.jl.
+"""
 function newlattice(dims::NTuple{D, Int}; start = :cold, kwargs...) where D
 	lattice = if start == :cold
 		distribute([MVector{D}([Sp2() for _ in 1:D]) for _ in CartesianIndices(dims)]; kwargs...)
@@ -23,6 +40,19 @@ newlattice(dims::Vararg{Int, D}; kwargs...) where D = newlattice(Tuple(dims); kw
 addtuple(n::Int, d::Int, p::NTuple{D, Int}) where D = ntuple(i -> i == d ? p[i]+n : p[i], D)::NTuple{D, Int}
 addtuple(n::Int, d::Int, p::Vararg{Int, D}) where D = addtuple(n, d, Tuple(p))::NTuple{D, Int}
 
+"""
+	getlink(L::Lattice{D}, u::Int, x::NTuple{D, Int}) where D
+	getlink(L::Lattice{D}, u::Int, x::Vararg{Int, D}) where D
+	getlink(L::Lattice{D}, u::Int, x::CartesianIndex{D}) where D
+Return the link (an `Sp2` object) in the `x` site of the lattice `L` pointing in the `u` direction. 
+
+`x` is modded by `L`'s dimensions as to wrap around if it doesn't fit the correct dimensions, simulating periodic \
+boundary conditions.
+
+`u` can be negative: in this case, the link pointing in a negative direction is the link coming from a near neighbour of \
+`x`, pointing towards `x`, which is then Hermitian conjugated.
+
+"""
 function getlink(L::Lattice{D}, u::Int, x::NTuple{D, Int})::Sp2 where D
 	if u ∈ 1:D
 		p = CartesianIndex(mod1.(x, size(L)))
@@ -32,7 +62,7 @@ function getlink(L::Lattice{D}, u::Int, x::NTuple{D, Int})::Sp2 where D
 		p = CartesianIndex(mod1.(x̄, size(L)))
 		@inbounds L[p][-u]'
 	else
-		throw(ArgumentError("Link direction for lattice must be in range [1, $D] or [-$D, -1]. Got u = $u"))
+		throw(ArgumentError("Link direction for lattice must be in range [1, $D] or [-$D, -1]. Got u = $u."))
 	end
 end
 getlink(L::Lattice{D}, u::Int, x::Vararg{Int, D}) where D = getlink(L, u, Tuple(x))
@@ -79,11 +109,16 @@ end
 staple(L::Lattice{D}, v::Int, u::Int, x::Vararg{Int, D}) where D = staple(L, v, u, Tuple(x))
 staple(L::Lattice{D}, v::Int, u::Int, x::CartesianIndex{D}) where D = staple(L, v, u, Tuple(x))
 
+"""
+	sumstaples(L::Lattice{D}, u::Int, x::NTuple{D, Int}) where D
+	sumstaples(L::Lattice{D}, u::Int, x::Vararg{Int, D}) where D
+	sumstaples(L::Lattice{D}, u::Int, x::CartesianIndex{D}) where D
+Returns the sum of all the staples surrounding the link at position `x` of the lattice `L`, pointing in the `u` direction.
+`u` must be positive. 
+"""
 function sumstaples(L::Lattice{D}, u::Int, x::NTuple{D, Int})::SMatrix{4, 4, ComplexF64} where D
-	if u ∉ 1:D
-		throw(ArgumentError("Link's direction u must be in range [1, D], got $u."))	
-	end
-
+	u ∉ 1:D && throw(ArgumentError("Link's direction u must be in range [1, D], got $u."))	
+	
 	total = zeros(MMatrix{4, 4, ComplexF64})
 	for v in mod1.(u+1:u+D-1, D) # generate all D directions except u
 		total += staple(L, v, u, x) + staple(L, -v, u, x)
