@@ -43,9 +43,9 @@ oddmask(A) = [isodd(sum(Tuple(i))) for i in CartesianIndices(A)]
 
 """
 	staple(L::Lattice{D}, d::Int, u::Int, x::NTuple{D, Int}) where D
-Calculate the staple in the direction `d` around the link at position `x` pointing in the direction `u`.
+Calculate the staple in the direction `v` around the link at position `x` pointing in the direction `u`.
 
-Note that `d` ≠ `u`. `u` must be positive and `u` ≤ `D`, while `d` must be in range [1, `D`] or [-`D`, -1].
+Note that `v` ≠ `u`. `u` must be positive and `u` ≤ `D`, while `v` must be in range [1, `D`] or [-`D`, -1].
 """
 function staple(L::Lattice{D}, v::Int, u::Int, x::NTuple{D, Int}) where D
 	if u ∉ 1:D
