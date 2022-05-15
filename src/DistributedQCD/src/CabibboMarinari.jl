@@ -86,7 +86,7 @@ function overrelaxation!(L::Lattice{D}, evenmask::Mask{D}, inds::Indices{D}, nov
 			mask = parity == :even ? evenmask[:L] : .!evenmask[:L]
 
 			# filters indices using the mask `mask`
-			@maybe_threaded for x in CartesianIndices(L[:L])[mask] # x is the position of the link in the local array
+			for x in CartesianIndices(L[:L])[mask] # x is the position of the link in the local array
 				link::Sp2 = L[:L][x][u]
 				R = sumstaples(L, u, inds[:L][x]) # inds[:L][x] is the position of the link in the global array 
 				L[:L][x][u] = touch_overrelaxation(link, R)
@@ -113,7 +113,7 @@ function heatbath!(L::Lattice{D}, evenmask::Mask{D}, inds::Indices{D}, β::Real;
 			mask = parity == :even ? evenmask[:L] : .!evenmask[:L]
 
 			# filters indices using the mask `mask`
-			@maybe_threaded for x in CartesianIndices(L[:L])[mask] # x is the position of the link in the local array
+			for x in CartesianIndices(L[:L])[mask] # x is the position of the link in the local array
 				link::Sp2 = L[:L][x][u]
 				R = sumstaples(L, u, inds[:L][x]) # inds[:L][x] is the position of the link in the global array 
 				L[:L][x][u] = touch_heatbath(link, R, β)
@@ -134,7 +134,7 @@ function normalizelattice!(L::Lattice{D}; log = false, iter = missing) where D
 	log && @info "Normalizing..." iter
 
 	with_workers(procs = vec(procs(L))) do
-		@maybe_threaded for u in 1:D
+		 for u in 1:D
 			for x in eachindex(L[:L])
 				L[:L][x][u] = normalizeSp2(L[:L][x][u])
 			end
