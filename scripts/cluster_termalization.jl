@@ -5,7 +5,7 @@ if "TERMALIZATION_LOG" ∉ keys(ENV)
 	ENV["TERMALIZATION_LOG"] = "0"
 end
 
-using Distributed, DistributedQCD, DataFrames, Suppressor, Term.progress
+using Distributed, DistributedQCD, DataFrames, Suppressor, ProgressMeter
 
 include(srcdir("Utilities.jl"))
 try 
@@ -106,31 +106,46 @@ function run(allparams; n = nothing, strategy = :atleast, folder = "", save = tr
 	getpool(id) = pool[findfirst(x -> id ∈ x, pool)]
 
 	# setup progress bar
-	pbar = ProgressBar(expand = true, columns = :detailed, refresh_rate = 1)
-	job = addjob!(pbar, N = totaliter(allparams), description = pbardesc)
+	# pbar = ProgressBar(expand = true, columns = :detailed, refresh_rate = 1)
+	# job = addjob!(pbar, N = totaliter(allparams), description = pbardesc)
+	total_iter = totaliter(allparams)
+	pbar = getpbar(total_iter, desc = pbardesc, enabled = ENV["TERMALIZATION_LOG"] != "1")
 	channel = RemoteChannel(()->Channel{Bool}(), 1)
-	@async while take!(channel)
-		update!(job)
+	@async begin
+		i = 0 
+		while take!(channel)
+			i += 1
+			next!(pbar, showvalues = generate_showvalues(:iter => i, :total => total_iter))
+		end
+	end
+	
+	logchannel = RemoteChannel(()->Channel{Tuple}(), 1)
+	@async while true
+		(b, s) = take!(logchannel)
+		if b
+			println(rpad("\r" * s, displaysize(stdout)[2]))
+		else
+			break
+		end
 	end
 
 	@unpack observables = allparams
 	obsnames, obsfunctions = takeobservables(observables)
-	start!(pbar)
 	dicts = pmap(wp, dict_list(allparams)) do params
-		@info "Starting new termalization: workers = $(getpool(myid()))"
+		put!(logchannel, (true, "From worker $(myid()): starting new termalization with workers = $(getpool(myid()))"))
 		d = Dict(params)
 		obsmeasurements, L = termalization(params, obsfunctions, channel, procs = getpool(myid()), log = ENV["TERMALIZATION_LOG"] == "1")
 		d[:data] = DataFrame(obsmeasurements, collect(obsnames))
 		d[:L] = (lattice = convert(Array, L.lattice), mask = convert(Array, L.mask), inds = convert(Array, L.inds))
 		if save
 			jld2name = savename(params, "jld2", sort = false)
-			@info "Saving jld2 file '$jld2name' in $(datadir(folder))..."
+			put!(logchannel, (true, "From worker $(myid()): saving jld2 file '$jld2name' in $(datadir(folder))"))
 			@suppress_err safesave(datadir(folder, jld2name), d) # suppress warnings about symbols converted to strings
 		end
 		d
 	end
 	put!(channel, false)
-	stop!(pbar)
+	put!(logchannel, (false,))
 	dicts
 end
 run(; kwargs...) = run(TermParams(); kwargs...)
