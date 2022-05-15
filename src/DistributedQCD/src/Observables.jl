@@ -51,7 +51,7 @@ Return the action squared for β = 8/g², defined as -2/g² times the sum over a
 """
 actionsquared(L::Lattice{D}, inds::Indices{D}, β::Real; kwargs...) where D = _actionsquared(plaquettesum(L, inds), β; kwargs...)
 actionsquared(T::NamedTuple, β::Real; kwargs...) = actionsquared(T.lattice, T.inds, β; kwargs...)
-actionsquared(C::ObsConfig; kwargs...) = _action(C.plaquette_sum, C.β; kwargs...)
+actionsquared(C::ObsConfig; kwargs...) = _actionsquared(C.plaquette_sum, C.β; kwargs...)
 
 function _actionsquared(plaquette_sum::Real, β::Real; log = false, iter = missing)
 	log && @info "Measuring action squared..." iter
@@ -95,7 +95,7 @@ susceptibility_pervolume(L::Lattice; kwargs...) = _susceptibility_pervolume(all_
 susceptibility_pervolume(T::NamedTuple; kwargs...) = susceptibility_pervolume(T.lattice; kwargs...)
 susceptibility_pervolume(C::ObsConfig; kwargs...) = _susceptibility_pervolume(C.polyloops, spatialvolume(C.L); kwargs...)
 
-function _susceptibility_pervolume(polyloops::Array{Float64}, volume; log = false, iter = missing)
+function _susceptibility_pervolume(polyloops::Array{Float64}, volume::Int; log = false, iter = missing)
 	log && @info "Measuring susceptibility per volume..." iter
 	_susceptibility(polyloops, volume) / volume
 end
