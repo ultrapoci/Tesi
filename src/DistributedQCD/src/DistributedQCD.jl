@@ -9,8 +9,8 @@ export SU2, asmatrix, normalizeSU2, normalizeSU2det
 export Sp2, asmatrix, normalizeSp2
 export Mask, Indices, Site, LocalLattice, Lattice, newlattice, evenmask, oddmask
 export one_termalization!
-export averageplaquette, polyloop, corr_polyloop, expval_polyloop, expval_modpolyloop, susceptibility, χ, susceptibility_pervolume, χᵥ, binder, gᵣ, action, actionsquared
-export susceptibility2, susceptibility_pervolume2 # temp exports
+export ObsConfig, averageplaquette, polyloop, corr_polyloop, expval_polyloop, expval_modpolyloop
+export susceptibility, χ, susceptibility_pervolume, χᵥ, binder, gᵣ, action, actionsquared
 
 """
 	initprocs(p; threads = 1, kwargs...)
