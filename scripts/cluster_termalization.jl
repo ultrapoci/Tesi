@@ -44,15 +44,14 @@ function termalization!(L, params, observable::Function, v::Vector, channel; log
 	for n in 1:nterm
 		log && @info "Termalization" n nterm
 		one_termalization!(L, nover, β, n % nnorm == 0; log = log, iter = n)
-		T = (L..., β = β) # used to pass β to observables that require it
 		if n ≥ startobs && n % nobs == 0
-			push!(v, observable(T; log = log, iter = n))
+			push!(v, observable(ObsConfig(L, β); log = log, iter = n))
 		end
 		put!(channel, true)
 	end
 	
 	# make sure the last iteration is measured
-	nterm % nobs ≠ 0 && push!(v, observable(L; log = log, iter = n))
+	nterm % nobs ≠ 0 && push!(v, observable(ObsConfig(L, β); log = log, iter = n))
 end
 
 function termalization(params, observable::Function, channel; procs = workers(), kwargs...)
@@ -69,15 +68,14 @@ function termalization!(L, params, observables, v, channel; log = false)
 	for n in 1:nterm
 		log && @info "Termalization" n nterm
 		one_termalization!(L, nover, β, n % nnorm == 0; log = log, iter = n)
-		T = (L..., β = β) # used to pass β to observables that require it
 		if n ≥ startobs && n % nobs == 0
-			push!(v, [obs(T; log = log, iter = n) for obs in observables])
+			push!(v, [obs(ObsConfig(L, β); log = log, iter = n) for obs in observables])
 		end
 		put!(channel, true)
 	end
 
 	# make sure the last iteration is measured
-	nterm % nobs ≠ 0 && push!(v, [obs(L; log = log, iter = n) for obs in observables])
+	nterm % nobs ≠ 0 && push!(v, [obs(ObsConfig(L, β); log = log, iter = n) for obs in observables])
 end
 
 function termalization(params, observables, channel; procs = workers(), kwargs...)
@@ -105,7 +103,7 @@ function run(allparams; n = nothing, strategy = :atleast, folder = "", save = tr
 		p = partition_workers(workers(), n, strategy = strategy)
 		WorkerPool(first.(p)), p, "Termalization using $(length(p)) groups of workers..."
 	end
-	getpool(id) = pool[id .∈ pool][begin]
+	getpool(id) = pool[findfirst(x -> id ∈ x, pool)]
 
 	# setup progress bar
 	pbar = ProgressBar(expand = true, columns = :detailed, refresh_rate = 1)
