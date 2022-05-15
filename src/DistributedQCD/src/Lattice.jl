@@ -118,12 +118,13 @@ Returns the sum of all the staples surrounding the link at position `x` of the l
 """
 function sumstaples(L::Lattice{D}, u::Int, x::NTuple{D, Int})::SMatrix{4, 4, ComplexF64} where D
 	u ∉ 1:D && throw(ArgumentError("Link's direction u must be in range [1, D], got $u."))	
-	
-	total = zeros(MMatrix{4, 4, ComplexF64})
-	for v in mod1.(u+1:u+D-1, D) # generate all D directions except u
-		total += staple(L, v, u, x) + staple(L, -v, u, x)
+
+	partial = Vector{Sp2}(undef, 2(D-1))
+	r = mod1.(u+1:u+D-1, D)
+	for (i, v) in enumerate(vcat(r, -r))
+		partial[i] = staple(L, v, u, x)
 	end
-	SMatrix(total)
+	sum(partial)
 end
 sumstaples(L::Lattice{D}, u::Int, x::Vararg{Int, D}) where D = sumstaples(L, u, Tuple(x))
 sumstaples(L::Lattice{D}, u::Int, x::CartesianIndex{D}) where D = sumstaples(L, u, Tuple(x))
@@ -131,3 +132,18 @@ sumstaples(L::Lattice{D}, u::Int, x::CartesianIndex{D}) where D = sumstaples(L, 
 plaquette(L::Lattice{D}, v::Int, u::Int, x::NTuple{D, Int}) where D = getlink(L, u, x) * staple(L, v, u, x)
 plaquette(L::Lattice{D}, v::Int, u::Int, x::Vararg{Int, D}) where D = plaquette(L, v, u, Tuple(x))
 plaquette(L::Lattice{D}, v::Int, u::Int, x::CartesianIndex{D}) where D = plaquette(L, v, u, Tuple(x))
+
+#=
+function sumstaples(L::Lattice{D}, u::Int, x::NTuple{D, Int})::SMatrix{4, 4, ComplexF64} where D
+	u ∉ 1:D && throw(ArgumentError("Link's direction u must be in range [1, D], got $u."))	
+	
+	total = zeros(MMatrix{4, 4, ComplexF64})
+	for v in mod1.(u+1:u+D-1, D) # generate all D directions except u
+		total += staple(L, v, u, x) + staple(L, -v, u, x)
+	end
+
+	SMatrix(total)
+end
+sumstaples(L::Lattice{D}, u::Int, x::Vararg{Int, D}) where D = sumstaples(L, u, Tuple(x))
+sumstaples(L::Lattice{D}, u::Int, x::CartesianIndex{D}) where D = sumstaples(L, u, Tuple(x))
+=#
