@@ -44,8 +44,9 @@ function termalization!(L, params, observable::Function, v::Vector, channel; log
 	for n in 1:nterm
 		log && @info "Termalization" n nterm
 		one_termalization!(L, nover, β, n % nnorm == 0; log = log, iter = n)
+		C = ObsConfig(L, β)
 		if n ≥ startobs && n % nobs == 0
-			push!(v, observable(ObsConfig(L, β); log = log, iter = n))
+			push!(v, observable(C; log = log, iter = n))
 		end
 		put!(channel, true)
 	end
@@ -68,8 +69,9 @@ function termalization!(L, params, observables, v, channel; log = false)
 	for n in 1:nterm
 		log && @info "Termalization" n nterm
 		one_termalization!(L, nover, β, n % nnorm == 0; log = log, iter = n)
+		C = ObsConfig(L, β)
 		if n ≥ startobs && n % nobs == 0
-			push!(v, [obs(ObsConfig(L, β); log = log, iter = n) for obs in observables])
+			push!(v, [obs(C; log = log, iter = n) for obs in observables])
 		end
 		put!(channel, true)
 	end
@@ -95,7 +97,7 @@ function run(allparams; n = nothing, strategy = :atleast, folder = "", save = tr
 
 	# setup workers pool
 	wp, pool, pbardesc = if isnothing(n)
-		@info "Dividing workers according to the node they belong."
+		@info "Dividing workers according to the node they belong to."
 		nodes = parse(Int, ENV["JULIA_NODES"])
 		p = nodes == 1 ? [workers()] : procs.(workers()[begin:nodes])
 		WorkerPool(workers()[begin:nodes]), p, "Termalization using $nodes nodes..."
@@ -106,20 +108,17 @@ function run(allparams; n = nothing, strategy = :atleast, folder = "", save = tr
 	getpool(id) = pool[findfirst(x -> id ∈ x, pool)]
 
 	# setup progress bar
-	# pbar = ProgressBar(expand = true, columns = :detailed, refresh_rate = 1)
-	# job = addjob!(pbar, N = totaliter(allparams), description = pbardesc)
 	total_iter = totaliter(allparams)
 	pbar = getpbar(total_iter, desc = pbardesc, enabled = ENV["TERMALIZATION_LOG"] != "1")
-	channel = RemoteChannel(()->Channel{Bool}(), 1)
+	pbarchannel = RemoteChannel(()->Channel{Bool}(), 1)
+	logchannel = RemoteChannel(()->Channel{Tuple}(), 1)
 	@async begin
 		i = 0 
-		while take!(channel)
+		while take!(pbarchannel)
 			i += 1
 			next!(pbar, showvalues = generate_showvalues(:iter => i, :total => total_iter))
 		end
-	end
-	
-	logchannel = RemoteChannel(()->Channel{Tuple}(), 1)
+	end	
 	@async while true
 		(b, s) = take!(logchannel)
 		if b
@@ -134,9 +133,9 @@ function run(allparams; n = nothing, strategy = :atleast, folder = "", save = tr
 	dicts = pmap(wp, dict_list(allparams)) do params
 		put!(logchannel, (true, "From worker $(myid()): starting new termalization with workers = $(getpool(myid()))"))
 		d = Dict(params)
-		obsmeasurements, L = termalization(params, obsfunctions, channel, procs = getpool(myid()), log = ENV["TERMALIZATION_LOG"] == "1")
+		obsmeasurements, L = termalization(params, obsfunctions, pbarchannel, procs = getpool(myid()), log = ENV["TERMALIZATION_LOG"] == "1")
 		d[:data] = DataFrame(obsmeasurements, collect(obsnames))
-		d[:L] = (lattice = convert(Array, L.lattice), mask = convert(Array, L.mask), inds = convert(Array, L.inds))
+		d[:L] = NamedTuple(keys(L) .=> convert.(Array, values(L))) # bring L into local process
 		if save
 			jld2name = savename(params, "jld2", sort = false)
 			put!(logchannel, (true, "From worker $(myid()): saving jld2 file '$jld2name' in $(datadir(folder))"))
@@ -144,7 +143,7 @@ function run(allparams; n = nothing, strategy = :atleast, folder = "", save = tr
 		end
 		d
 	end
-	put!(channel, false)
+	put!(pbarchannel, false)
 	put!(logchannel, (false,))
 	dicts
 end
