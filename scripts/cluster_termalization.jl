@@ -5,18 +5,21 @@ if "TERMALIZATION_LOG" ∉ keys(ENV)
 	ENV["TERMALIZATION_LOG"] = "0"
 end
 
+@info "Importing packages..."
 using Distributed, DistributedQCD, DataFrames, Suppressor, ProgressMeter
 
+@info "Including 'Utilities.jl'..."
 include(srcdir("Utilities.jl"))
-try 
+try
 	using Revise
+	@info "Including 'parameters.jl'..."
 	includet(scriptsdir("parameters.jl")) 
 catch 
 	@warn "Including parameters without Revise.jl"
 	include(scriptsdir("parameters.jl")) 
 end
 
-
+@info "Building termalization functions..."
 #* ===== TERMALIZATION =====
 
 function termalization!(L, params, channel; log = false)
@@ -93,8 +96,12 @@ end
 
 function run(allparams; n = nothing, strategy = :atleast, folder = "", save = true)
 	strategy ∉ [:atleast, :atmost] && throw(ArgumentError("strategy must be :atleast or :atmost, got :$strategy."))
-	!save && @warn "Current simulation is not going to be saved!"
-
+	if save
+		@info "Data will be saved in $(datadir(folder))" 
+	else
+		@warn "Current simulation is not going to be saved!"
+	end
+	
 	# setup workers pool
 	wp, pool, pbardesc = if isnothing(n)
 		@info "Dividing workers according to the node they belong to."
