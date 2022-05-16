@@ -74,7 +74,7 @@ susceptibility(C::ObsConfig; kwargs...) = _susceptibility(C.polyloops, spatialvo
 
 function _susceptibility(polyloops::Array{Float64}, volume::Int; log = false, iter = missing)
 	log && @info "Measuring susceptibility..." iter
-	sum(polyloops .^ 2) - sum(polyloops)^2 / volume # subtracting the condensate  
+	sum(polyloops .^ 2) - sum(abs.(polyloops))^2 / volume # subtracting the condensate  
 end
 
 """
