@@ -5,7 +5,7 @@ const LocalLattice{D} = Array{Site{D}, D}
 const Lattice{D} = DArray{Site{D}, D, LocalLattice{D}}
 
 """
-	newlattice(dims::NTuple{D, Int}; start = :cold, kwargs...) where D
+	newlattice(dims::Dims{D}; start = :cold, kwargs...) where D
 	newlattice(dims::Vararg{Int, D}; kwargs...) where D
 Create a D-dimensional lattice of dimensions `dims`, where each cell contains a `MVector` (mutable, static vector) of \
 length `D`. Each entry of the vector contains an `Sp2` object and represents a link of the lattice pointing in a given \
@@ -21,7 +21,7 @@ corresponding site is odd
 
 Any keyword argument passed to `newlattice` is passed to the function `distribute` from DistributedArrays.jl.
 """
-function newlattice(dims::NTuple{D, Int}; start = :cold, kwargs...) where D
+function newlattice(dims::Dims{D}; start = :cold, kwargs...) where D
 	lattice = if start == :cold
 		distribute([MVector{D}([Sp2() for _ in 1:D]) for _ in CartesianIndices(dims)]; kwargs...)
 	elseif start == :hot
@@ -37,11 +37,14 @@ function newlattice(dims::NTuple{D, Int}; start = :cold, kwargs...) where D
 end
 newlattice(dims::Vararg{Int, D}; kwargs...) where D = newlattice(Tuple(dims); kwargs...)
 
-addtuple(n::Int, d::Int, p::NTuple{D, Int}) where D = ntuple(i -> i == d ? p[i]+n : p[i], D)::NTuple{D, Int}
-addtuple(n::Int, d::Int, p::Vararg{Int, D}) where D = addtuple(n, d, Tuple(p))::NTuple{D, Int}
+evenmask(A) = [iseven(sum(Tuple(i))) for i in CartesianIndices(A)]
+oddmask(A) = [isodd(sum(Tuple(i))) for i in CartesianIndices(A)]
+
+addtuple(n::Int, d::Int, p::Dims{D}) where D = ntuple(i -> i == d ? p[i]+n : p[i], D)::Dims{D}
+addtuple(n::Int, d::Int, p::Vararg{Int, D}) where D = addtuple(n, d, Tuple(p))::Dims{D}
 
 """
-	getlink(L::Lattice{D}, u::Int, x::NTuple{D, Int}) where D
+	getlink(L::Lattice{D}, u::Int, x::Dims{D}) where D
 	getlink(L::Lattice{D}, u::Int, x::Vararg{Int, D}) where D
 	getlink(L::Lattice{D}, u::Int, x::CartesianIndex{D}) where D
 Return the link (an `Sp2` object) in the `x` site of the lattice `L` pointing in the `u` direction. 
@@ -53,12 +56,12 @@ boundary conditions.
 `x`, pointing towards `x`, which is then Hermitian conjugated.
 
 """
-function getlink(L::Lattice{D}, u::Int, x::NTuple{D, Int})::Sp2 where D
+function getlink(L::Lattice{D}, u::Int, x::Dims{D})::Sp2 where D
 	if u ∈ 1:D
 		p = CartesianIndex(mod1.(x, size(L)))
 		@inbounds L[p][u]
 	elseif u ∈ -D:-1
-		x̄::NTuple{D, Int} = addtuple(-1, -u, x)
+		x̄::Dims{D} = addtuple(-1, -u, x)
 		p = CartesianIndex(mod1.(x̄, size(L)))
 		@inbounds L[p][-u]'
 	else
@@ -68,16 +71,13 @@ end
 getlink(L::Lattice{D}, u::Int, x::Vararg{Int, D}) where D = getlink(L, u, Tuple(x))
 getlink(L::Lattice{D}, u::Int, x::CartesianIndex{D}) where D = getlink(L, u, Tuple(x))
 
-evenmask(A) = [iseven(sum(Tuple(i))) for i in CartesianIndices(A)]
-oddmask(A) = [isodd(sum(Tuple(i))) for i in CartesianIndices(A)]
-
 """
-	staple(L::Lattice{D}, d::Int, u::Int, x::NTuple{D, Int}) where D
+	staple(L::Lattice{D}, d::Int, u::Int, x::Dims{D}) where D
 Calculate the staple in the direction `v` around the link at position `x` pointing in the direction `u`.
 
 Note that `v` ≠ `u`. `u` must be positive and `u` ≤ `D`, while `v` must be in range [1, `D`] or [-`D`, -1].
 """
-function staple(L::Lattice{D}, v::Int, u::Int, x::NTuple{D, Int}) where D
+function staple(L::Lattice{D}, v::Int, u::Int, x::Dims{D}) where D
 	if u ∉ 1:D
 		throw(ArgumentError("The link's direction must be in range [1, $D]: got u=$u."))
 	elseif v ∉ 1:D && v ∉ -D:-1
@@ -110,13 +110,13 @@ staple(L::Lattice{D}, v::Int, u::Int, x::Vararg{Int, D}) where D = staple(L, v, 
 staple(L::Lattice{D}, v::Int, u::Int, x::CartesianIndex{D}) where D = staple(L, v, u, Tuple(x))
 
 """
-	sumstaples(L::Lattice{D}, u::Int, x::NTuple{D, Int}) where D
+	sumstaples(L::Lattice{D}, u::Int, x::Dims{D}) where D
 	sumstaples(L::Lattice{D}, u::Int, x::Vararg{Int, D}) where D
 	sumstaples(L::Lattice{D}, u::Int, x::CartesianIndex{D}) where D
 Returns the sum of all the staples surrounding the link at position `x` of the lattice `L`, pointing in the `u` direction.
 `u` must be positive. 
 """
-function sumstaples(L::Lattice{D}, u::Int, x::NTuple{D, Int})::SMatrix{4, 4, ComplexF64} where D
+function sumstaples(L::Lattice{D}, u::Int, x::Dims{D})::SMatrix{4, 4, ComplexF64} where D
 	u ∉ 1:D && throw(ArgumentError("Link's direction u must be in range [1, D], got $u."))	
 
 	partial = Vector{Sp2}(undef, 2(D-1))
@@ -129,12 +129,12 @@ end
 sumstaples(L::Lattice{D}, u::Int, x::Vararg{Int, D}) where D = sumstaples(L, u, Tuple(x))
 sumstaples(L::Lattice{D}, u::Int, x::CartesianIndex{D}) where D = sumstaples(L, u, Tuple(x))
 
-plaquette(L::Lattice{D}, v::Int, u::Int, x::NTuple{D, Int}) where D = getlink(L, u, x) * staple(L, v, u, x)
+plaquette(L::Lattice{D}, v::Int, u::Int, x::Dims{D}) where D = getlink(L, u, x) * staple(L, v, u, x)
 plaquette(L::Lattice{D}, v::Int, u::Int, x::Vararg{Int, D}) where D = plaquette(L, v, u, Tuple(x))
 plaquette(L::Lattice{D}, v::Int, u::Int, x::CartesianIndex{D}) where D = plaquette(L, v, u, Tuple(x))
 
 #=
-function sumstaples(L::Lattice{D}, u::Int, x::NTuple{D, Int})::SMatrix{4, 4, ComplexF64} where D
+function sumstaples(L::Lattice{D}, u::Int, x::Dims{D})::SMatrix{4, 4, ComplexF64} where D
 	u ∉ 1:D && throw(ArgumentError("Link's direction u must be in range [1, D], got $u."))	
 	
 	total = zeros(MMatrix{4, 4, ComplexF64})
