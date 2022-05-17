@@ -89,7 +89,7 @@ md"""
 """
 
 # ╔═╡ 50505008-1375-4d69-bea2-26f70fc703be
-#=
+
 begin
 	temp = DataFrame()
 	for data in df.data
@@ -97,14 +97,15 @@ begin
 		append!(
 			temp,
 			Dict(:susc =>
-				measurement(data.φ² .- data.φ .^ 2)
+				measurement(data.φ² .- 
+				data.φ .^ 2)
 			)
 		)
 	end
 	data = hcat(df, temp);
 end
-=#
 
+#=
 begin
 	temp = DataFrame();
 	for data in df.data
@@ -117,6 +118,7 @@ begin
 	end;
 	data = hcat(df, temp);
 end;
+=#
 
 
 #=data = @transform(df, :susc = 
@@ -189,7 +191,7 @@ begin
 			label = "L = $L", 
 			marker = (marker, 3.5), 
 			msc = :auto,
-			markerstrokewidth = 0.2
+			markerstrokewidth = 0.5
 		)
 	end
 	wsave(plotsdir("susc", file_name), p)
