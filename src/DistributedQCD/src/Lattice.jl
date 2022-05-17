@@ -61,8 +61,7 @@ function getlink(L::Lattice{D}, u::Int, x::Dims{D})::Sp2 where D
 		p = CartesianIndex(mod1.(x, size(L)))
 		@inbounds L[p][u]
 	elseif u ∈ -D:-1
-		x̄::Dims{D} = addtuple(-1, -u, x)
-		p = CartesianIndex(mod1.(x̄, size(L)))
+		p = CartesianIndex(mod1.(addtuple(-1, -u, x), size(L)))
 		@inbounds L[p][-u]'
 	else
 		throw(ArgumentError("Link direction for lattice must be in range [1, $D] or [-$D, -1]. Got u = $u."))
@@ -89,12 +88,12 @@ function staple(L::Lattice{D}, v::Int, u::Int, x::Dims{D}) where D
 	û = MVector(x)
 	v̂ = copy(û)
 	ŵ = copy(û) # û + v̂
-
+	
 	su = sign(u)
 	sv = sign(v)
 	iu = abs(u)
 	iv = abs(v)
-
+	
 	@inbounds û[iu] += su
 	@inbounds v̂[iv] += sv
 	@inbounds ŵ[iu] += su
@@ -119,12 +118,8 @@ Returns the sum of all the staples surrounding the link at position `x` of the l
 function sumstaples(L::Lattice{D}, u::Int, x::Dims{D})::SMatrix{4, 4, ComplexF64} where D
 	u ∉ 1:D && throw(ArgumentError("Link's direction u must be in range [1, D], got $u."))	
 
-	partial = Vector{Sp2}(undef, 2(D-1))
-	r = mod1.(u+1:u+D-1, D)
-	for (i, v) in enumerate(vcat(r, -r))
-		partial[i] = staple(L, v, u, x)
-	end
-	sum(partial)
+	r = mod1.(u+1:u+D-1, D) # generate all D directions except 'u'
+	sum(staple(L, v, u, x) for v in vcat(r, -r))
 end
 sumstaples(L::Lattice{D}, u::Int, x::Vararg{Int, D}) where D = sumstaples(L, u, Tuple(x))
 sumstaples(L::Lattice{D}, u::Int, x::CartesianIndex{D}) where D = sumstaples(L, u, Tuple(x))
