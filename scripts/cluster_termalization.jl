@@ -94,7 +94,7 @@ end
 
 #* ===== RUN =====
 
-function run(allparams; n = nothing, strategy = :atleast, folder = "", save = true)
+function run(allparams; n = nothing, strategy = :atleast, folder = "", save = true, digits = nothing)
 	strategy ∉ [:atleast, :atmost] && throw(ArgumentError("strategy must be :atleast or :atmost, got :$strategy."))
 	if save
 		@info "Data will be saved in $(datadir(folder))" 
@@ -144,7 +144,7 @@ function run(allparams; n = nothing, strategy = :atleast, folder = "", save = tr
 		d[:data] = DataFrame(obsmeasurements, collect(obsnames))
 		d[:L] = NamedTuple(keys(L) .=> convert.(Array, values(L))) # bring L into local process
 		if save
-			jld2name = savename(params, "jld2", sort = false)
+			jld2name = savename(params, "jld2", digits = digits, sort = false)
 			put!(logchannel, (true, "From worker $(myid()): saving jld2 file '$jld2name' in $(datadir(folder))"))
 			@suppress_err safesave(datadir(folder, jld2name), d) # suppress warnings about symbols converted to strings
 		end
