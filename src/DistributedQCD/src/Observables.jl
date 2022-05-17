@@ -150,6 +150,21 @@ function _expval_polyloop(polyloops::Array{Float64}, volume::Int; log = false, i
 end
 
 """
+	expval_polyloop_squared(L::Lattice; log = false, iter = missing)
+	expval_polyloop_squared(T::NamedTuple; kwargs...)
+	expval_polyloop_squared(C::ObsConfig; kwargs...)
+Return the expectation value of the Polyakov loop squared of the lattice `L`.
+"""
+expval_polyloop_squared(L::Lattice; kwargs...) = _expval_polyloop_squared(all_polyloops(L), spatialvolume(L); kwargs...)
+expval_polyloop_squared(T::NamedTuple; kwargs...) = expval_polyloop_squared(T.lattice; kwargs...)
+expval_polyloop_squared(C::ObsConfig; kwargs...) = _expval_polyloop_squared(C.polyloops, spatialvolume(C.L); kwargs...)
+
+function _expval_polyloop_squared(polyloops::Array{Float64}, volume::Int; log = false, iter = missing) where D
+	log && @info "Measuring exp. value of the squares of Polyakov loops..." iter
+	sum(polyloops .^ 2) / volume # sum of the traces of all polyakov loops
+end
+
+"""
 	expval_modpolyloop(L::Lattice; log = false, iter = missing)
 	expval_modpolyloop(T::NamedTuple; kwargs...)
 	expval_modpolyloop(C::ObsConfig; kwargs...)
