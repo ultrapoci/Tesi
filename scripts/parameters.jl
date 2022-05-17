@@ -13,7 +13,7 @@ Base.@kwdef struct TermParams <: Params
 	β = sort(unique(vcat(6.43:0.01:6.49, 6.456:0.001:6.47)))
 	latticestart = :cold
 	
-	nterm = 300
+	nterm = 400
 	nnorm = 10 # after how many cycle to normalize lattice
 	nover = 3 # how many cycles of overrelaxation to do
 	
@@ -24,6 +24,7 @@ Base.@kwdef struct TermParams <: Params
 		:avg_plaq	=> averageplaquette,
 		:φ			=> expval_polyloop,
 		:mod_φ		=> expval_modpolyloop,
+		:φ²			=> expval_polyloop_squared,
 		:χ			=> susceptibility,
 		:χᵥ			=> susceptibility_pervolume,
 		:S			=> action,
