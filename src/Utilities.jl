@@ -1,4 +1,4 @@
-import DrWatson, Statistics, DataFrames, Measurements, CSV, DelimitedFiles, ProgressMeter
+import DrWatson, Statistics, DataFrames, Measurements, CSV, DelimitedFiles, ProgressMeter, Plots
 
 function DrWatson._wsave(filename, data::Dict)
 	if splitext(filename)[2] == ".dat" 
@@ -9,6 +9,7 @@ function DrWatson._wsave(filename, data::Dict)
 end
 
 DrWatson._wsave(filename, data::DataFrames.DataFrame) = CSV.write(filename, data)
+DrWatson._wsave(filename, p::Plots.Plot; kwargs...) = Plots.savefig(p, filename; kwargs...)
 
 showall(x) = begin show(stdout, "text/plain", x); println() end
 
