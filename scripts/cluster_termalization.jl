@@ -107,10 +107,10 @@ function run(allparams; n = nothing, strategy = :atleast, folder = "", save = tr
 		@info "Dividing workers according to the node they belong to."
 		nodes = parse(Int, ENV["JULIA_NODES"])
 		p = nodes == 1 ? [workers()] : procs.(workers()[begin:nodes])
-		WorkerPool(workers()[begin:nodes]), p, "Termalization using $nodes nodes..."
+		WorkerPool(workers()[begin:nodes]), p, "$nodes nodes"
 	else
 		p = partition_workers(workers(), n, strategy = strategy)
-		WorkerPool(first.(p)), p, "Termalization using $(length(p)) groups of workers..."
+		WorkerPool(first.(p)), p, "$(length(p)) groups of workers"
 	end
 	getpool(id) = pool[findfirst(x -> id ∈ x, pool)]
 
