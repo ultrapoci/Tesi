@@ -89,14 +89,12 @@ function staple(L::Lattice{D}, v::Int, u::Int, x::Dims{D}) where D
 	v̂ = copy(û)
 	ŵ = copy(û) # û + v̂
 	
-	su = sign(u)
 	sv = sign(v)
-	iu = abs(u)
 	iv = abs(v)
 	
-	@inbounds û[iu] += su
+	@inbounds û[u] += 1
 	@inbounds v̂[iv] += sv
-	@inbounds ŵ[iu] += su
+	@inbounds ŵ[u] += 1
 	@inbounds ŵ[iv] += sv
 
 	U₁ = getlink(L,  v, Tuple(û))
