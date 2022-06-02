@@ -8,10 +8,12 @@ end
 
 Base.@kwdef struct TermParams <: Params
 	dims = [(4, L, L) for L in 20:10:80]
-	β = sort(unique(vcat(
-		4.0:1.0:20.0,
-		6.0:0.5:11.0
-	)))
+	β = [@onlyif(:dims==(4, 80, 80), [6.5, 8.0, 8.5])...,
+		sort(unique(vcat(21.0:1.0:30.0)))...]
+	# β = sort(unique(vcat(
+	# 	4.0:1.0:20.0,
+	# 	6.0:0.5:11.0
+	# )))
 	latticestart = :cold
 	
 	nterm = 15_000
