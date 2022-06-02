@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.4
+# v0.19.5
 
 using Markdown
 using InteractiveUtils
@@ -45,11 +45,12 @@ results = collect_results(datadir(folder));
 # ╔═╡ 9a0ec951-a1e0-4247-8497-4872cca3fe9e
 md"""
 X axis label: $(@bind xaxis_label TextField(default="β = 8/g²"))
+Latex: $(@bind xlabel_latex CheckBox())
 """
 
-# ╔═╡ 2edfa35d-ae20-4fce-8ba3-4262fcd6f517
+# ╔═╡ 906aa83b-511d-4153-b823-9e4d9235a96d
 md"""
-File name: $(@bind file_name TextField(default = "plot.png"))
+Plot folder: $(@bind plot_folder TextField(default = folder))
 """
 
 # ╔═╡ 3a4ed019-6af7-47c3-8614-8478007cf99f
@@ -111,11 +112,18 @@ Observable to plot: $(@bind plot_col Select(obsnames))
 # ╔═╡ edd17153-8b5c-4037-88ce-3eae67765268
 md"""
 Plot's title: $(@bind plot_title TextField(default=String(plot_col)))
+Latex: $(@bind title_latex CheckBox())
 """
 
 # ╔═╡ cf926d06-09f7-4845-8b6c-706e1d38c9bb
 md"""
 Y axis label: $(@bind yaxis_label TextField(default=String(plot_col)))
+Latex: $(@bind ylabel_latex CheckBox())
+"""
+
+# ╔═╡ 2edfa35d-ae20-4fce-8ba3-4262fcd6f517
+md"""
+File name: $(@bind file_name TextField(default = string(plot_col)*".png"))
 """
 
 # ╔═╡ 0b1bc5a8-e298-41b4-8d2e-648f3c6911e0
@@ -137,9 +145,9 @@ markers = [:circle, :rect, :diamond, :hexagon, :cross, :xcross, :utriangle, :dtr
 # ╔═╡ 43ceb641-52e5-4e89-bf2c-032b70d5c58f
 function build_plot()
 	p = plot(
-		title = plot_title, 
-		xlabel = xaxis_label, 
-		ylabel = yaxis_label, 
+		title = title_latex ? L"%$plot_title" : plot_title, 
+		xlabel = xlabel_latex ? L"%$xaxis_label" : xaxis_label, 
+		ylabel = ylabel_latex ? L"%$yaxis_label" : yaxis_label, 
 		xminorticks = 5,
 		yminorticks = 5, 
 		legend = :outertopright,
@@ -188,7 +196,7 @@ end;
 begin
 	save_trigger
 	if first_trigger[] && save_plot[] 
-		wsave(plotsdir(file_name), build_plot())
+		wsave(plotsdir(plot_folder, file_name), build_plot())
 		@info "$file_name plot saved"
 	end
 	save_plot[] = false
@@ -263,6 +271,7 @@ end;
 # ╟─edd17153-8b5c-4037-88ce-3eae67765268
 # ╟─9a0ec951-a1e0-4247-8497-4872cca3fe9e
 # ╟─cf926d06-09f7-4845-8b6c-706e1d38c9bb
+# ╟─906aa83b-511d-4153-b823-9e4d9235a96d
 # ╟─2edfa35d-ae20-4fce-8ba3-4262fcd6f517
 # ╟─3a4ed019-6af7-47c3-8614-8478007cf99f
 # ╟─3eecae2c-2775-4cdc-8430-9253fccef3d0
