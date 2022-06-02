@@ -138,14 +138,14 @@ function run(allparams; n = nothing, strategy = :atleast, folder = "", save = tr
 	@unpack observables = allparams
 	obsnames, obsfunctions = takeobservables(observables)
 	dicts = pmap(wp, dict_list(allparams)) do params
-		put!(logchannel, (true, "Worker $(myid()): dims=$(params.dims), β=$(params.β) - with workers = $(getpool(myid()))"))
+		put!(logchannel, (true, rpad("Worker $(myid()):", 20) * "dims=$(params.dims), β=$(params.β) - with workers = $(getpool(myid()))"))
 		d = Dict(params)
 		obsmeasurements, L = termalization(params, obsfunctions, pbarchannel, procs = getpool(myid()), log = ENV["TERMALIZATION_LOG"] == "1")
 		d[:data] = DataFrame(obsmeasurements, collect(obsnames))
 		d[:L] = NamedTuple(keys(L) .=> convert.(Array, values(L))) # bring L into local process
 		if save
 			jld2name = savename(params, "jld2", digits = digits, sort = false)
-			put!(logchannel, (true, "From worker $(myid()): saving '$jld2name' in $(datadir(folder))"))
+			put!(logchannel, (true, rpad("Worker $(myid()):", 20) * "saving '$jld2name' in $(datadir(folder))"))
 			@suppress_err safesave(datadir(folder, jld2name), d) # suppress warnings about symbols converted to strings
 		end
 		d
