@@ -26,7 +26,7 @@ generate_showvalues(pairs...) = () -> [Tuple.(pairs)...]
 
 totaliter(allparams) = sum((p[:nterm] for p in DrWatson.dict_list(allparams)))
 
-Measurements.measurement(v::Vector) = Measurements.measurement(Statistics.mean(v), Statistics.std(v))
+Measurements.measurement(v::Vector) = Measurements.measurement(Statistics.mean(v), Statistics.std(v) / sqrt(length(v)))
 
 function partition_workers(w, n; strategy = :atleast)
 	par = convert.(Array, collect(Iterators.partition(w, n)))
