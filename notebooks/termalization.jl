@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.5
+# v0.19.6
 
 using Markdown
 using InteractiveUtils
@@ -93,7 +93,7 @@ begin
 		append!(
 			d, 
 			Dict(
-				name => measurement(col) # col is a Vector
+				name => measurement(col) #measurement(col) # col is a Vector
 				for (name, col) in zip(names(data), eachcol(data))
 			)
 		)
@@ -101,8 +101,19 @@ begin
 	df = hcat(results, d)
 end;
 
+# ╔═╡ 3794fe45-e2bf-4d49-9221-307687317b0e
+md"""
+### Specific heat
+"""
+
+# ╔═╡ 745d3199-d361-4083-95ff-251d2e034fa0
+df2 = @transform(
+	df,
+	@byrow :Cᵥ = (measurement((:data).S²) - (measurement((:data).S)^2)) / prod(:dims)
+);
+
 # ╔═╡ b0e6fee8-c42b-45bf-a621-330051833314
-obsnames = filter(x->x∉[:β, :dims, :nterm, :data], Symbol.(names(df)))
+obsnames = filter(x->x∉[:β, :dims, :nterm, :data], Symbol.(names(df2)))
 
 # ╔═╡ 813e6066-1a8f-41f3-b6bf-4482d3d8d8d9
 md"""
@@ -111,7 +122,7 @@ Observable to plot: $(@bind plot_col Select(obsnames))
 
 # ╔═╡ edd17153-8b5c-4037-88ce-3eae67765268
 md"""
-Plot's title: $(@bind plot_title TextField(default=String(plot_col)))
+Plot's title: $(@bind plot_title TextField(30, default=String(plot_col)))
 Latex: $(@bind title_latex CheckBox())
 """
 
@@ -132,7 +143,7 @@ md"""
 """
 
 # ╔═╡ 7cb4536b-e3bd-4724-a50f-b82a4c0151ef
-gf = groupby(df, :dims);
+gf = groupby(df2, :dims);
 
 # ╔═╡ 66142c02-0d2c-4d16-bf6b-deb0b17f16fa
 md"""
@@ -140,7 +151,7 @@ md"""
 """
 
 # ╔═╡ ba1a70d4-5eae-49ca-9837-966155cf2444
-markers = [:circle, :rect, :diamond, :hexagon, :cross, :xcross, :utriangle, :dtriangle, :rtriangle, :ltriangle, :pentagon, :heptagon, :octagon, :star4, :star5, :star6, :star7, :star8, :vline, :hline, :+, :x]
+markers = [:circle, :rect, :diamond, :hexagon, :xcross, :utriangle, :dtriangle, :rtriangle, :ltriangle, :pentagon, :heptagon, :octagon, :star4, :star5, :star6, :star7, :star8, :vline, :hline, :+, :x, :cross]
 
 # ╔═╡ 43ceb641-52e5-4e89-bf2c-032b70d5c58f
 function build_plot()
@@ -197,7 +208,7 @@ begin
 	save_trigger
 	if first_trigger[] && save_plot[] 
 		wsave(plotsdir(plot_folder, file_name), build_plot())
-		@info "$file_name plot saved"
+		@info "$file_name saved to $(plotsdir(plot_folder))"
 	end
 	save_plot[] = false
 	first_trigger[] = true
@@ -284,6 +295,8 @@ end;
 # ╠═79f08bdc-94f1-4265-a6d2-0729a537553c
 # ╟─9b8096f2-1b1b-47ba-b669-648b7e5f7d51
 # ╠═f95043e2-e15d-4d8b-983e-27d6e58acdf9
+# ╟─3794fe45-e2bf-4d49-9221-307687317b0e
+# ╠═745d3199-d361-4083-95ff-251d2e034fa0
 # ╠═b0e6fee8-c42b-45bf-a621-330051833314
 # ╠═7cb4536b-e3bd-4724-a50f-b82a4c0151ef
 # ╟─66142c02-0d2c-4d16-bf6b-deb0b17f16fa
