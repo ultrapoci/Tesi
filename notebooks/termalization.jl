@@ -60,6 +60,11 @@ md"""
 β max = $(@bind max_β TextField())
 """
 
+# ╔═╡ a1be3f0d-7ccc-4a0c-a40a-0bbb181a05c5
+md"""
+Error bars: $(@bind use_error_bars CheckBox(default=true))
+"""
+
 # ╔═╡ 3eecae2c-2775-4cdc-8430-9253fccef3d0
 md"""
 $(@bind save_button Button("Save plot"))
@@ -81,6 +86,15 @@ begin
 	sort!(results, [:β, :dims, order(:nterm, rev=true)])
 end;
 
+# ╔═╡ 745d3199-d361-4083-95ff-251d2e034fa0
+results2 = @transform(
+	results,
+	@byrow :Cᵥ = measurement(
+		var((:data).S), 
+		var((:data).S) * sqrt(2 / (length((:data).S) - 1))
+	) / prod(:dims)
+);
+
 # ╔═╡ 9b8096f2-1b1b-47ba-b669-648b7e5f7d51
 md"""
 ### Calculate mean and std error from data
@@ -89,16 +103,16 @@ md"""
 # ╔═╡ f95043e2-e15d-4d8b-983e-27d6e58acdf9
 begin
 	d = DataFrame()
-	for data in results.data
+	for data in results2.data
 		append!(
 			d, 
 			Dict(
-				name => measurement(col) #measurement(col) # col is a Vector
+				name => measurement(col) # col is a Vector
 				for (name, col) in zip(names(data), eachcol(data))
 			)
 		)
 	end
-	df = hcat(results, d)
+	df = hcat(results2, d)
 end;
 
 # ╔═╡ 3794fe45-e2bf-4d49-9221-307687317b0e
@@ -106,14 +120,8 @@ md"""
 ### Specific heat
 """
 
-# ╔═╡ 745d3199-d361-4083-95ff-251d2e034fa0
-df2 = @transform(
-	df,
-	@byrow :Cᵥ = (measurement((:data).S²) - (measurement((:data).S)^2)) / prod(:dims)
-);
-
 # ╔═╡ b0e6fee8-c42b-45bf-a621-330051833314
-obsnames = filter(x->x∉[:β, :dims, :nterm, :data], Symbol.(names(df2)))
+obsnames = filter(x->x∉[:β, :dims, :nterm, :data], Symbol.(names(df)))
 
 # ╔═╡ 813e6066-1a8f-41f3-b6bf-4482d3d8d8d9
 md"""
@@ -143,7 +151,7 @@ md"""
 """
 
 # ╔═╡ 7cb4536b-e3bd-4724-a50f-b82a4c0151ef
-gf = groupby(df2, :dims);
+gf = groupby(df, :dims);
 
 # ╔═╡ 66142c02-0d2c-4d16-bf6b-deb0b17f16fa
 md"""
@@ -166,12 +174,14 @@ function build_plot()
 	)
 	for (g, marker) in zip(gf, Iterators.cycle(markers))
 		L = g.dims[begin][2]
-		v = getproperty(g, plot_col)
+		v = use_error_bars ? getproperty(g, plot_col) : Measurements.value.(getproperty(g, plot_col))
+		
 		inds = try
 			findall(x -> parse(Float64, min_β) ≤ x ≤ parse(Float64, max_β), g.β)
 		catch
 			1:length(g.β)
 		end
+		
 		plot!(p, g.β[inds], v[inds], 
 			label = "L = $L", 
 			marker = (marker, 3.5), 
@@ -214,66 +224,6 @@ begin
 	first_trigger[] = true
 end;
 
-# ╔═╡ 617d3018-b5b2-44bb-8c33-f0a4d3ecff7d
-md"""
-# Old stuff
-"""
-
-# ╔═╡ 221b8424-5215-4e8f-a7ca-33c3b4fbe427
-#=md"""
-### Calculate susceptibility from <φ²> - <|φ|>²
-"""=#
-
-# ╔═╡ 50505008-1375-4d69-bea2-26f70fc703be
-
-#= begin
-	temp = DataFrame()
-	for data in df.data
-		V = 40*40
-		append!(
-			temp,
-			Dict(:susc =>
-				measurement(data.φ²) - 
-				measurement(data.φ) ^ 2
-			)
-		)
-	end
-	data = hcat(df, temp);
-end;=#
-
-#=
-begin
-	temp = DataFrame();
-	for data in df.data
-		append!(
-			temp,
-			Dict(:susc =>
-				measurement(data.χᵥ .- data.polyloop .^ 2)
-			)
-		)
-	end;
-	data = hcat(df, temp);
-end;
-=#
-
-
-#=data = @transform(df, :susc = 
-	#measurement.(getproperty.(:data, ^(:φ²))) .- 
-	#measurement.(getproperty.(:data, ^(:mod_φ))) .^ 2
-	getproperty.(:data, ^(:φ²)) .- 
-	(x->x.^2).(getproperty.(:data, ^(:mod_φ)))
-);=#
-
-
-
-#=data = @transform(df, :susc = 
-	measurement.(
-		getproperty.(:data, ^(:χᵥ)) .- 
-		(x->x.^2).(getproperty.(:data, ^(:polyloop)))
-	)
-);=#
-
-
 # ╔═╡ Cell order:
 # ╟─d5095d25-a5ed-432f-b5dc-8e5f2c68f35f
 # ╟─35092cc8-7995-4af9-adcf-44738b9b7fc6
@@ -285,6 +235,7 @@ end;
 # ╟─906aa83b-511d-4153-b823-9e4d9235a96d
 # ╟─2edfa35d-ae20-4fce-8ba3-4262fcd6f517
 # ╟─3a4ed019-6af7-47c3-8614-8478007cf99f
+# ╟─a1be3f0d-7ccc-4a0c-a40a-0bbb181a05c5
 # ╟─3eecae2c-2775-4cdc-8430-9253fccef3d0
 # ╟─1212a794-8e23-423f-9f04-50d9be906314
 # ╟─0b1bc5a8-e298-41b4-8d2e-648f3c6911e0
@@ -293,10 +244,10 @@ end;
 # ╟─47761aa2-7222-444b-934d-e0593b2cecbd
 # ╟─4ccc646e-0602-4d6b-a0bf-d412261f9598
 # ╠═79f08bdc-94f1-4265-a6d2-0729a537553c
+# ╠═745d3199-d361-4083-95ff-251d2e034fa0
 # ╟─9b8096f2-1b1b-47ba-b669-648b7e5f7d51
 # ╠═f95043e2-e15d-4d8b-983e-27d6e58acdf9
 # ╟─3794fe45-e2bf-4d49-9221-307687317b0e
-# ╠═745d3199-d361-4083-95ff-251d2e034fa0
 # ╠═b0e6fee8-c42b-45bf-a621-330051833314
 # ╠═7cb4536b-e3bd-4724-a50f-b82a4c0151ef
 # ╟─66142c02-0d2c-4d16-bf6b-deb0b17f16fa
@@ -309,6 +260,3 @@ end;
 # ╠═6305b71c-1722-4125-b276-c1ca93951ffb
 # ╠═0098cd8f-4ac4-4fab-bb49-9271ea388e65
 # ╠═49008af8-d913-41fc-b990-b98a197fe1c9
-# ╟─617d3018-b5b2-44bb-8c33-f0a4d3ecff7d
-# ╠═221b8424-5215-4e8f-a7ca-33c3b4fbe427
-# ╠═50505008-1375-4d69-bea2-26f70fc703be
