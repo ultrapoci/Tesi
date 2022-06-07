@@ -182,6 +182,31 @@ end
 
 #* ===== Polyakov loops =====
 """
+	corr_polyloop(L::Lattice; log = false, iter = missing)
+	corr_polyloop(T::NamedTuple; kwargs...)
+	corr_polyloop(C::ObsConfig; kwargs...)
+Return the expectation value of the modulus the Polyakov loop of the lattice `L`.
+"""
+corr_polyloop(R::Int, L::Lattice; kwargs...) = _corr_polyloop(R, all_polyloops(L); kwargs...)
+corr_polyloop(R::Int, T::NamedTuple; kwargs...) = corr_polyloop(R, T.lattice; kwargs...)
+corr_polyloop(R::Int, C::ObsConfig; kwargs...) = _corr_polyloop(R, C.polyloops; kwargs...)
+
+function _corr_polyloop(R::Int, polyloops::Array{Float64}; log = false, iter = missing)
+	log && @info "Measuring correlation function of Polyakov loops at distance $R..." iter
+	D = ndims(polyloops)
+	dims = size(polyloops)
+	tot = 0.0
+	for x in CartesianIndices(polyloops)
+		px = polyloops[x]
+		for d in 1:D
+			y = CartesianIndex(ntuple(i -> i == d ? mod1(x[d]+R, dims[d]) : x[d]))
+			tot += px * polyloops[y]
+		end
+	end
+	tot / (length(polyloops) * D)
+end
+
+"""
 	polyloop(L::Lattice{D}, x::NTuple{Dm1, Int}; log = false, iter = missing) where {D, Dm1}
 	polyloop(L, x; kwargs...)
 	polyloop(L, x...; kwargs...)
@@ -221,16 +246,16 @@ polyloop(T::NamedTuple, x...; kwargs...) = polyloop(T.lattice, T.inds, x...; kwa
 polyloop(C::ObsConfig, x...; kwargs...) = polyloop(C.L, C.inds, x...; kwargs...)
 
 """
-	corr_polyloop(L::Lattice{D}, x::NTuple{Dm1, Int}, y::NTuple{Dm1, Int}; log = false, iter = missing) where {D, Dm1}
-	corr_polyloop(L, x, y; kwargs...)
-	corr_polyloop(T::NamedTuple, x, y; kwargs...)
-	corr_polyloop(C::ObsConfig, x, y; kwargs...)
+	twopoints_polyloop(L::Lattice{D}, x::NTuple{Dm1, Int}, y::NTuple{Dm1, Int}; log = false, iter = missing) where {D, Dm1}
+	twopoints_polyloop(L, x, y; kwargs...)
+	twopoints_polyloop(T::NamedTuple, x, y; kwargs...)
+	twopoints_polyloop(C::ObsConfig, x, y; kwargs...)
 Return the two point correlation function of the Polyakov loops at points `x` and `y`, which must be compatible with the spatial dimensions of the lattice `L`.
 """
-function corr_polyloop(L::Lattice{D}, inds::Indices{D}, x::NTuple{Dm1, Int}, y::NTuple{Dm1, Int}; log = false, iter = missing) where {D, Dm1}
+function twopoints_polyloop(L::Lattice{D}, inds::Indices{D}, x::NTuple{Dm1, Int}, y::NTuple{Dm1, Int}; log = false, iter = missing) where {D, Dm1}
 	Dm1 ≠ D-1 && throw(TypeError(corr_loop, CartesianIndex{D-1}, CartesianIndex{Dm1}))
 
-	log && @info "Measuring correlation function of Polyakov loops at $x and $y..." iter
+	log && @info "Measuring two points function of Polyakov loops at $x and $y..." iter
 
 	current_workers = vec(procs(L)) # vector of workers that own L
 	dist = size(procs(L)) # how are partitions distributed among workers
@@ -266,9 +291,9 @@ function corr_polyloop(L::Lattice{D}, inds::Indices{D}, x::NTuple{Dm1, Int}, y::
 
 	trX * trY
 end
-corr_polyloop(L, inds, x, y; kwargs...) = corr_polyloop(L, inds, Tuple(x), Tuple(y); kwargs...)
-corr_polyloop(T::NamedTuple, x, y; kwargs...) = corr_polyloop(T.lattice, T.inds, x, y; kwargs...)
-corr_polyloop(C::ObsConfig, x, y; kwargs...) = corr_polyloop(C.L, C.inds, x, y; kwargs...)
+twopoints_polyloop(L, inds, x, y; kwargs...) = twopoints_polyloop(L, inds, Tuple(x), Tuple(y); kwargs...)
+twopoints_polyloop(T::NamedTuple, x, y; kwargs...) = twopoints_polyloop(T.lattice, T.inds, x, y; kwargs...)
+twopoints_polyloop(C::ObsConfig, x, y; kwargs...) = twopoints_polyloop(C.L, C.inds, x, y; kwargs...)
 
 #* ===== intermediate useful functions =====
 """
@@ -362,7 +387,7 @@ polyloop2(L, x...; kwargs...) = polyloop2(L, Tuple(x); kwargs...)
 polyloop2(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}, x; kwargs...) = polyloop2(T[1], x; kwargs...)
 polyloop2(T::NamedTuple, x; kwargs...) = polyloop2(T.lattice, x; kwargs...) =#
 
-#= function corr_polyloop2(L::Lattice{D}, x::NTuple{Dm1, Int}, y::NTuple{Dm1, Int}; log = false, iter = missing) where {D, Dm1}
+#= function twopoints_polyloop2(L::Lattice{D}, x::NTuple{Dm1, Int}, y::NTuple{Dm1, Int}; log = false, iter = missing) where {D, Dm1}
 	Dm1 ≠ D-1 && throw(TypeError(polyloop, NTuple{D-1, Int}, NTuple{Dm1, Int}))
 
 	log && @info "Measuring two point correlation function of Polyakov loops at $x and $y..." iter
@@ -370,17 +395,17 @@ polyloop2(T::NamedTuple, x; kwargs...) = polyloop2(T.lattice, x; kwargs...) =#
 	loops = all_polyloops(L)
 	loops[x...] * loops[y...]
 end
-corr_polyloop2(L, x, y; kwargs...) = corr_polyloop2(L, Tuple(x), Tuple(y); kwargs...)
-corr_polyloop2(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}, x, y; kwargs...) = corr_polyloop2(T[1], x, y; kwargs...)
-corr_polyloop2(T::NamedTuple, x, y; kwargs...) = corr_polyloop2(T.lattice, x, y; kwargs...) =#
+twopoints_polyloop2(L, x, y; kwargs...) = twopoints_polyloop2(L, Tuple(x), Tuple(y); kwargs...)
+twopoints_polyloop2(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}, x, y; kwargs...) = twopoints_polyloop2(T[1], x, y; kwargs...)
+twopoints_polyloop2(T::NamedTuple, x, y; kwargs...) = twopoints_polyloop2(T.lattice, x, y; kwargs...) =#
 
-#= function corr_polyloop3(L::Lattice{D}, x::NTuple{Dm1, Int}, y::NTuple{Dm1, Int}; log = false) where {D, Dm1}
+#= function twopoints_polyloop3(L::Lattice{D}, x::NTuple{Dm1, Int}, y::NTuple{Dm1, Int}; log = false) where {D, Dm1}
 	Dm1 ≠ D-1 && throw(TypeError(corr_loop, CartesianIndex{D-1}, CartesianIndex{Dm1}))
 
 	log && @info "Measuring Polyakov loop at $x..."
 
 	polyloop2(L, x) * polyloop2(L, y)
 end
-corr_polyloop3(L, x, y; kwargs...) = corr_polyloop3(L, Tuple(x), Tuple(y); kwargs...)
-corr_polyloop3(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}, x, y; kwargs...) = corr_polyloop3(T[1], x, y; kwargs...)
-corr_polyloop3(T::NamedTuple, x, y; kwargs...) = corr_polyloop3(T.lattice, x, y; kwargs...) =#
+twopoints_polyloop3(L, x, y; kwargs...) = twopoints_polyloop3(L, Tuple(x), Tuple(y); kwargs...)
+twopoints_polyloop3(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}, x, y; kwargs...) = twopoints_polyloop3(T[1], x, y; kwargs...)
+twopoints_polyloop3(T::NamedTuple, x, y; kwargs...) = twopoints_polyloop3(T.lattice, x, y; kwargs...) =#
