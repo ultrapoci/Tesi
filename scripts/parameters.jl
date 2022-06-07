@@ -7,13 +7,10 @@ Base.@kwdef struct ObsParams <: Params
 end
 
 Base.@kwdef struct TermParams <: Params
+	β = sort(unique(vcat(
+		18.0:0.1:21.0
+	)))
 	dims = [(4, L, L) for L in 20:10:80]
-	β = [@onlyif(:dims==(4, 80, 80), [6.5, 8.0, 8.5])...,
-		sort(unique(vcat(21.0:1.0:30.0)))...]
-	# β = sort(unique(vcat(
-	# 	4.0:1.0:20.0,
-	# 	6.0:0.5:11.0
-	# )))
 	latticestart = :cold
 	
 	nterm = 15_000
