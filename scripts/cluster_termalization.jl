@@ -137,7 +137,7 @@ function run(allparams; n = nothing, strategy = :atleast, folder = "", save = tr
 
 	@unpack observables = allparams
 	obsnames, obsfunctions = takeobservables(observables)
-	dicts = pmap(wp, dict_list(allparams)) do params
+	dicts = pmap(wp, sort(dict_list(allparams), by=(x->x.dims))) do params
 		put!(logchannel, (true, rpad("Worker $(myid()):", 15) * "dims=$(params.dims), β=$(params.β) - with workers = $(getpool(myid()))"))
 		d = Dict(params)
 		obsmeasurements, L = termalization(params, obsfunctions, pbarchannel, procs = getpool(myid()), log = ENV["TERMALIZATION_LOG"] == "1")
