@@ -9,6 +9,34 @@ struct ObsConfig{D}
 	ObsConfig(T::NamedTuple, β::Real) = new{ndims(T.lattice)}(T.lattice, T.inds, β, all_polyloops(T.lattice), plaquettesum(T.lattice, T.inds))
 end
 
+"""
+	plaquettesum(L::Lattice{D}, inds::Indices{D}) where D
+	plaquettesum(T::NamedTuple; kwargs...)
+Return the sum over the traces of all plaquettes. 
+"""
+function plaquettesum(L::Lattice{D}, inds::Indices{D}) where D
+	current_workers = vec(procs(L))
+	n_current_workers = length(current_workers)
+	# initialize a vector with current_workers elements, of which each worker owns one cell
+	partial = dzeros((n_current_workers,), current_workers, [n_current_workers])
+	with_workers(procs = current_workers) do
+		tot = 0.0
+		for x in CartesianIndices(L[:L]), u in 1:D-1, v in u+1:D
+			tot += tr(L[:L][x][u] * staple(L, v, u, inds[:L][x]))
+		end
+		partial[:L][begin] = tot
+	end
+	sum(partial)
+end
+plaquettesum(T::NamedTuple; kwargs...) = plaquettesum(T.lattice, T.inds; kwargs...)
+plaquettesum(C::ObsConfig; kwargs...) = C.plaquette_sum
+
+polyloop_sum(C::ObsConfig; kwargs...) = sum(C.polyloops)
+polyloop2_sum(C::ObsConfig; kwargs...) = sum(C.polyloops .^ 2)
+polyloop4_sum(C::ObsConfig; kwargs...) = sum(C.polyloops .^ 4)
+polyloopmod_sum(C::ObsConfig; kwargs...) = sum(abs.(C.polyloops))
+
+
 #* ===== average plaquette =====
 """
 	averageplaquette(L::Lattice{D}, inds::Indices{D}; log = false, iter = missing) where D
@@ -301,27 +329,6 @@ twopoints_polyloop(C::ObsConfig, x, y; kwargs...) = twopoints_polyloop(C.L, C.in
 Return the volume of the spatial portion of the lattice (which corresponds to all dimensions except the first one which is time).
 """
 spatialvolume(L::Lattice) = prod(tail(size(L)))
-
-"""
-	plaquettesum(L::Lattice{D}, inds::Indices{D}) where D
-	plaquettesum(T::NamedTuple; kwargs...)
-Return the sum over the traces of all plaquettes. 
-"""
-function plaquettesum(L::Lattice{D}, inds::Indices{D}) where D
-	current_workers = vec(procs(L))
-	n_current_workers = length(current_workers)
-	# initialize a vector with current_workers elements, of which each worker owns one cell
-	partial = dzeros((n_current_workers,), current_workers, [n_current_workers])
-	with_workers(procs = current_workers) do
-		tot = 0.0
-		for x in CartesianIndices(L[:L]), u in 1:D-1, v in u+1:D
-			tot += tr(L[:L][x][u] * staple(L, v, u, inds[:L][x]))
-		end
-		partial[:L][begin] = tot
-	end
-	sum(partial)
-end
-plaquettesum(T::NamedTuple; kwargs...) = plaquettesum(T.lattice, T.inds; kwargs...)
 
 """
 	all_polyloops(L::Lattice{D}) where D

@@ -11,6 +11,7 @@ export Mask, Indices, Site, LocalLattice, Lattice, newlattice, evenmask, oddmask
 export one_termalization!
 export ObsConfig, averageplaquette, polyloop, corr_polyloop, expval_polyloop, expval_modpolyloop, expval_polyloop_squared
 export susceptibility, χ, susceptibility_pervolume, χᵥ, binder, gᵣ, action, actionsquared
+export spatialvolume, plaquettesum, polyloop_sum, polyloop2_sum, polyloop4_sum, polyloopmod_sum
 
 """
 	initprocs(p; threads = 1, kwargs...)
