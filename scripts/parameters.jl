@@ -27,6 +27,7 @@ Base.@kwdef struct TermParams <: Params
 		:φ⁴		=> polyloop4_sum,
 		:modφ	=> polyloopmod_sum,
 		:V		=> (C::ObsConfig; kwargs...) -> length(C.L),
+		:Nₜ		=> (C::ObsConfig; kwargs...) -> first(size((C.L))),
 		:Vₛ		=> (C::ObsConfig; kwargs...) -> spatialvolume(C.L),
 	)
 	#= observables = (
