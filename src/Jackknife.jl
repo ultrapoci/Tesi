@@ -33,10 +33,25 @@ function autocorrelation_time(x, cutoff)
 	1 + 2*sum(Γ[t] / Γ[1] for t in 2:N)
 end
 
-# TODO
+"""
+	binsamples(v, binsize)
+Divide a vector `v` into bins of size `binsize`. If `v` cannot be divided perfectly, increase the binsize of the first bins \
+by one, until the vector is completely divided. This implies that each bin is identical to each or at most has one more element.
+"""
 function binsamples(v, binsize)
-	binned = collect(Iterators.partition(v, binsize))
-	binned
+	r = length(v) % binsize
+	if r == 0
+		vcat(convert.(Array, Iterators.partition(v, binsize)))
+	else
+		n = length(v) ÷ binsize # number of bins 
+		new_binsize = binsize + (r ÷ n)
+		new_r = length(v) % new_binsize
+		# place the remaining elements in each bin, starting from the first one
+		split_at = new_r * (new_binsize + 1)
+		head = convert.(Array, Iterators.partition(v[begin:split_at], new_binsize + 1))
+		tail = convert.(Array, Iterators.partition(v[split_at+1:end], new_binsize))
+		vcat(head, tail)
+	end
 end
 
 """
