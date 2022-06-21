@@ -9,10 +9,14 @@ struct ObsConfig{D}
 	ObsConfig(T::NamedTuple, β::Real) = new{ndims(T.lattice)}(T.lattice, T.inds, β, all_polyloops(T.lattice), plaquettesum(T.lattice, T.inds))
 end
 
+#=====
+	================= PRIMARY OBSERVABLES ================= 
+=====#
+
 """
 	plaquettesum(L::Lattice{D}, inds::Indices{D}) where D
 	plaquettesum(T::NamedTuple; kwargs...)
-Return the sum over the traces of all plaquettes. 
+Return the sum over the traces of all plaquettes, already normalized by 2N. 
 """
 function plaquettesum(L::Lattice{D}, inds::Indices{D}) where D
 	current_workers = vec(procs(L))
@@ -26,7 +30,7 @@ function plaquettesum(L::Lattice{D}, inds::Indices{D}) where D
 		end
 		partial[:L][begin] = tot
 	end
-	sum(partial)
+	sum(partial) / 4 # trace normalization
 end
 plaquettesum(T::NamedTuple; kwargs...) = plaquettesum(T.lattice, T.inds; kwargs...)
 plaquettesum(C::ObsConfig; kwargs...) = C.plaquette_sum
@@ -36,6 +40,11 @@ polyloop2_sum(C::ObsConfig; kwargs...) = sum(C.polyloops .^ 2)
 polyloop4_sum(C::ObsConfig; kwargs...) = sum(C.polyloops .^ 4)
 polyloopmod_sum(C::ObsConfig; kwargs...) = sum(abs.(C.polyloops))
 
+
+
+#=====
+	================= COMPOSITE OBSERVABLES ================= 
+=====#
 
 #* ===== average plaquette =====
 """
