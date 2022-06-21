@@ -21,6 +21,15 @@ Base.@kwdef struct TermParams <: Params
 	nobs = 1 # measure observables every nobs cycles
 	
 	observables = (
+		:plaqs	=> plaquettesum,
+		:φ		=> polyloop_sum,
+		:φ²		=> polyloop2_sum,
+		:φ⁴		=> polyloop4_sum,
+		:modφ	=> polyloopmod_sum,
+		:V		=> (C::ObsConfig; kwargs...) -> length(C.L),
+		:Vₛ		=> (C::ObsConfig; kwargs...) -> spatialvolume(C.L),
+	)
+	#= observables = (
 		:avg_plaq	=> averageplaquette,
 		:φ			=> expval_polyloop,
 		:mod_φ		=> expval_modpolyloop,
@@ -30,7 +39,7 @@ Base.@kwdef struct TermParams <: Params
 		:S			=> action,
 		:S²			=> actionsquared,
 		:gᵣ			=> binder
-	)
+	) =#
 end
 
 DrWatson.default_allowed(::TermParams) = (Real, String, Tuple)
