@@ -40,6 +40,31 @@ polyloop2_sum(C::ObsConfig; kwargs...) = sum(C.polyloops .^ 2)
 polyloop4_sum(C::ObsConfig; kwargs...) = sum(C.polyloops .^ 4)
 polyloopmod_sum(C::ObsConfig; kwargs...) = sum(abs.(C.polyloops))
 
+"""
+	corr_polyloop(L::Lattice; log = false, iter = missing)
+	corr_polyloop(T::NamedTuple; kwargs...)
+	corr_polyloop(C::ObsConfig; kwargs...)
+Return the expectation value of the modulus the Polyakov loop of the lattice `L`.
+"""
+corr_polyloop(R::Int, L::Lattice; kwargs...) = _corr_polyloop(R, all_polyloops(L); kwargs...)
+corr_polyloop(R::Int, T::NamedTuple; kwargs...) = corr_polyloop(R, T.lattice; kwargs...)
+corr_polyloop(R::Int, C::ObsConfig; kwargs...) = _corr_polyloop(R, C.polyloops; kwargs...)
+
+function _corr_polyloop(R::Int, polyloops::Array{Float64}; log = false, iter = missing)
+	log && @info "Measuring correlation function of Polyakov loops at distance $R..." iter
+	D = ndims(polyloops)
+	dims = size(polyloops)
+	tot = 0.0
+	for x in CartesianIndices(polyloops)
+		px = polyloops[x]
+		for d in 1:D
+			# increment d coordinate by R and wrap around lattice boundary
+			y = CartesianIndex(ntuple(i -> i == d ? mod1(x[d]+R, dims[d]) : x[d]))
+			tot += px * polyloops[y]
+		end
+	end
+	tot / (length(polyloops) * D)
+end
 
 
 #=====
@@ -218,30 +243,6 @@ end
 
 
 #* ===== Polyakov loops =====
-"""
-	corr_polyloop(L::Lattice; log = false, iter = missing)
-	corr_polyloop(T::NamedTuple; kwargs...)
-	corr_polyloop(C::ObsConfig; kwargs...)
-Return the expectation value of the modulus the Polyakov loop of the lattice `L`.
-"""
-corr_polyloop(R::Int, L::Lattice; kwargs...) = _corr_polyloop(R, all_polyloops(L); kwargs...)
-corr_polyloop(R::Int, T::NamedTuple; kwargs...) = corr_polyloop(R, T.lattice; kwargs...)
-corr_polyloop(R::Int, C::ObsConfig; kwargs...) = _corr_polyloop(R, C.polyloops; kwargs...)
-
-function _corr_polyloop(R::Int, polyloops::Array{Float64}; log = false, iter = missing)
-	log && @info "Measuring correlation function of Polyakov loops at distance $R..." iter
-	D = ndims(polyloops)
-	dims = size(polyloops)
-	tot = 0.0
-	for x in CartesianIndices(polyloops)
-		px = polyloops[x]
-		for d in 1:D
-			y = CartesianIndex(ntuple(i -> i == d ? mod1(x[d]+R, dims[d]) : x[d]))
-			tot += px * polyloops[y]
-		end
-	end
-	tot / (length(polyloops) * D)
-end
 
 """
 	polyloop(L::Lattice{D}, x::NTuple{Dm1, Int}; log = false, iter = missing) where {D, Dm1}
