@@ -9,8 +9,8 @@ function generate_a0(k::Real, β::Real)
 	reject = true
 	a₀ = 0.0
 	while reject
-		x = rand(Uniform(exp(-2*β*k), 1.0)) #? are range extremes a problem?
-		a₀ = 1 + log(x) / (β*k)
+		x = rand(Uniform(exp(-β*k), 1.0)) #? are range extremes a problem?
+		a₀ = 1 + 2.0 * log(x) / (β*k)
 		reject = (1 - a₀^2) < rand(Uniform(0.0, 1.0))^2
 	end	
 	a₀
