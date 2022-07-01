@@ -417,3 +417,4 @@ $RECYCLE.BIN/
 # Many thanks to `https://gitignore.io/`, written and maintained by Joe Blau, which contributed much material to this gitignore file.
 *.ps1
 justfile
+*.code-workspace
