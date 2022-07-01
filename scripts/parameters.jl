@@ -7,8 +7,8 @@ Base.@kwdef struct ObsParams <: Params
 end
 
 Base.@kwdef struct TermParams <: Params
-	β = 7.635
-	dims = (20, 16, 16, 16)
+	β = 1.0
+	dims = (8, 8, 8)
 	latticestart = :cold
 	
 	nterm = 1_000
@@ -21,13 +21,13 @@ Base.@kwdef struct TermParams <: Params
 		:φ²		=> polyloop2_sum,
 		:φ⁴		=> polyloop4_sum,
 		:modφ	=> polyloopmod_sum,
-		:R2		=> (C::ObsConfig; kwargs...) -> corr_polyloop(2, C; kwargs...),
-		:R3		=> (C::ObsConfig; kwargs...) -> corr_polyloop(3, C; kwargs...),
-		:R4		=> (C::ObsConfig; kwargs...) -> corr_polyloop(4, C; kwargs...),
-		:R5		=> (C::ObsConfig; kwargs...) -> corr_polyloop(5, C; kwargs...),
-		:R6		=> (C::ObsConfig; kwargs...) -> corr_polyloop(6, C; kwargs...),
-		:R7		=> (C::ObsConfig; kwargs...) -> corr_polyloop(7, C; kwargs...),
-		:R8		=> (C::ObsConfig; kwargs...) -> corr_polyloop(8, C; kwargs...),
+		# :R2		=> (C::ObsConfig; kwargs...) -> corr_polyloop(2, C; kwargs...),
+		# :R3		=> (C::ObsConfig; kwargs...) -> corr_polyloop(3, C; kwargs...),
+		# :R4		=> (C::ObsConfig; kwargs...) -> corr_polyloop(4, C; kwargs...),
+		# :R5		=> (C::ObsConfig; kwargs...) -> corr_polyloop(5, C; kwargs...),
+		# :R6		=> (C::ObsConfig; kwargs...) -> corr_polyloop(6, C; kwargs...),
+		# :R7		=> (C::ObsConfig; kwargs...) -> corr_polyloop(7, C; kwargs...),
+		# :R8		=> (C::ObsConfig; kwargs...) -> corr_polyloop(8, C; kwargs...),
 		# :V		=> (C::ObsConfig; kwargs...) -> length(C.L),
 		# :Nₜ		=> (C::ObsConfig; kwargs...) -> first(size((C.L))),
 		# :Vₛ		=> (C::ObsConfig; kwargs...) -> spatialvolume(C.L),
