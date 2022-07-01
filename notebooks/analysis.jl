@@ -37,7 +37,7 @@ md"""
 """
 
 # ╔═╡ 07a9828f-3de7-44e7-af62-4aa9ccac9cda
-datafolder = datadir("rust")
+datafolder = datadir("rust", "nt=2")
 
 # ╔═╡ 5d983982-21c0-4c83-b14b-a8e9fd6c9683
 skip_offset = 400
@@ -110,7 +110,7 @@ function add_measurements!(dict, offset = 0)
 	avg_plaq(p) = p / (np * V) # average plaquette
 	χ(ϕ², modϕ) = ϕ² - modϕ^2 / Vs # susceptibility
 	χᵥ(ϕ², modϕ) = χ(ϕ², modϕ) / Vs # susceptibility per volume
-	S(p) = -β * p / 8 # action
+	S(p) = -β * p / 4 # action
 	S²(p) = S(p)^2 # action squared
 	gᵣ(ϕ², ϕ⁴) = Vs * ϕ⁴ / ϕ²^2 - 3 # Binder cumulant
 	Cᵥ(s², s) = (s² - s^2) / V # specific heat
@@ -122,19 +122,28 @@ function add_measurements!(dict, offset = 0)
 	dict[:S²] = jackknife(S², data.plaquettes)
 	dict[:gᵣ] = jackknife(gᵣ, data.polyloops2, data.polyloops4)
 	dict[:Cᵥ] = jackknife(Cᵥ, S².(data.plaquettes), S.(data.plaquettes))
-
-	dict[:susc] = mean(χᵥ.(data.polyloops2, data.polyloops_mod))	
+	#dict[:Cᵥ] = (mean(S².(data.plaquettes)) - mean(S.(data.plaquettes))) / V
+	dict[:susc] = mean(χᵥ.(data.polyloops2, data.polyloops_mod))
+	dict[:susc2] = χᵥ(mean(data.polyloops2), mean(data.polyloops_mod))
 end
 
 # ╔═╡ 37679ab2-f768-47ec-927d-d359d6fd036c
 begin
-	tmpdf = DataFrame()
+	dicts = []
 	for filename in filelist
 		@info "Reading $filename"
 		dict = readinfo(filename)	
 		dict[:data] = readdata(filename)
-		add_measurements!(dict, skip_offset)
-		append!(tmpdf, DataFrame(dict))
+		push!(dicts, dict)		
+	end
+end;
+
+# ╔═╡ 31bc8726-638b-402e-8ff9-34920a452d31
+begin
+	add_measurements!.(dicts, skip_offset)
+	tmpdf = DataFrame()
+	for d in dicts
+		append!(tmpdf, DataFrame(d))
 	end
 	df = sort(tmpdf, [:l, :beta])
 end;
@@ -148,7 +157,7 @@ if !all_ls
 end
 
 # ╔═╡ 1d135b91-8121-43e3-86a9-e583a947ef32
-obsnames = [:avg_plaq, :χ, :χᵥ, :S, :S², :gᵣ, :Cᵥ, :susc]
+obsnames = [:avg_plaq, :χ, :χᵥ, :S, :S², :gᵣ, :Cᵥ, :susc, :susc2]
 
 # ╔═╡ e5fd0de8-8222-4e0d-a555-6cb078960e77
 md"""
@@ -248,6 +257,26 @@ begin
 	first_trigger[] = true
 end;
 
+# ╔═╡ 2b6e4e88-db1e-46d4-b9b8-29a0b10cf615
+md"""
+# Test
+"""
+
+# ╔═╡ 4a430497-5767-4218-94fa-0cbdfac448d5
+filename = filelist[1]
+
+# ╔═╡ 09b55a16-789b-4bc0-be4d-712f933e7017
+info = readinfo(filename)
+
+# ╔═╡ 0ba2e0fb-1a69-44f0-967e-3d2ed4c423f4
+test = readdata(filename)
+
+# ╔═╡ 763db54e-2694-4e05-8574-9d6918fb4327
+plaqs = test.plaquettes
+
+# ╔═╡ a539170d-6cba-4e8c-9247-8bead91b42f5
+mean(plaqs) / (3 * 8^3)
+
 # ╔═╡ Cell order:
 # ╟─9d70e646-4dfb-4fed-9b00-383fdf3923bb
 # ╠═07a9828f-3de7-44e7-af62-4aa9ccac9cda
@@ -272,6 +301,7 @@ end;
 # ╠═74653267-7842-469a-a9d1-c5cd693cdec6
 # ╠═35a679fe-989b-4b27-950d-afd56840ae88
 # ╠═37679ab2-f768-47ec-927d-d359d6fd036c
+# ╠═31bc8726-638b-402e-8ff9-34920a452d31
 # ╠═f4b0c054-7500-4fed-8fba-ab9b481d410d
 # ╠═1d135b91-8121-43e3-86a9-e583a947ef32
 # ╠═4cdaf72c-57da-41c7-ac54-c0b6290d6830
@@ -285,3 +315,9 @@ end;
 # ╠═b573b0a5-a23a-47e0-9b6b-e69f49563e89
 # ╠═19ffdd0b-1b22-4ee7-bc52-5042b9058280
 # ╠═0fd26021-cc9f-4383-bf32-43b11e564f0f
+# ╟─2b6e4e88-db1e-46d4-b9b8-29a0b10cf615
+# ╠═4a430497-5767-4218-94fa-0cbdfac448d5
+# ╠═09b55a16-789b-4bc0-be4d-712f933e7017
+# ╠═0ba2e0fb-1a69-44f0-967e-3d2ed4c423f4
+# ╠═763db54e-2694-4e05-8574-9d6918fb4327
+# ╠═a539170d-6cba-4e8c-9247-8bead91b42f5
