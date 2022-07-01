@@ -152,7 +152,7 @@ Do one iteration of termalization, meaning `nover` cycles of overrelaxation, one
 """
 function one_termalization!(L::Lattice{D}, evenmask::Mask{D}, inds::Indices{D}, nover::Int, β::Real, do_normalization = false; log = false, iter = missing) where D
 	overrelaxation!(L, evenmask, inds, nover, log = log, iter = iter)
-	heatbath!(L, evenmask, inds, β/2, log = log, iter = iter) # β/2 is to account for trace normalization
+	heatbath!(L, evenmask, inds, β, log = log, iter = iter) # β/2 is to account for trace normalization
 	do_normalization && normalizelattice!(L, log = log, iter = iter)
 end
 one_termalization!(T::Tuple{Lattice{D}, Mask{D}, Indices{D}}, nover::Int, β::Real, do_normalization = false; kwargs...) where D = one_termalization!(T..., nover, β, do_normalization; kwargs...)
