@@ -44,7 +44,7 @@ polyloopmod_sum(C::ObsConfig; kwargs...) = sum(abs.(C.polyloops))
 	corr_polyloop(L::Lattice; log = false, iter = missing)
 	corr_polyloop(T::NamedTuple; kwargs...)
 	corr_polyloop(C::ObsConfig; kwargs...)
-Return the expectation value of the modulus the Polyakov loop of the lattice `L`.
+Return the correlation function of the Polyakov loops at distance `R`.
 """
 corr_polyloop(R::Int, L::Lattice; kwargs...) = _corr_polyloop(R, all_polyloops(L); kwargs...)
 corr_polyloop(R::Int, T::NamedTuple; kwargs...) = corr_polyloop(R, T.lattice; kwargs...)
