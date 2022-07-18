@@ -52,6 +52,20 @@ function partition_workers(w, n; strategy = :atleast)
 	end
 end
 
+"""
+	readinfo(f)
+Read info from a CSV file `f`. Info is stored in the first two lines of the file (header + one line of data).
+"""
+function readinfo(f)
+	d = CSV.read(f, DataFrames.DataFrame, limit = 1)[1, :]
+	Dict(Symbol.(names(d)) .=> values(d))
+end
+
+"""
+	readdata(f)
+Read data from a CSV file `f`. Data is stored from line 3 (the header).
+"""
+readdata(f) = CSV.read(f, DataFrame, header = 3)
 
 #* ===== PARAMETERS =====
 
