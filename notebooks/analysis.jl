@@ -115,6 +115,7 @@ function add_measurements!(dict, offset = 0)
 	dict[:S²] = jackknife(S², data.plaquettes)
 	dict[:gᵣ] = jackknife(gᵣ, data.polyloops2, data.polyloops4)
 	dict[:Cᵥ] = jackknife(Cᵥ, S².(data.plaquettes), S.(data.plaquettes))
+	dict[:poly] = measurement(data.polyloops)
 end
 
 # ╔═╡ e5f3645f-1740-4163-9220-7d7189cf1aaa
@@ -165,7 +166,7 @@ begin
 end
 
 # ╔═╡ 1d135b91-8121-43e3-86a9-e583a947ef32
-obsnames = [:avg_plaq, :χ, :χᵥ, :S, :S², :gᵣ, :Cᵥ]
+obsnames = [:avg_plaq, :χ, :χᵥ, :S, :S², :gᵣ, :Cᵥ, :poly]
 
 # ╔═╡ e5fd0de8-8222-4e0d-a555-6cb078960e77
 md"""
