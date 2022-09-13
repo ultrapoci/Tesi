@@ -35,7 +35,7 @@ md"""
 # ╔═╡ 35092cc8-7995-4af9-adcf-44738b9b7fc6
 md"""
 Folder to read: $(@bind folder Select(
-(x->x=>x).(readdir(datadir())) |> collect
+(x->x=>x).(readdir(datadir("rust"))) |> collect
 ))
 """
 
@@ -226,18 +226,18 @@ end;
 
 # ╔═╡ Cell order:
 # ╟─d5095d25-a5ed-432f-b5dc-8e5f2c68f35f
-# ╠═35092cc8-7995-4af9-adcf-44738b9b7fc6
+# ╟─35092cc8-7995-4af9-adcf-44738b9b7fc6
 # ╠═aa1a4f63-8df5-4ea3-a0dc-3ab59a0908f5
-# ╠═813e6066-1a8f-41f3-b6bf-4482d3d8d8d9
-# ╠═edd17153-8b5c-4037-88ce-3eae67765268
-# ╠═9a0ec951-a1e0-4247-8497-4872cca3fe9e
-# ╠═cf926d06-09f7-4845-8b6c-706e1d38c9bb
-# ╠═906aa83b-511d-4153-b823-9e4d9235a96d
-# ╠═2edfa35d-ae20-4fce-8ba3-4262fcd6f517
-# ╠═3a4ed019-6af7-47c3-8614-8478007cf99f
-# ╠═a1be3f0d-7ccc-4a0c-a40a-0bbb181a05c5
-# ╠═3eecae2c-2775-4cdc-8430-9253fccef3d0
-# ╠═1212a794-8e23-423f-9f04-50d9be906314
+# ╟─813e6066-1a8f-41f3-b6bf-4482d3d8d8d9
+# ╟─edd17153-8b5c-4037-88ce-3eae67765268
+# ╟─9a0ec951-a1e0-4247-8497-4872cca3fe9e
+# ╟─cf926d06-09f7-4845-8b6c-706e1d38c9bb
+# ╟─906aa83b-511d-4153-b823-9e4d9235a96d
+# ╟─2edfa35d-ae20-4fce-8ba3-4262fcd6f517
+# ╟─3a4ed019-6af7-47c3-8614-8478007cf99f
+# ╟─a1be3f0d-7ccc-4a0c-a40a-0bbb181a05c5
+# ╟─3eecae2c-2775-4cdc-8430-9253fccef3d0
+# ╟─1212a794-8e23-423f-9f04-50d9be906314
 # ╟─0b1bc5a8-e298-41b4-8d2e-648f3c6911e0
 # ╟─ecdb29af-b963-48a8-8110-d4ad1a646b0a
 # ╠═43ceb641-52e5-4e89-bf2c-032b70d5c58f

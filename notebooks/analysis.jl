@@ -37,7 +37,7 @@ md"""
 """
 
 # ╔═╡ 07a9828f-3de7-44e7-af62-4aa9ccac9cda
-datafolder = datadir("rust", "nt=4-9")
+datafolder = raw"E:\Programmazione\rust\tesi\data"
 
 # ╔═╡ 5d983982-21c0-4c83-b14b-a8e9fd6c9683
 skip_offset = 500
