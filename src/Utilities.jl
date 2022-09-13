@@ -67,32 +67,46 @@ Read data from a CSV file `f`. Data is stored from line 3 (the header).
 """
 readdata(f) = CSV.read(f, DataFrame, header = 3)
 
-function fitfile(filename; betarange = nothing, nrange = nothing)
-	if !isnothing(betarange) || !isnothing(nrange)
+function fitfile(filename; beta = nothing, rows = nothing)
+	if !isnothing(beta) && !isnothing(rows)
 		throw(ArgumentError("Set only one flag between 'betarange' and 'nrange'"))
 	end
 
 	df = CSV.read(filename, DataFrames.DataFrame)
 	
-	nrange = if isnothing(nrange)
+	rows = if isnothing(rows)
 		1:DataFrames.nrow(df)
 	else
-		nrange
+		first(rows):last(rows)
 	end
 
-	df = df[nrange, :]
+	df = df[rows, :]
 
 	x = df[:, 1] # beta values
 	y = Measurements.measurement.(df[:, 2], df[:, 3])
 
-	x, y = if isnothing(betarange)
+	x, y = if isnothing(beta)
 		df[:, 1], Measurements.measurement.(df[:, 2], df[:, 3])
 	else
-		mask = df[:, 1] .∈ [betarange]
+		mask = first(beta) .<= df[:, 1] .<= last(beta)
 		df[:, 1][mask], Measurements.measurement.(df[:, 2][mask], df[:, 3][mask])
 	end
 
-	x, y
+	poly3(x, c) = c[1] + c[2] * x + c[3] * x^2 + c[4] * x^3
+
+	c = CurveFit.poly_fit(x, y, 3)
+	beta1 = (-2c[3] - sqrt(4(c[3]^2) - 12*c[4]*c[2])) / (6c[4])
+	beta2 = (-2c[3] + sqrt(4(c[3]^2) - 12*c[4]*c[2])) / (6c[4])
+	y1 = poly3(beta1, c)
+	y2 = poly3(beta2, c)
+	
+	max = if y1 > y2 
+		beta1
+	else
+		beta2
+	end 
+
+	Dict("coeff" => c, "max" => max, "points" => DataFrames.DataFrame("beta" => x, "y" => y))
 end
 
 
