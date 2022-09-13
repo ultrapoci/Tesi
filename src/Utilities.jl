@@ -1,4 +1,4 @@
-import DrWatson, Statistics, DataFrames, Measurements, CSV, DelimitedFiles, ProgressMeter, Plots
+import DrWatson, Statistics, DataFrames, Measurements, CSV, DelimitedFiles, ProgressMeter, Plots, CurveFit
 
 function DrWatson._wsave(filename, data::Dict)
 	if splitext(filename)[2] == ".dat" 
@@ -66,6 +66,35 @@ end
 Read data from a CSV file `f`. Data is stored from line 3 (the header).
 """
 readdata(f) = CSV.read(f, DataFrame, header = 3)
+
+function fitfile(filename; betarange = nothing, nrange = nothing)
+	if !isnothing(betarange) || !isnothing(nrange)
+		throw(ArgumentError("Set only one flag between 'betarange' and 'nrange'"))
+	end
+
+	df = CSV.read(filename, DataFrames.DataFrame)
+	
+	nrange = if isnothing(nrange)
+		1:DataFrames.nrow(df)
+	else
+		nrange
+	end
+
+	df = df[nrange, :]
+
+	x = df[:, 1] # beta values
+	y = Measurements.measurement.(df[:, 2], df[:, 3])
+
+	x, y = if isnothing(betarange)
+		df[:, 1], Measurements.measurement.(df[:, 2], df[:, 3])
+	else
+		mask = df[:, 1] .∈ [betarange]
+		df[:, 1][mask], Measurements.measurement.(df[:, 2][mask], df[:, 3][mask])
+	end
+
+	x, y
+end
+
 
 #* ===== PARAMETERS =====
 
