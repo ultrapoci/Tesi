@@ -1,5 +1,6 @@
 {
 	"fortran.ignoreWarning.fortls": true,
 	"julia.persistentSession.alwaysCopy": true,
-	"fortran.fortls.disabled": true
+	"fortran.fortls.disabled": true,
+	"latex-workshop.latex.outDir": "%DIR%\\.."
 }
