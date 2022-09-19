@@ -109,6 +109,16 @@ function fitfile(filename; beta = nothing, rows = nothing)
 	Dict("coeff" => c, "max" => max, "points" => DataFrames.DataFrame("beta" => x, "y" => y))
 end
 
+val(x) = getproperty.(x, :val)
+err(x) = getproperty.(x, :err)
+
+function chi_squared(y, f)
+	acc = 0.0
+	for (yi, yr, fi) in zip(val(y), err(y), f)
+		acc += (yi - fi)^2 / yr^2
+	end
+	acc
+end
 
 #* ===== PARAMETERS =====
 
