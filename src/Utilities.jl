@@ -1,4 +1,4 @@
-import DrWatson, Statistics, DataFrames, Measurements, CSV, DelimitedFiles, ProgressMeter, Plots, CurveFit, JLD2
+import DrWatson, Statistics, DataFrames, Measurements, CSV, DelimitedFiles, ProgressMeter, Plots
 
 function DrWatson._wsave(filename, data::Dict)
 	if splitext(filename)[2] == ".dat" 
@@ -15,9 +15,6 @@ showall(x) = begin show(stdout, "text/plain", x); println() end
 
 takeobservables(x::Pair) = (x.first,), (x.second,)
 takeobservables(x) = first.(x), last.(x)
-
-keys_to_symbol(d::Dict) = Dict(Symbol.(keys(d)) .=> values(d))
-keys_to_string(d::Dict) = Dict(String.(keys(d)) .=> values(d))
 
 incremental_measurement(v) = [Measurements.measurement(Statistics.mean(v[1:i]), Statistics.std(v[1:i])) for i in 1:length(v)]
 
@@ -66,59 +63,6 @@ end
 Read data from a CSV file `f`. Data is stored from line 3 (the header).
 """
 readdata(f) = CSV.read(f, DataFrame, header = 3)
-
-function fitfile(filename; beta = nothing, rows = nothing)
-	if !isnothing(beta) && !isnothing(rows)
-		throw(ArgumentError("Set only one flag between 'betarange' and 'nrange'"))
-	end
-
-	df = CSV.read(filename, DataFrames.DataFrame)
-	
-	rows = if isnothing(rows)
-		1:DataFrames.nrow(df)
-	else
-		first(rows):last(rows)
-	end
-
-	df = df[rows, :]
-
-	x = df[:, 1] # beta values
-	y = Measurements.measurement.(df[:, 2], df[:, 3])
-
-	x, y = if isnothing(beta)
-		df[:, 1], Measurements.measurement.(df[:, 2], df[:, 3])
-	else
-		mask = first(beta) .<= df[:, 1] .<= last(beta)
-		df[:, 1][mask], Measurements.measurement.(df[:, 2][mask], df[:, 3][mask])
-	end
-
-	poly3(x, c) = c[1] + c[2] * x + c[3] * x^2 + c[4] * x^3
-
-	c = CurveFit.poly_fit(x, y, 3)
-	beta1 = (-2c[3] - sqrt(4(c[3]^2) - 12*c[4]*c[2])) / (6c[4])
-	beta2 = (-2c[3] + sqrt(4(c[3]^2) - 12*c[4]*c[2])) / (6c[4])
-	y1 = poly3(beta1, c)
-	y2 = poly3(beta2, c)
-	
-	max = if y1 > y2 
-		beta1
-	else
-		beta2
-	end 
-
-	Dict("coeff" => c, "max" => max, "points" => DataFrames.DataFrame("beta" => x, "y" => y))
-end
-
-val(x) = getproperty.(x, :val)
-err(x) = getproperty.(x, :err)
-
-function chi_squared(y, f)
-	acc = 0.0
-	for (yi, yr, fi) in zip(val(y), err(y), f)
-		acc += (yi - fi)^2 / yr^2
-	end
-	acc
-end
 
 #* ===== PARAMETERS =====
 
