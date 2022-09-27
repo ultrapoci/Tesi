@@ -2,7 +2,7 @@
 
 julia_version = "1.8.1"
 manifest_format = "2.0"
-project_hash = "bdef560a7eab3925232288040f7d17467c35b3b7"
+project_hash = "bf5d497a8d9b60bf8e418d7344a01ec26d026cb5"
 
 [[deps.Adapt]]
 deps = ["LinearAlgebra"]
@@ -570,6 +570,12 @@ version = "0.15.1"
 [[deps.LazyArtifacts]]
 deps = ["Artifacts", "Pkg"]
 uuid = "4af54fe1-eca0-43a8-85a7-787d91b784e3"
+
+[[deps.LegibleLambdas]]
+deps = ["MacroTools"]
+git-tree-sha1 = "7946db4829eb8de47c399f92c19790f9cc0bbd07"
+uuid = "f1f30506-32fe-5131-bd72-7c197988f9e5"
+version = "0.3.0"
 
 [[deps.LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
