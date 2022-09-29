@@ -1,8 +1,6 @@
 using DocStringExtensions, DrWatson, Statistics, DataFrames, Measurements, Plots, JLD2, LegibleLambdas, LsqFit
-
-#= model = LegibleLambdas.@λ(
-	(x, p) -> p[2] .+ p[3] .* (x .- p[1]) .^ 2 .+ p[4] .* (x .- p[1]) .^ 3 .+ p[5] .* (x .- p[1]) .^ 4
-) =#
+	
+jld2dir(args...) = DrWatson.projectdir("jld2", args...)
 
 @. model(x, p) = p[2] + p[3] * (x - p[1])^2 + p[4] * (x - p[1])^3 + p[5] * (x - p[1])^4
 
