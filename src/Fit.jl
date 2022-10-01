@@ -35,10 +35,16 @@ end
 chi_squared(fit::LsqFit.LsqFitResult, x, y) = chi_squared(model, fit, x, y)
 
 @doc "$(TYPEDSIGNATURES)"
+chi_squared(model::Function, fit::LsqFit.LsqFitResult, df::DataFrames.DataFrame) = chi_squared(model, fit, df.beta, df.susc)
+
+@doc "$(TYPEDSIGNATURES)"
+chi_squared(fit::LsqFit.LsqFitResult, df::DataFrames.DataFrame) = chi_squared(model, fit, df)
+
+@doc "$(TYPEDSIGNATURES)"
 function chi_squared(model::Function, d::Dict, nt::Integer)
 	key = Symbol("nt$nt")
 	df = d[:peak_points][key]
-	chi_squared(model, d[:fit][key], df.beta, df.susc)
+	chi_squared(model, d[:fit][key], df)
 end
 
 @doc "$(TYPEDSIGNATURES)"
