@@ -2,7 +2,13 @@ using DocStringExtensions, DrWatson, Statistics, DataFrames, Measurements, Plots
 	
 jld2dir(args...) = DrWatson.projectdir("jld2", args...)
 
-@. model(x, p) = p[2] + p[3] * (x - p[1])^2 + p[4] * (x - p[1])^3 + p[5] * (x - p[1])^4
+#@. model(x, p) = p[2] + p[3] * (x - p[1])^2 + p[4] * (x - p[1])^3 + p[5] * (x - p[1])^4
+
+model4 = @λ (x, p) -> p[2] .+ p[3] .* (x .- p[1]) .^ 2 + p[4] .* (x .- p[1]) .^ 3 + p[5] .* (x .- p[1]) .^ 4
+model3 = @λ (x, p) -> p[2] .+ p[3] .* (x .- p[1]) .^ 2 + p[4] .* (x .- p[1]) .^ 3
+model2 = @λ (x, p) -> p[2] .+ p[3] .* (x .- p[1]) .^ 2
+
+model = model4 # default model
 
 convertkeys(d::Dict{String}) = Dict(Symbol.(keys(d)) .=> values(d))
 convertkeys(d::Dict{Symbol}) = Dict(String.(keys(d)) .=> values(d))
