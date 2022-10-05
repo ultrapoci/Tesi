@@ -112,3 +112,20 @@ end
 
 @doc "$(TYPEDSIGNATURES)"
 Plots.plot(d::Dict, nt::Integer; kwargs...) = Plots.plot(model, d, nt; kwargs...)
+
+
+### getweights ###
+
+@doc "$(TYPEDSIGNATURES)"
+function getweights(v, exp = 1; normalize = true)
+	w = 1 ./ v .^ exp
+
+	if normalize
+		w ./ maximum(w)
+	else
+		w
+	end
+end
+
+@doc "$(TYPEDSIGNATURES)"
+getweights(df::DataFrames.DataFrame, exp = 1; kwargs...) = getweights(df.susc_error, exp; kwargs...)
