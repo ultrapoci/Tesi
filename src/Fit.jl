@@ -2,22 +2,22 @@ using DocStringExtensions, DrWatson, Statistics, DataFrames, Measurements, Plots
 	
 jld2dir(args...) = DrWatson.projectdir("jld2", args...)
 
-#@. model(x, p) = p[2] + p[3] * (x - p[1])^2 + p[4] * (x - p[1])^3 + p[5] * (x - p[1])^4
-
-model4 = @λ (x, p) -> p[2] .+ p[3] .* (x .- p[1]) .^ 2 + p[4] .* (x .- p[1]) .^ 3 + p[5] .* (x .- p[1]) .^ 4
-model3 = @λ (x, p) -> p[2] .+ p[3] .* (x .- p[1]) .^ 2 + p[4] .* (x .- p[1]) .^ 3
-model2 = @λ (x, p) -> p[2] .+ p[3] .* (x .- p[1]) .^ 2
+model4 = LegibleLambdas.@λ (x, p) -> p[2] .+ p[3] .* (x .- p[1]) .^ 2 + p[4] .* (x .- p[1]) .^ 3 + p[5] .* (x .- p[1]) .^ 4
+model3 = LegibleLambdas.@λ (x, p) -> p[2] .+ p[3] .* (x .- p[1]) .^ 2 + p[4] .* (x .- p[1]) .^ 3
+model2 = LegibleLambdas.@λ (x, p) -> p[2] .+ p[3] .* (x .- p[1]) .^ 2
 
 model = model4 # default model
+
+betamodel = LegibleLambdas.@λ (nt, p) -> p[1] .* nt .+ p[2] .+ p[3] ./ nt
 
 convertkeys(d::Dict{String}) = Dict(Symbol.(keys(d)) .=> values(d))
 convertkeys(d::Dict{Symbol}) = Dict(String.(keys(d)) .=> values(d))
 
-val(x::Measurements.Measurement) = getproperty(x, :val)
-err(x::Measurements.Measurement) = getproperty(x, :err)
+mval(x::Measurements.Measurement) = getproperty(x, :val)
+merr(x::Measurements.Measurement) = getproperty(x, :err)
 
-val(x) = val.(x)
-err(x) = err.(x)
+mval(x) = mval.(x)
+merr(x) = merr.(x)
 
 
 ### chi_squared ###
@@ -25,7 +25,7 @@ err(x) = err.(x)
 @doc "$(TYPEDSIGNATURES)"
 function chi_squared(y, f)
 	acc = 0.0
-	for (yi, yr, fi) in zip(val(y), err(y), f)
+	for (yi, yr, fi) in zip(mval(y), merr(y), f)
 		acc += (yi - fi)^2 / yr^2
 	end
 	acc
@@ -59,41 +59,50 @@ chi_squared(d::Dict, nt::Integer) =	chi_squared(model, d, nt)
 
 ### fitmodel ###
 
-@doc "$(TYPEDSIGNATURES)"
-function fitmodel(model::Function, df::DataFrames.DataFrame, params, weights = nothing; kwargs...)
-	xdata = df.beta
-	ydata = df.susc_avg
-	y = df.susc
+"""
+$(TYPEDSIGNATURES)
 
-	fit = if isnothing(weights) 
-		@info "Fitting without weights"
-		LsqFit.curve_fit(model, xdata, ydata, params)
+`y` must be a vector of Measurements.
+"""
+function fitmodel(model::Function, x, y, params; weighted = true, kwargs...)
+	yavg = mval(y)
+
+	fit = if weighted
+		@info "Fitting with weights"
+		w = 1 ./ merr(y) .^ 2
+		LsqFit.curve_fit(model, x, yavg, w, params)
 	else
-		@info "Fitting using weights"
-		LsqFit.curve_fit(model, xdata, ydata, weights, params)
+		@info "Fitting without weights"
+		LsqFit.curve_fit(model, x, yavg, params)
 	end
 
 	f(x) = model(x, LsqFit.coef(fit))
-	m = f(xdata)
+	m = f(x)
 	chi = chi_squared(y, m) / LsqFit.dof(fit)
 
-	p = plot(xdata, y; kwargs...)
+	p = plot(x, y; kwargs...)
 	plot!(p, f)
 
 	(fit = fit, plot = p, chi = chi, f = f)
 end
 
 @doc "$(TYPEDSIGNATURES)"
-fitmodel(df::DataFrames.DataFrame, params, weights = nothing; kwargs...) = fitmodel(model, df, params, weights; kwargs...)
+fitmodel(x, y, params; kwargs...) = fitmodel(model, x, y, params; kwargs...)
 
 @doc "$(TYPEDSIGNATURES)"
-function fitmodel(model::Function, d::Dict, nt::Integer, params, weights = nothing; kwargs...) 
+fitmodel(model::Function, df::DataFrames.DataFrame, params; kwargs...) = fitmodel(model, df.beta, df.susc, params; kwargs...)
+
+@doc "$(TYPEDSIGNATURES)"
+fitmodel(df::DataFrames.DataFrame, params; kwargs...) = fitmodel(model, df, params; kwargs...)
+
+@doc "$(TYPEDSIGNATURES)"
+function fitmodel(model::Function, d::Dict, nt::Integer, params; kwargs...) 
 	key = Symbol("nt$nt")
-	fitmodel(model, d[:peak_points][key], params, weights; kwargs...)
+	fitmodel(model, d[:peak_points][key], params; kwargs...)
 end
 
 @doc "$(TYPEDSIGNATURES)"
-fitmodel(d::Dict, nt::Integer, params, weights = nothing; kwargs...) = fitmodel(model, d, nt, params, weights; kwargs...)
+fitmodel(d::Dict, nt::Integer, params; kwargs...) = fitmodel(model, d, nt, params; kwargs...)
 
 
 ### plot ###
@@ -117,15 +126,10 @@ Plots.plot(d::Dict, nt::Integer; kwargs...) = Plots.plot(model, d, nt; kwargs...
 ### getweights ###
 
 @doc "$(TYPEDSIGNATURES)"
-function getweights(v, exp = 1; normalize = true)
-	w = 1 ./ v .^ exp
-
-	if normalize
-		w ./ maximum(w)
-	else
-		w
-	end
-end
+getweights(v, exp = 1) = 1 ./ v .^ exp
 
 @doc "$(TYPEDSIGNATURES)"
 getweights(df::DataFrames.DataFrame, exp = 1; kwargs...) = getweights(df.susc_error, exp; kwargs...)
+
+@doc "$(TYPEDSIGNATURES)"
+get_betamax(d::Dict, nts) = [Measurements.measurement(LsqFit.coef(d[:fit][nt])[1], LsqFit.standard_errors(d[:fit][nt])[1]) for nt in (x -> Symbol("nt$x")).(nts)]
