@@ -5,7 +5,6 @@ authors = ["Nicholas Pini"]
 Alert = "28312eec-4d86-447d-83ad-bc2b262de792"
 BlockArrays = "8e7c35d0-a365-5155-bbbb-fb81a777f24e"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
-CurveFit = "5a033b19-8c74-5913-a970-47c3779ef25c"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
