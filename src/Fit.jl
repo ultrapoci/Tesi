@@ -1,5 +1,6 @@
 using DocStringExtensions, DrWatson, Statistics, DataFrames, Measurements, Plots, JLD2, LegibleLambdas, LsqFit
-	
+import Distributions
+
 jld2dir(args...) = DrWatson.projectdir("jld2", args...)
 
 model4 = LegibleLambdas.@λ (x, p) -> p[2] .+ p[3] .* (x .- p[1]) .^ 2 + p[4] .* (x .- p[1]) .^ 3 + p[5] .* (x .- p[1]) .^ 4
@@ -9,6 +10,7 @@ model2 = LegibleLambdas.@λ (x, p) -> p[2] .+ p[3] .* (x .- p[1]) .^ 2
 model = model4 # default model
 
 betamodel = LegibleLambdas.@λ (nt, p) -> p[1] .* nt .+ p[2] .+ p[3] ./ nt
+linearmodel = LegibleLambdas.@λ (nt, p) -> p[1] .+ p[2] .* nt
 
 convertkeys(d::Dict{String}) = Dict(Symbol.(keys(d)) .=> values(d))
 convertkeys(d::Dict{Symbol}) = Dict(String.(keys(d)) .=> values(d))
@@ -133,3 +135,20 @@ getweights(df::DataFrames.DataFrame, exp = 1; kwargs...) = getweights(df.susc_er
 
 @doc "$(TYPEDSIGNATURES)"
 get_betamax(d::Dict, nts) = [Measurements.measurement(LsqFit.coef(d[:fit][nt])[1], LsqFit.standard_errors(d[:fit][nt])[1]) for nt in (x -> Symbol("nt$x")).(nts)]
+
+@doc "$(TYPEDSIGNATURES)"
+function confidence_bands(fit::LsqFit.LsqFitResult, alpha = 0.05; dist = :t)
+	J = fit.jacobian
+	sqrtN = sqrt(size(J, 1)) # sqrt of number of samples
+	cov = LsqFit.estimate_covar(fit)
+	σ = sqrt.([r' * cov * r for r in eachrow(J)]) # std dev at each point
+	z = if dist == :t
+		Distributions.quantile(Distributions.TDist(LsqFit.dof(fit)), 1 - alpha / 2)
+	elseif dist == :normal
+		Distributions.quantile(Distributions.Normal(), 1 - alpha / 2)
+	else
+		throw(ArgumentError("'dist' argument must be either :t or :normal, got '$dist'"))
+	end
+
+	z .* σ ./ sqrtN
+end
