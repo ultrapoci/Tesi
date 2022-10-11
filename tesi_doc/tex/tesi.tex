@@ -14,20 +14,44 @@
 \usepackage[subfigure]{tocloft}
 \usepackage[parfill]{parskip}
 \usepackage{multirow}
-\usepackage{biblatex}
-\usepackage{csquotes} % required by biblatex
+%\usepackage{biblatex}
+%\usepackage{csquotes} % required by biblatex
+%\addbibresource{source.bib}
 
 \renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
-\addbibresource{source.bib}
 
 \title{}
 \date{}
 \author{}
 
 \begin{document}
-test \cite{cabibbo} \cite{beta-fit}
 
-\printbibliography
+\begin{abstract}
+	abstract
+\end{abstract}
+
+\section{Introduction}
+Brief intro about the paper. Past work, theory, references.
+
+
+\section{Theoretical background}
+Explain the concepts of lattice gauge theory, Wilson and Polyakov loops, center symmetry and Sp(2) group. 
+Mostly from Pepe's work.
+
+Read the paper by Caselle to see if there is something to pure here (SY conjecture? String tension? 
+Universality with spin model? EST?)
+
+\section{Simulation and algorithm}
+Introduce the algorithm used in the simulation. Creutz, Cabibbo Marinari. Explain in details what the code
+does (without explicitely pasting the code): for example, how to extract SU(2) matrices from Sp(2).
+
+\section{Results}
+Put plots and results of the fit and simulations: fit of susceptibility peaks, fit of beta vs nt, etc.
+
+
+To understand how EST works, let us describe 
+
+%\printbibliography
 % https://www.overleaf.com/learn/latex/Bibliography_management_in_LaTeX
 
 \end{document}
