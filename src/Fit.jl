@@ -137,17 +137,19 @@ getweights(df::DataFrames.DataFrame, exp = 1; kwargs...) = getweights(df.susc_er
 get_betamax(d::Dict, nts) = [Measurements.measurement(LsqFit.coef(d[:fit][nt])[1], LsqFit.standard_errors(d[:fit][nt])[1]) for nt in (x -> Symbol("nt$x")).(nts)]
 
 @doc "$(TYPEDSIGNATURES)"
-function confidence_bands(fit::LsqFit.LsqFitResult, alpha = 0.05; dist = :t)
+function confidence_bands(fit::LsqFit.LsqFitResult, alpha = 0.05; dist::Symbol = :t)
+	if !(dist in [:t, :normal])
+		throw(ArgumentError("'dist' argument must be either :t or :normal, got :$dist"))
+	end
+	
 	J = fit.jacobian
 	sqrtN = sqrt(size(J, 1)) # sqrt of number of samples
 	cov = LsqFit.estimate_covar(fit)
 	σ = sqrt.([r' * cov * r for r in eachrow(J)]) # std dev at each point
 	z = if dist == :t
 		Distributions.quantile(Distributions.TDist(LsqFit.dof(fit)), 1 - alpha / 2)
-	elseif dist == :normal
+	else dist == :normal
 		Distributions.quantile(Distributions.Normal(), 1 - alpha / 2)
-	else
-		throw(ArgumentError("'dist' argument must be either :t or :normal, got '$dist'"))
 	end
 
 	z .* σ ./ sqrtN
