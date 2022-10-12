@@ -1,4 +1,4 @@
-\documentclass[reqno, 12pt]{article}
+\documentclass[reqno,12pt]{article}
 
 \usepackage[utf8]{inputenc}
 \usepackage[tbtags]{amsmath}
@@ -14,11 +14,16 @@
 \usepackage[subfigure]{tocloft}
 \usepackage[parfill]{parskip}
 \usepackage{multirow}
-%\usepackage{biblatex}
-%\usepackage{csquotes} % required by biblatex
-%\addbibresource{source.bib}
+\usepackage{biblatex}
+\usepackage{csquotes} % required by biblatex
+\addbibresource{source.bib}
+
+\numberwithin{equation}{section}
 
 \renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+
+\newcommand{\SU}{\mathrm{SU}}
+\newcommand{\Sp}{\mathrm{Sp}}
 
 \title{}
 \date{}
@@ -42,8 +47,59 @@ Read the paper by Caselle to see if there is something to pure here (SY conjectu
 Universality with spin model? EST?)
 
 \section{Simulation and algorithm}
-Introduce the algorithm used in the simulation. Creutz, Cabibbo Marinari. Explain in details what the code
-does (without explicitely pasting the code): for example, how to extract SU(2) matrices from Sp(2).
+\begin{center}
+	\textit{Introduce the algorithm used in the simulation. Creutz, Cabibbo Marinari. Explain in details what the code
+	does (without explicitly pasting the code): for example, how to extract SU(2) matrices from Sp(2).}
+\end{center}
+
+Define the partition function of the system to be
+
+\begin{equation}
+	\mathcal{Z} = \int \mathcal{D}U e^{-\beta S(U)} \qq{where} \int \mathcal{D} U \equiv \prod_{x,\mu} \int \dd{U_{x,\mu}}.
+\end{equation}
+
+$U_{x,\mu}$ is an element of the group (a link variable starting at the lattice site $x$, pointing
+along the direction $\mu$), 
+and $S$ is the action, defined as
+\begin{equation}
+	S = \sum_\square S_\square \qc 
+	S_\square \equiv 1 - \frac{1}{4} \Tr(U_{x,\mu}U_{x+\hat{\mu}, \nu}U^\dagger_{x+\hat{\nu}, \mu}U^\dagger_{x,\nu}).
+\end{equation}
+The symbol $\square$ represents the plaquette: the minimum loop possible on the lattice. Note that a link 
+variable has a direction: the adjoint of a link variable is the link connecting the two sites in the opposite
+direction. In other words:
+\begin{equation}
+	U_{x,\mu} = U_{x+\hat{\mu}, -\mu}^\dagger.
+\end{equation}
+
+The idea is to follow the \textit{heat-bath} algorithm as designed by Cabibbo and Marinari \cite{cabibbo}, and generate a new link
+element with a Boltzmann probability distribution:
+\begin{equation}
+	P(U) = \frac{1}{\mathcal{Z}} e^{-\beta S(U)} \dd{U}.
+\end{equation}  
+
+To do this, we consider a set $F$ of SU(2) subgroups of the gauge group Sp(2). Given a Sp(2) element $U$ of the form
+\begin{equation}
+	U_\text{Sp(2)} = \mqty(
+		W_{11} & W_{12} & X_{11} & X_{12} \\
+		W_{21} & W_{22} & X_{21} & X_{22} \\
+		X^*_{22} & -X^*_{21} & W^*_{22} & -W^*_{21} \\
+		-X^*_{12} & X^*_{11} & -W^*_{12} & W^*_{11}
+	),
+\end{equation}
+where $W_{ij}, X_{kl} \in \mathbb{C}$ for $i,j,k,l = 1, 2$, 
+we can construct four SU(2) subgroups, by extracting two complex numbers $t_1$ and $t_2$ as
+\begin{itemize}
+	\item $\begin{cases} t_1 = W_{11} \\ t_2 = X_{12} \end{cases}$
+	\item $\begin{cases} t_1 = W_{22} \\ t_2 = X_{21} \end{cases}$
+	\item $\begin{cases} t_1 = W_{11} + W_{22} \\ t_2 = X_{11} - X_{22} \end{cases}$
+	\item $\begin{cases} t_1 = W_{11} + W^*_{22} \\ t_2 = W_{12} - W^*_{21} \end{cases}$
+\end{itemize}
+and building an SU(2) group element as
+\begin{equation}
+	U_\text{SU(2)} = \mqty(t_1 & t_2 \\ -t_2^* & t_1^*).
+\end{equation}
+Each choice of $t_1$ and $t_2$ above gives a different SU(2) element belonging to a SU(2) subgroup of Sp(2).
 
 \section{Results}
 Put plots and results of the fit and simulations: fit of susceptibility peaks, fit of beta vs nt, etc.
@@ -51,7 +107,7 @@ Put plots and results of the fit and simulations: fit of susceptibility peaks, f
 
 To understand how EST works, let us describe 
 
-%\printbibliography
+\printbibliography
 % https://www.overleaf.com/learn/latex/Bibliography_management_in_LaTeX
 
 \end{document}
