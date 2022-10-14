@@ -4,6 +4,7 @@
 \usepackage[tbtags]{amsmath}
 \usepackage[english]{babel}
 \usepackage{bm}
+\usepackage{bbm} % \mathbbm{1}
 \usepackage{amsfonts}
 \usepackage{microtype}
 \usepackage{physics}
@@ -14,6 +15,7 @@
 \usepackage[subfigure]{tocloft}
 \usepackage[parfill]{parskip}
 \usepackage{multirow}
+\usepackage{xcolor}
 \usepackage{biblatex}
 \usepackage{csquotes} % required by biblatex
 \addbibresource{source.bib}
@@ -22,8 +24,11 @@
 
 \renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
 
+\newcommand{\red}[1]{\textbf{\textcolor{red}{#1}}}
+
 \newcommand{\SU}{\mathrm{SU}}
 \newcommand{\Sp}{\mathrm{Sp}}
+\newcommand{\id}{\mathbbm{1}}
 
 \title{}
 \date{}
@@ -36,22 +41,15 @@
 \end{abstract}
 
 \section{Introduction}
-Brief intro about the paper. Past work, theory, references.
+\red{Brief intro about the paper. Past work, theory, references.}
 
 
 \section{Theoretical background}
-Explain the concepts of lattice gauge theory, Wilson and Polyakov loops, center symmetry and Sp(2) group. 
-Mostly from Pepe's work.
-
-Read the paper by Caselle to see if there is something to pure here (SY conjecture? String tension? 
-Universality with spin model? EST?)
+\red{Explain the concepts of lattice gauge theory, Wilson and Polyakov loops, center symmetry and Sp(2) group. 
+Mostly from Pepe's work. Read the paper by Caselle to see if there is something to pure here (SY conjecture? String tension? 
+Universality with spin model? EST?)}
 
 \section{Simulation and algorithm}
-\begin{center}
-	\textit{Introduce the algorithm used in the simulation. Creutz, Cabibbo Marinari. Explain in details what the code
-	does (without explicitly pasting the code): for example, how to extract SU(2) matrices from Sp(2).}
-\end{center}
-
 Define the partition function of the system to be
 
 \begin{equation}
@@ -63,7 +61,7 @@ along the direction $\mu$),
 and $S$ is the action, defined as
 \begin{equation}
 	S = \sum_\square S_\square \qc 
-	S_\square \equiv 1 - \frac{1}{4} \Tr(U_{x,\mu}U_{x+\hat{\mu}, \nu}U^\dagger_{x+\hat{\nu}, \mu}U^\dagger_{x,\nu}).
+	S_\square \equiv - \frac{1}{4} \Tr(U_{x,\mu}U_{x+\hat{\mu}, \nu}U^\dagger_{x+\hat{\nu}, \mu}U^\dagger_{x,\nu}).
 \end{equation}
 The symbol $\square$ represents the plaquette: the minimum loop possible on the lattice. Note that a link 
 variable has a direction: the adjoint of a link variable is the link connecting the two sites in the opposite
@@ -72,15 +70,20 @@ direction. In other words:
 	U_{x,\mu} = U_{x+\hat{\mu}, -\mu}^\dagger.
 \end{equation}
 
-The idea is to follow the \textit{heat-bath} algorithm as designed by Cabibbo and Marinari \cite{cabibbo}, and generate a new link
-element with a Boltzmann probability distribution:
+Note that the lattice has periodic boundary conditions.
+
+The algorithm basic idea is to generate a new link element $U$ with a Boltzmann probability distribution:
 \begin{equation}
 	P(U) = \frac{1}{\mathcal{Z}} e^{-\beta S(U)} \dd{U}.
 \end{equation}  
 
-To do this, we consider a set $F$ of SU(2) subgroups of the gauge group Sp(2). Given a Sp(2) element $U$ of the form
+While this is fairly easy for the SU(2) gauge group using Creutz's algorithm \cite{creutz}, there is no obvious
+way to generalize it to other gauge groups, like SU(N) or Sp(N). Thus, to generate new links belonging to Sp(2), we use
+a more general approach, as designed by Cabibbo and Marinari \cite{cabibbo}.  
+
+We consider a set $F$ of SU(2) subgroups of the gauge group Sp(2). Given a Sp(2) element $U$ of the form
 \begin{equation}
-	U_\text{Sp(2)} = \mqty(
+	U = \mqty(
 		W_{11} & W_{12} & X_{11} & X_{12} \\
 		W_{21} & W_{22} & X_{21} & X_{22} \\
 		X^*_{22} & -X^*_{21} & W^*_{22} & -W^*_{21} \\
@@ -88,24 +91,195 @@ To do this, we consider a set $F$ of SU(2) subgroups of the gauge group Sp(2). G
 	),
 \end{equation}
 where $W_{ij}, X_{kl} \in \mathbb{C}$ for $i,j,k,l = 1, 2$, 
-we can construct four SU(2) subgroups, by extracting two complex numbers $t_1$ and $t_2$ as
+we can construct four SU(2) subgroups, by extracting two complex numbers $t_1$ and $t_2$:
 \begin{itemize}
 	\item $\begin{cases} t_1 = W_{11} \\ t_2 = X_{12} \end{cases}$
 	\item $\begin{cases} t_1 = W_{22} \\ t_2 = X_{21} \end{cases}$
 	\item $\begin{cases} t_1 = W_{11} + W_{22} \\ t_2 = X_{11} - X_{22} \end{cases}$
 	\item $\begin{cases} t_1 = W_{11} + W^*_{22} \\ t_2 = W_{12} - W^*_{21} \end{cases}$
 \end{itemize}
-and building an SU(2) group element as
+We can then build an SU(2) group element as
 \begin{equation}
-	U_\text{SU(2)} = \mqty(t_1 & t_2 \\ -t_2^* & t_1^*).
+	a_k = \mqty(t_1 & t_2 \\ -t_2^* & t_1^*) \qc k = 1, 2, 3, 4,
 \end{equation}
+where $k$ labels each subgroup. 
 Each choice of $t_1$ and $t_2$ above gives a different SU(2) element belonging to a SU(2) subgroup of Sp(2).
 
+We define $A_k$ to be an SU(2) element belonging to the $k$th SU(2) subgroup, embedded into Sp(2). For each subgroup in $F$,
+the Sp(2) embedding is constructed as follows:
+\begin{itemize}
+	\item $A_1 = \mqty(
+		t_1 & 0 & 0 & t_2 \\
+		0 & 1 & 0 & 0 \\
+		0 & 0 & 1 & 0 \\
+		-t^*_2 & 0 & 0 & t^*_1 
+		)$
+	\item $A_2 = \mqty(
+		1 & 0 & 0 & 0 \\
+		0 & t_1 & t_2 & 0 \\
+		0 & -t^*_2 & t^*_1 & 0 \\
+		0 & 0 & 0 & 1 
+		)$
+	\item $A_3 = \mqty(
+		t_1 & 0 & t_2 & 0 \\
+		0 & t_1 & 0 & -t_2 \\
+		-t_2^* & 0 & t^*_1 & 0 \\
+		0 & t^*_2 & 0 & t^*_1 
+		)$
+	\item $A_4 = \mqty(
+		t_1 & t_2 & 0 & 0 \\
+		-t^*_2 & 1 & 0 & 0 \\
+		0 & 0 & t_1 & t_2  \\
+		0 & 0 & -t^*_2 & 1 
+		)$
+\end{itemize}
+
+Generating each $A_k$ randomly, we define the new link $U'$ to be
+
+\begin{equation}
+	U' = \qty(\prod_k A_k) U.
+\end{equation}
+
+It is proven \cite{cabibbo} that this algorithm leads to thermalization, if each $a_k$ is randomly distributed as
+
+\begin{equation} \label{eq:probdist}
+	P(A_k) = \dd{A_k} \frac{e^{-\beta S(A_k U_{k-1})}}{\mathcal{Z}_k(U_{k-1})},
+\end{equation}
+
+where $U_{k-1} = \qty(\prod_1^{k-1}A_k) U$ with $U_0 = U$ and 
+
+\begin{equation}
+	\mathcal{Z}_k(U) = \int_{SU(2)_k} \dd{A} e^{-\beta S(AU)}.
+\end{equation}
+
+
+The reason for the decomposition into SU(2) subgroups is to efficiently generate $A_k$ according to 
+\eqref{eq:probdist}. In fact, now that we are dealing with SU(2) elements, we can fall back to Creutz's
+algorithm \cite{creutz} to generate each SU(2) element, embed it into Sp(2) as explained above, and left multiply
+the original link $U$ by it. 
+
+Focusing on a single link $U$ to update, we are interested only in the plaquettes that contain $U$. Defining
+$\widetilde{U}$ to be the product of the staples surrounding $U$ (an ordered product of the three links in the plaquettes that
+are not $U$ itself), we have 
+
+\begin{align}
+	S(A_k U) &= -\frac{1}{4} \Tr(A_k U \sum_i \widetilde{U}_i) + \text{terms independent of } A_k \\
+	&= -\frac{1}{4} \Tr(a_k u_k \sum_i \tilde{u}_k^i) + \text{terms independent of } a_k, 
+\end{align}
+
+where $a_k$, $u_k$ and $\tilde{u}_k$ are SU(2) elements corresponding to the $k$th
+subgroup extracted from $A_k$, $U$ and $\widetilde{U}$, respectively. This implies that we want to generate
+$a_k$ according to the distribution
+
+\begin{equation}
+	\dd{P(a_k)} \sim e^{\frac{1}{4}\beta\Tr(a_k u_k \sum_i \tilde{u}_k^i)} \dd{a_k}.
+\end{equation}
+
+We parametrize $a_k$ as
+
+\begin{equation}
+	a_k = \alpha_0 \id + i \vec{\alpha} \cdot \vec{\sigma},
+\end{equation}
+
+where $\alpha_\mu \in \mathbb{C} \ \forall \mu = 1, 2, 3, 4$ with the constraint that 
+
+\begin{equation}
+	\alpha^2 \equiv \alpha_0^2 + |\vec{\alpha}|^2 = 1
+\end{equation} 
+
+and $\vec{\sigma} = \qty(\sigma_1, \sigma_2, \sigma_3)$ is the three-vector of the $2 \times 2$ Pauli matrices. 
+
+The SU(2) group measure is 
+\begin{equation}
+	\dd{a_k} = \frac{1}{2\pi^2} \delta(\alpha^2 - 1) \dd[4]{\alpha}.
+\end{equation}
+
+Since the sum of SU(2) elements is proportional to an SU(2) element, we write
+\begin{equation}
+	u_k \sum_i \tilde{u}_k^i = c \bar{u}_k \qc \bar{u}_k \in \SU(2)
+\end{equation}
+where 
+\begin{equation}
+	c = \det(u_k \sum_i \tilde{u}_k^i)^{\flatfrac{1}{2}}.
+\end{equation}
+
+The probability distribution for $a_k$ now becomes
+\begin{equation}
+	\dd{P(a_k)} \sim e^{\frac{1}{4}\beta\Tr(c a_k \bar{u}_k)} \dd{a_k}.
+\end{equation}
+
+The group measure is invariant under multiplication by another SU(2) element:
+\begin{equation}
+	\dd(b a_k) = \dd{a_k} \qfor b \in \SU(2),
+\end{equation}
+
+so that we can write
+\begin{equation}
+	\dd{P(a_k \bar{u}_k^{-1})} \sim e^{\frac{1}{4}\beta c \Tr(a_k)} \dd{a_k} 
+	= \frac{1}{2\pi^2} e^{\frac{\beta}{2}c \alpha_0} \delta(\alpha^2 - 1) \dd[4]{\alpha},
+\end{equation}
+
+because $\Tr(a_k) = 2\alpha_0$. Noting that $\delta(\alpha^2 - 1)\dd[4]{\alpha} = 
+\frac{1}{2}(1 - \alpha_0^2)^{\flatfrac{1}{2}} \dd{\alpha_0}\dd{\Omega}$, we rewrite $\dd{P(a_k \bar{u}_k^{-1})}$ as
+\begin{equation}
+	\dd{P(a_k \bar{u}_k^{-1})} \sim 
+	\frac{1}{2\pi^2} \frac{1}{2}(1 - \alpha_0^2)^{\flatfrac{1}{2}} e^{\frac{\beta}{2}c \alpha_0} \dd{\alpha_0}\dd{\Omega}
+\end{equation}
+with $\alpha_0 \in (-1,1)$ and $\vec{\alpha}$ is a totally random unit three-vector.
+
+The problem is now generating the four-vector $\alpha_\mu$ according to the distribution above, thus obtaining
+$a_k \in \SU(2)$. Finally, we obtain $A_k$ by embedding $a_k \bar{u}_k^{-1} \in \SU(2)$ into Sp(2). Doing this for every 
+SU(2) subgroup will yield the new link $U'$.
+
+To generate $a_k$, we have to randomly generate $\alpha_0$ according to
+
+\begin{equation} \label{eq:probdistalpha}
+	P(\alpha_0) \sim (1 - \alpha_0^2)^{\flatfrac{1}{2}} e^{\frac{\beta}{2}c\alpha_0}.
+\end{equation}
+
+The algorithm is quite simple. We uniformly generate $x$ in the range 
+
+\begin{equation}
+	e^{-\beta c} < x < 1
+\end{equation} 
+
+and define a trial $\alpha_0$ distributed according to $e^{\frac{\beta}{2}c\alpha_0}$ as
+
+\begin{equation}
+	\alpha_0 = 1 + \frac{2}{\beta c}\ln{x}.
+\end{equation}
+
+To account for the term $\qty(1 - \alpha_0^2)^{\flatfrac{1}{2}}$ in \eqref{eq:probdistalpha}, we \textit{reject} this trial
+$\alpha_0$ with probability $1 - \qty(1 - \alpha_0^2)^{\flatfrac{1}{2}}$, generating a new trial $\alpha_0$ if 
+the rejection is successful. We keep doing this until a trial $\alpha_0$ is finally accepted. 
+
+The unit vector $\vec{\alpha} = (\alpha_1, \alpha_2, \alpha_3)$ is constructed by uniformly generating 
+
+\begin{gather}
+	0 < \phi < 2\pi, \\
+	-1 < y < 1
+\end{gather}
+
+and defining 
+
+\begin{align}
+	\theta &\equiv \arccos(y), \\
+	r &\equiv \qty(1 - \alpha_0)^{\flatfrac{1}{2}}.
+\end{align}
+
+We finally have
+
+\begin{equation}
+	\begin{cases}
+		\alpha_1 = r \sin(\theta) \cos(\phi) \\
+		\alpha_2 = r \sin(\theta) \sin(\phi) \\
+		\alpha_3 = r \cos(\theta)
+	\end{cases}.
+\end{equation}
+
+
 \section{Results}
-Put plots and results of the fit and simulations: fit of susceptibility peaks, fit of beta vs nt, etc.
-
-
-To understand how EST works, let us describe 
+\red{Put plots and results of the fit and simulations: fit of susceptibility peaks, fit of beta vs nt, etc.}
 
 \printbibliography
 % https://www.overleaf.com/learn/latex/Bibliography_management_in_LaTeX
