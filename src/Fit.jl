@@ -1,4 +1,4 @@
-using DocStringExtensions, DrWatson, Statistics, DataFrames, Measurements, Plots, JLD2, LegibleLambdas, LsqFit
+using DocStringExtensions, DrWatson, Statistics, DataFrames, Measurements, Plots, JLD2, LegibleLambdas, LsqFit, GLM
 import Distributions: quantile, Normal, TDist
 
 jld2dir(args...) = DrWatson.projectdir("jld2", args...)
@@ -135,3 +135,12 @@ getweights(df::DataFrames.DataFrame, exp = 1; kwargs...) = getweights(df.susc_er
 
 @doc "$(TYPEDSIGNATURES)"
 get_betamax(d::Dict, nts) = [Measurements.measurement(LsqFit.coef(d[:fit][nt])[1], LsqFit.standard_errors(d[:fit][nt])[1]) for nt in (x -> Symbol("nt$x")).(nts)]
+
+@doc "$(TYPEDSIGNATURES)"
+function get_temperatures(linearfit, beta, nts)
+	c = coef(linearfit)
+	nt(β) = (β - c[1]) / c[2]
+	T_c = 1 / nt(beta)
+	T = 1 ./ nts
+	T ./ T_c
+end
