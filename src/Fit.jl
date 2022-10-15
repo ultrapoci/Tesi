@@ -124,18 +124,6 @@ end
 @doc "$(TYPEDSIGNATURES)"
 Plots.plot(d::Dict, nt::Integer; kwargs...) = Plots.plot(model, d, nt; kwargs...)
 
-
-### getweights ###
-
-@doc "$(TYPEDSIGNATURES)"
-getweights(v, exp = 1) = 1 ./ v .^ exp
-
-@doc "$(TYPEDSIGNATURES)"
-getweights(df::DataFrames.DataFrame, exp = 1; kwargs...) = getweights(df.susc_error, exp; kwargs...)
-
-@doc "$(TYPEDSIGNATURES)"
-get_betamax(d::Dict, nts) = [Measurements.measurement(LsqFit.coef(d[:fit][nt])[1], LsqFit.standard_errors(d[:fit][nt])[1]) for nt in (x -> Symbol("nt$x")).(nts)]
-
 @doc "$(TYPEDSIGNATURES)"
 function get_temperatures(linearfit, beta, nts)
 	c = coef(linearfit)
