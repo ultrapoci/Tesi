@@ -50,7 +50,7 @@ Mostly from Pepe's work. Read the paper by Caselle to see if there is something 
 Universality with spin model? EST?)}
 
 \section{Simulation and algorithm}
-Define the partition function of the system to be
+Define the partition function of the $(2+1)$ dimensional system to be
 
 \begin{equation}
 	\mathcal{Z} = \int \mathcal{D}U e^{-\beta S(U)} \qq{where} \int \mathcal{D} U \equiv \prod_{x,\mu} \int \dd{U_{x,\mu}}.
@@ -70,12 +70,18 @@ direction. In other words:
 	U_{x,\mu} = U_{x+\hat{\mu}, -\mu}^\dagger.
 \end{equation}
 
-Note that the lattice has periodic boundary conditions.
+Note that the lattice has periodic boundary conditions. In our case, the gauge group of choice is Sp(2).
 
-The algorithm basic idea is to generate a new link element $U$ with a Boltzmann probability distribution:
+\subsection{Heat-bath algorithm}
+
+The heat-bath algorithm is used to calculate each step of the evolution of the system.
+The basic idea is to generate a new link element $U$ with a Boltzmann probability distribution:
+
 \begin{equation}
-	P(U) = \frac{1}{\mathcal{Z}} e^{-\beta S(U)} \dd{U}.
+	P(U) = \frac{1}{\mathcal{Z}} e^{-\beta S(U)} \dd{U}
 \end{equation}  
+
+for each link variable in the system. Updating each link once represents a single step in the algorithm. 
 
 While this is fairly easy for the SU(2) gauge group using Creutz's algorithm \cite{creutz}, there is no obvious
 way to generalize it to other gauge groups, like SU(N) or Sp(N). Thus, to generate new links belonging to Sp(2), we use
@@ -99,9 +105,11 @@ we can construct four SU(2) subgroups, by extracting two complex numbers $t_1$ a
 	\item $\begin{cases} t_1 = W_{11} + W^*_{22} \\ t_2 = W_{12} - W^*_{21} \end{cases}$
 \end{itemize}
 We can then build an SU(2) group element as
-\begin{equation}
+
+\begin{equation} \label{eq:su2element}
 	a_k = \mqty(t_1 & t_2 \\ -t_2^* & t_1^*) \qc k = 1, 2, 3, 4,
 \end{equation}
+
 where $k$ labels each subgroup. 
 Each choice of $t_1$ and $t_2$ above gives a different SU(2) element belonging to a SU(2) subgroup of Sp(2).
 
@@ -128,25 +136,27 @@ the Sp(2) embedding is constructed as follows:
 		)$
 	\item $A_4 = \mqty(
 		t_1 & t_2 & 0 & 0 \\
-		-t^*_2 & 1 & 0 & 0 \\
+		-t^*_2 & t^*_1 & 0 & 0 \\
 		0 & 0 & t_1 & t_2  \\
-		0 & 0 & -t^*_2 & 1 
+		0 & 0 & -t^*_2 & t^*_1 
 		)$
 \end{itemize}
 
 Generating each $A_k$ randomly, we define the new link $U'$ to be
 
 \begin{equation}
-	U' = \qty(\prod_k A_k) U.
+	U' = A_4 A_3 A_2 A_1 U,
 \end{equation}
 
-It is proven \cite{cabibbo} that this algorithm leads to thermalization, if each $a_k$ is randomly distributed as
+because, in this case, the set $F$ contains four SU(2) subgroups.
+
+It is proven \cite{cabibbo} that this algorithm leads to thermalization, if each $A_k$ is randomly distributed as
 
 \begin{equation} \label{eq:probdist}
 	P(A_k) = \dd{A_k} \frac{e^{-\beta S(A_k U_{k-1})}}{\mathcal{Z}_k(U_{k-1})},
 \end{equation}
 
-where $U_{k-1} = \qty(\prod_1^{k-1}A_k) U$ with $U_0 = U$ and 
+where $U_{n} \equiv A_n A_{n-1} \dots A_1 U$ with $U_0 = U$ and 
 
 \begin{equation}
 	\mathcal{Z}_k(U) = \int_{SU(2)_k} \dd{A} e^{-\beta S(AU)}.
@@ -159,8 +169,8 @@ algorithm \cite{creutz} to generate each SU(2) element, embed it into Sp(2) as e
 the original link $U$ by it. 
 
 Focusing on a single link $U$ to update, we are interested only in the plaquettes that contain $U$. Defining
-$\widetilde{U}$ to be the product of the staples surrounding $U$ (an ordered product of the three links in the plaquettes that
-are not $U$ itself), we have 
+$\widetilde{U}_i$ to be one of the staples surrounding $U$ (an ordered product of the three links in the plaquettes
+containing $U$, that are not the link $U$ itself), we have 
 
 \begin{align}
 	S(A_k U) &= -\frac{1}{4} \Tr(A_k U \sum_i \widetilde{U}_i) + \text{terms independent of } A_k \\
@@ -177,7 +187,7 @@ $a_k$ according to the distribution
 
 We parametrize $a_k$ as
 
-\begin{equation}
+\begin{equation} \label{eq:su2parametrization}
 	a_k = \alpha_0 \id + i \vec{\alpha} \cdot \vec{\sigma},
 \end{equation}
 
@@ -187,9 +197,9 @@ where $\alpha_\mu \in \mathbb{C} \ \forall \mu = 1, 2, 3, 4$ with the constraint
 	\alpha^2 \equiv \alpha_0^2 + |\vec{\alpha}|^2 = 1
 \end{equation} 
 
-and $\vec{\sigma} = \qty(\sigma_1, \sigma_2, \sigma_3)$ is the three-vector of the $2 \times 2$ Pauli matrices. 
+and $\vec{\sigma} = \qty(\sigma_1, \sigma_2, \sigma_3)$ is the three-vector of $2 \times 2$ Pauli matrices. 
 
-The SU(2) group measure is 
+The SU(2) group measure is then
 \begin{equation}
 	\dd{a_k} = \frac{1}{2\pi^2} \delta(\alpha^2 - 1) \dd[4]{\alpha}.
 \end{equation}
@@ -213,7 +223,7 @@ The group measure is invariant under multiplication by another SU(2) element:
 	\dd(b a_k) = \dd{a_k} \qfor b \in \SU(2),
 \end{equation}
 
-so that we can write
+so we can write
 \begin{equation}
 	\dd{P(a_k \bar{u}_k^{-1})} \sim e^{\frac{1}{4}\beta c \Tr(a_k)} \dd{a_k} 
 	= \frac{1}{2\pi^2} e^{\frac{\beta}{2}c \alpha_0} \delta(\alpha^2 - 1) \dd[4]{\alpha},
@@ -221,11 +231,14 @@ so that we can write
 
 because $\Tr(a_k) = 2\alpha_0$. Noting that $\delta(\alpha^2 - 1)\dd[4]{\alpha} = 
 \frac{1}{2}(1 - \alpha_0^2)^{\flatfrac{1}{2}} \dd{\alpha_0}\dd{\Omega}$, we rewrite $\dd{P(a_k \bar{u}_k^{-1})}$ as
+
 \begin{equation}
 	\dd{P(a_k \bar{u}_k^{-1})} \sim 
 	\frac{1}{2\pi^2} \frac{1}{2}(1 - \alpha_0^2)^{\flatfrac{1}{2}} e^{\frac{\beta}{2}c \alpha_0} \dd{\alpha_0}\dd{\Omega}
 \end{equation}
-with $\alpha_0 \in (-1,1)$ and $\vec{\alpha}$ is a totally random unit three-vector.
+
+with $\alpha_0 \in (-1,1)$ and $\dd{\Omega}$ being the differential solid angle of the three-vector $\vec{a}$,
+which is of length $(1 - \alpha_0^2)^{\flatfrac{1}{2}}$.
 
 The problem is now generating the four-vector $\alpha_\mu$ according to the distribution above, thus obtaining
 $a_k \in \SU(2)$. Finally, we obtain $A_k$ by embedding $a_k \bar{u}_k^{-1} \in \SU(2)$ into Sp(2). Doing this for every 
@@ -255,19 +268,25 @@ the rejection is successful. We keep doing this until a trial $\alpha_0$ is fina
 
 The unit vector $\vec{\alpha} = (\alpha_1, \alpha_2, \alpha_3)$ is constructed by uniformly generating 
 
-\begin{gather}
-	0 < \phi < 2\pi, \\
-	-1 < y < 1
-\end{gather}
+\begin{equation}
+	\begin{aligned}
+		0 < &\phi < 2\pi, \\
+		-1 < &y < 1
+	\end{aligned}
+\end{equation}
 
 and defining 
 
-\begin{align}
-	\theta &\equiv \arccos(y), \\
-	r &\equiv \qty(1 - \alpha_0)^{\flatfrac{1}{2}}.
-\end{align}
+\begin{equation}
+	\begin{aligned}
+		\theta &\equiv \arccos(y), \\
+		r &\equiv \qty(1 - \alpha_0)^{\flatfrac{1}{2}},
+	\end{aligned}
+\end{equation}
 
-We finally have
+Of course, $\alpha_0$ being the trial random number that has been accepted according to \eqref{eq:probdist}. 
+
+We finally have, for $\vec{\alpha} = (\alpha_1, \alpha_2, \alpha_3)$,
 
 \begin{equation}
 	\begin{cases}
@@ -277,6 +296,117 @@ We finally have
 	\end{cases}.
 \end{equation}
 
+$a_k$ will then be constructed using \eqref{eq:su2parametrization}, and $A_k$ using the embeddings described
+above, with $t_1$ and $t_2$ selected from $a_k$ as of \eqref{eq:su2element}.
+
+\subsection{Overrelaxation}
+
+The full algorithm implemented for the simulation also takes advantage of \textit{overrelaxation} \cite{montvay}.
+Overrelaxation is used to counter critical slowing down in the vicinity of the phase transition: here,
+the system's correlation length is so large that lattice updates of the order of the lattice spacing are
+negligible. This causes the simulation to slow down considerably. 
+Overrelaxation is a way of choosing new link elements to update the lattice with, which prevents critical
+slowing down. 
+
+The idea is to choose a new link element $U'$ "as far as possible" from $U$ (the original link), without actually changing the
+action $S$ of the system. \cite{montvay} describes overrelaxation in the case of SU(2) gauge group. For more
+complex groups, it is not as straightforward to generate new links. Again, we use Cabibbo and Marinari's idea:
+the new link is chosen left multiplying the old $U$ link by randomly generated $A_k$ elements which belongs
+to Sp(2), which are in turn built embedding SU(2) elements into Sp(2). $k$ labels the SU(2) subgroups and runs
+from 1 to 4, as above. 
+
+Note that overrelaxation is applied at each simulation step along with heat-bath: in fact,
+a single complete simulation step consists of one or more steps of overrelaxation and one step of heat-bath, where
+a step is the update of the entire lattice exactly once. In our case, overrelaxation is applied three times
+before each heat-bath step. This is possible because, as noted above, overrelaxation doesn't actually change
+the action of the system.
+
+Consider $\widetilde{U}_i$ to be one staple surrounding the link $U$, and let us define
+
+\begin{equation}
+	R = \sum_{i = 1}^6 \widetilde{U}_i.
+\end{equation}
+
+Evidently, there are six staples surrounding each link in a $(2+1)$ dimensional lattice, thus $i = 1,\dots,6$.
+
+\cite{montvay} defines the new link to be
+\begin{equation}
+	U' = V U^{-1} V,
+\end{equation}
+
+where 
+
+\begin{equation}
+	V \equiv \det(R)^{\flatfrac{1}{2}} R^{-1},
+\end{equation}
+
+the inverse of the projection of $R$ onto the SU(2) gauge group. In the case of the Sp(2) gauge group, 
+we define 
+
+\begin{equation} \label{eq:overrelaxation_Ak}
+	A_k U_{k-1} = V U_{k-1}^{-1} V,
+\end{equation}
+
+instead, where 
+
+\begin{equation}
+	U_{n} \equiv A_n A_{n-1} \dots A_1 U \qq{with} U_0 = U.
+\end{equation}
+
+Following Cabibbo and Marinari's prescription, the new link will be
+
+\begin{equation} \label{eq:overrelaxation_newlink}
+	U' = A_4 A_3 A_2 A_1 U
+\end{equation}
+
+in the case of four SU(2) subgroups.
+
+We then extract the SU(2) elements corresponding to the $k$th subgroup of Sp(2) 
+from each term in \eqref{eq:overrelaxation_Ak}:
+
+\begin{eqnarray}
+	\begin{cases}
+		A_k \in \Sp(2) &\longrightarrow a_k \in \SU(2) \\
+		U_{k-1} \in \Sp(2) &\longrightarrow u_k \in \SU(2) \\
+		\widetilde{U}_i \in \Sp(2) &\longrightarrow r_k^{(i)} \in \SU(2)
+	\end{cases}.
+\end{eqnarray}
+
+We also define
+\begin{equation}
+	r_k \equiv \sum_i r_k^{(i)}.
+\end{equation}
+
+Using the fact that a sum of SU(2) elements is proportional to a SU(2) element, we can write
+
+\begin{equation}
+	u_k r_k = u_k \sum_i r_k^{(i)} = c \bar{u}_k \qc c = \det(r_k)^{\flatfrac{1}{2}}.
+\end{equation}
+
+Rewriting \eqref{eq:overrelaxation_Ak} as
+
+\begin{equation}
+	A_k = V U^{-1} V U^{-1}
+\end{equation}
+
+and applying the equation to the SU(2) elements extracted above, we end up with
+
+\begin{equation}
+	\begin{aligned}
+		a_k &= \det(r_k) r_k^{-1} u_k^{-1} r_k^{-1} u_k^{-1} \\
+		&= \det(r_k) (u_k r_k)^{-1} (u_k r_k)^{-1} \\
+		&= \det(r_k) (r_k u_k)^{-2} \\
+		&= \det(r_k) (c \bar{u}_k)^{-2}.
+	\end{aligned}
+\end{equation}
+
+Given that $c = \det(r_k)^{\flatfrac{1}{2}}$, we finally have
+\begin{equation}
+	a_k = \bar{u}_k^{-2} = \qty(\frac{1}{c} u_k \sum_i r_k^{(i)})^{-2}.
+\end{equation}
+
+Exactly as with the heat-bath algorithm, once we find $a_k$, we can embed it into Sp(2) according to the
+subgroup it belongs to, which yields the corresponding $A_k$, and find the new link using \eqref{eq:overrelaxation_newlink}.
 
 \section{Results}
 \red{Put plots and results of the fit and simulations: fit of susceptibility peaks, fit of beta vs nt, etc.}
