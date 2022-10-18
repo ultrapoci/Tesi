@@ -1,5 +1,6 @@
 using DocStringExtensions, DrWatson, Statistics, DataFrames, Measurements, Plots, JLD2, LegibleLambdas, LsqFit, GLM
 import Distributions: quantile, Normal, TDist
+import Base.MathConstants: γ
 
 jld2dir(args...) = DrWatson.projectdir("jld2", args...)
 
@@ -11,6 +12,19 @@ model = model4 # default model
 
 betamodel = LegibleLambdas.@λ (nt, p) -> p[1] .* nt .+ p[2] .+ p[3] ./ nt
 linearmodel = LegibleLambdas.@λ (nt, p) -> p[1] .+ p[2] .* nt
+
+# Bessel function
+@. K₀(t) = sqrt(π / (2t)) * ℯ^(-t)
+
+@. longdistance(R, p) = p[2] * (K₀(R / p[1]) + K₀((100 - R) / p[1]))
+
+# Caristo's paper uses t = R / ξ
+@. shortdistance(R, p) = p[2]/R^(1/4) * (
+	1 + 
+	R/(2p[1]) * log((ℯ^γ * R) / (8p[1])) +
+	(R / p[1])^2 / 16 + 
+	(R / p[1])^3 * log((ℯ^γ * R) / (8p[1])) / 32
+)
 
 convertkeys(d::Dict{String}) = Dict(Symbol.(keys(d)) .=> values(d))
 convertkeys(d::Dict{Symbol}) = Dict(String.(keys(d)) .=> values(d))
@@ -66,7 +80,7 @@ $(TYPEDSIGNATURES)
 
 `y` must be a vector of Measurements.
 """
-function fitmodel(model::Function, x, y, params; weighted = true, kwargs...)
+function fitmodel(model::Function, x, y, params; weighted = true, label1 = "y1", label2 = "y2", kwargs...)
 	yavg = mval(y)
 
 	fit = if weighted
@@ -82,8 +96,8 @@ function fitmodel(model::Function, x, y, params; weighted = true, kwargs...)
 	m = f(x)
 	chi = chi_squared(y, m) / LsqFit.dof(fit)
 
-	p = plot(x, y; kwargs...)
-	plot!(p, f)
+	p = plot(x, y; label = label1, kwargs...)
+	plot!(p, f, label = label2)
 
 	(fit = fit, plot = p, chi = chi, f = f)
 end
