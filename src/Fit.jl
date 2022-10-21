@@ -1,4 +1,4 @@
-using DocStringExtensions, DrWatson, Statistics, DataFrames, Measurements, Plots, JLD2, LegibleLambdas, LsqFit, GLM
+using DocStringExtensions, DrWatson, Statistics, DataFrames, Measurements, Plots, JLD2, LegibleLambdas, LsqFit, GLM, CSV
 import Distributions: quantile, Normal, TDist
 import Base.MathConstants: γ
 
@@ -19,7 +19,7 @@ linearmodel = LegibleLambdas.@λ (nt, p) -> p[1] .+ p[2] .* nt
 @. longdistance(R, p) = p[2] * (K₀(R / p[1]) + K₀((100 - R) / p[1]))
 
 # Caristo's paper uses t = R / ξ
-@. shortdistance(R, p) = p[2]/R^(1/4) * (
+@. shortdistance(R, p) = p[2]/(R^(1/4)) * (
 	1 + 
 	R/(2p[1]) * log((ℯ^γ * R) / (8p[1])) +
 	(R / p[1])^2 / 16 + 
@@ -145,4 +145,22 @@ function get_temperatures(linearfit, beta, nts)
 	T_c = 1 / nt(beta)
 	T = 1 ./ nts
 	T ./ T_c
+end
+
+### autocorrelation ###
+
+function Γ(y, t; mean = nothing)
+	m = if isnothing(mean)
+		Statistics.mean(y)
+	else
+		mean
+	end
+	L = length(y)
+	sum([(y[i] - m) * (y[i+t] - m) for i in 1:L-t]) / (L - t)
+end
+
+function τ(y, cutoff)
+	m = Statistics.mean(y)
+	d = Γ(y, 0, mean = m)
+	(1 + 2*sum([Γ(y, t, mean = m) / d for t in 1:cutoff])) / 2
 end
