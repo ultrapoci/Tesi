@@ -30,15 +30,20 @@
 \newcommand{\Sp}{\mathrm{Sp}}
 \newcommand{\id}{\mathbbm{1}}
 
-\title{}
-\date{}
-\author{}
+\title{Tesi}
+\date{2022}
+\author{Nicholas Pini}
+
 
 \begin{document}
+
+\maketitle
 
 \begin{abstract}
 	abstract
 \end{abstract}
+
+\tableofcontents
 
 \section{Introduction}
 \red{Brief intro about the paper. Past work, theory, references.}
@@ -49,7 +54,210 @@
 Mostly from Pepe's work. Read the paper by Caselle to see if there is something to pure here (SY conjecture? String tension? 
 Universality with spin model? EST?)}
 
+\subsection{Lattice gauge theory}
+In this work, we will be focusing on a (2+1) dimensional lattice gauge theory (two spatial dimensions and one time dimension).
+We will present a brief summary of lattice gauge theories (LGT).
+
+An LGT is a gauge theory built on a discretized spacetime: a lattice of spacing $a$ with $N_s$ sites in the space directions
+and $N_t$ sites in the time direction. This discretization is useful, because it introduces a natural cutoff for the momentum $p$, thus 
+regularizing the theory:
+
+\begin{equation}
+	p \in \qty(-\frac{\pi}{a}, \frac{\pi}{a}).
+\end{equation}
+
+Starting from the continuum limit action
+
+\begin{equation}
+	\widetilde{S} = \frac{1}{2g_0^2} \int \dd[4]{x} \Tr(F_{\mu\nu}F^{\mu\nu}),
+\end{equation}
+
+where $F_{\mu\nu} = F_{\mu\nu}^a T^a = \partial_\mu A_\nu - \partial_\nu A_\mu - [A_\mu, A_\nu]$, we define the \textit{link} variable
+as
+
+\begin{equation}
+	U_\mu(x) = e^{-ia A_\mu(x)}.	
+\end{equation}
+
+Given a gauge transformation $G(x)$, a link variable transforms as
+
+\begin{equation}
+	U_\mu(x) \longrightarrow G(x) U_\mu(x) G^\dagger(x+\hat{\mu}).
+\end{equation}
+
+The link variable can be thought of as connecting the site at $x$ to the site at $x + \hat{\mu}$, and it belongs to the gauge
+group defining the theory. We define a \textit{plaquette} $U_{\mu\nu}(x)$ as the smallest loop of product of link variables:
+
+\begin{equation}
+	U_{\mu\nu}(x) = U_\mu(x) U_\nu(x+\hat{\mu}) U^\dagger_\mu(x+\hat{\nu}) U^\dagger_\nu(x).
+\end{equation}
+
+Note that links are oriented, and the adjoint operation flips a link, inverting its direction.  
+
+Finally, we can define the discretized action of an LGT:
+
+\begin{equation} \label{eq:lgt_action}
+	S = -\frac{\beta}{N} \sum_x \sum_{\mu < \nu} \Tr U_{\mu\nu}(x) = -\frac{2}{g_0^2} \sum_x \sum_{\mu < \nu} \Tr U_{\mu\nu}(x),
+\end{equation}
+
+where $g_0$ is the bare gauge coupling, $N$ is the trace normalization constant related to the gauge group, and
+$\beta \equiv \frac{2N}{g_0^2}$. This action is invariant under gauge transformations: in fact, despite
+links not being gauge invariant, a plaquette is indeed gauge invariant.
+
+The path integral is
+
+\begin{equation}
+	\mathcal{Z} = \int \mathcal{D}U e^{-S}
+\end{equation}
+
+for 
+
+\begin{equation}
+	\int \mathcal{D}U = \prod_{x, \mu} \int_{\substack{\text{gauge} \\ \text{group}}} \dd{U_{x, \mu}}. 
+\end{equation}
+
+\subsection{Static quarks and Wilson loops}
+We want to study the confinement-deconfinement phase transition that is typical of QCD. To do so, we imagine instantly
+creating a static quark-antiquark pair at distance $R$ from one another. "Static" means that these quarks have infinite
+mass and are thus non-dynamical. We let them evolve with time for a duration of $T$, 
+and finally we instantly destroy them. In the context of a lattice gauge theory, the line connecting the two quarks has swept an area
+of $R \times T$. This picture is described by \textit{Wilson loops}. 
+
+A Wilson loop is the trace of an ordered product of link variables on an LGT along some path $\mathcal{C}$:
+
+\begin{equation}
+	W(\mathcal{C}) = \Tr \prod_{t, \vec{x}} U_\mu(t, \vec{x}).
+\end{equation}
+
+If the path $\mathcal{C}$ is a $R \times T$ rectangle, we are basically considering the rectangle swept by the quark pair: the Wilson
+loop is then interpreted as the free energy. In fact, it is possible to relate the potential $V(R)$ 
+between these two quarks to the expectation value of the Wilson loop for the $R \times T$ rectangle:
+
+\begin{equation}
+	V(R) = - \lim_{L\rightarrow\infty} \frac{1}{L} \log{\expval{W(\mathcal{C})}}.
+\end{equation}
+
+In a confining theory, the potential $V(R)$ is linearly rising, and the Wilson loop exhibits a so-called "area law":
+
+\begin{equation}
+	\expval{W(\mathcal{C})} \sim e^{-\sigma_0 R T}.
+\end{equation}
+
+$\sigma_0$ is called \textit{zero temperature string tension}. "String tensions" comes from the fact that the interquark 
+potential can be effectively described as a vibrating string \cite{caselle}.
+
+
+A complete introduction to Wilson loops and their relation to the interquark potential can be found in \cite{gattringer}. 
+
+\subsection{Finite temperature LGT and Polyakov loops}
+The description of the confining potential through Wilson loops does not take into account the temperature of the system.
+If we want to study how the confinement-deconfinement transition depends on temperature, we need to define the theory at finite
+temperature in the first place. 
+
+It is well known how to do so for an LGT defined on a $(d+1)$ dimensional lattice of volume $(N_s a)^d(N_t a)$:
+we consider the lattice regularization and impose \textit{periodic boundary condition} 
+for bosonic fields (which are the fields we will be considering in this work). In particular, the compactified time direction
+is interpreted as the temperature $T$ of the system, through the relation
+
+\begin{equation} \label{eq:lattice_temperature}
+	T = \frac{1}{N_t a}.
+\end{equation}
+
+Thus, the length of the lattice in the time direction is inversely proportional to the temperature of the system.
+
+The Wilson loop is not suitable anymore in describing the interquark potential in a finite temperature context. Fortunately,
+there is another quantity we can consider: the correlation function of two \textit{Polyakov loops}. 
+
+A Polyakov loop is the trace of the ordered product of all time-like links ($U_\mu(t, \vec{x})$ with $\mu = t$) 
+with the same space coordinates:
+
+\begin{equation} \label{eq:polyloop_def}
+	\phi(\vec{x}) = \Tr \prod_{\tau = 1}^{N_t} U_t(\tau, \vec{x}),
+\end{equation}
+
+where $\vec{x}$ represents the space coordinate of the loop (a $d$ dimensional vector, in the case of a $d+1$ dimensional lattice).
+
+As usual, the correlation function is defined as
+
+\begin{equation}
+	\expval{\phi(\vec{x}) \phi(\vec{y})} = \frac{1}{\mathcal{Z}} \int \mathcal{D}U \phi(\vec{x}) \phi(\vec{y}) e^{-S[U]}.
+\end{equation}
+
+Now, the finite temperature interquark potential $V(R, T)$ can be extracted from the relation
+
+\begin{equation}
+	\expval{\phi(\vec{x}) \phi(\vec{y})} = e^{-\frac{1}{T} V(R, T)} = e^{-N_t V(R, T)},
+\end{equation}
+
+where the lattice spacing is set to $a = 1$ for simplicity and $|\vec{x} - \vec{y}| = R$.
+
+Assuming an area law as with the Wilson loops, we have
+
+\begin{equation} \label{eq:corr_fun_polyloops}
+	\expval{\phi(\vec{x}) \phi(\vec{y})}_{N_t} \sim e^{-\sigma(T) N_t R},
+\end{equation}
+
+where $\sigma(T)$ is the \textit{finite temperature string tension}. Again, refer to \cite{gattringer} for a more
+extensive overview about Polyakov loops.
+
+\subsection{Polyakov loop as order parameter}
+
+A compactified time direction with periodic boundary conditions has as consequence the appearance of a new
+global symmetry in action $S$: its symmetry group is the center of the gauge group. In the case of an SU(N) gauge
+group, the center is $\mathbb{Z}_N$; in the case of a Sp(N) gauge group, the center is always $\mathbb{Z}_2$.
+
+Applying a center symmetry transformation has the effect of multiplying all time-like links belonging to the same space-like slice (they have
+the same coordinate $t$) by the same element $W_0$ belonging to the center of the gauge group:
+
+\begin{equation}
+	U_t(\tau, \vec{x}) \longrightarrow W_0 U_t(\tau, \vec{x}) \qc \forall \vec{x}
+\end{equation}
+
+for a fixed value of $\tau$, the time component. From \eqref{eq:polyloop_def}, this implies that a Polyakov loop $\phi(\vec{x})$ also 
+transforms in the same way:
+
+\begin{equation}
+	\phi(\vec{x}) \longrightarrow W_0 \phi(\vec{x}).
+\end{equation}
+
+Thus, when $\expval{\phi(\vec{x})} = 0$, the center symmetry is \textit{unbroken}; when $\expval{\phi(\vec{x})} \neq 0$, the center symmetry
+is \textit{broken}. This means that the expectation value of the Polyakov loop is the order parameter of the spontaneous center symmetry
+breaking phase transition.
+
+Polyakov loops have another interesting property: their expectation value is related to the free energy $F$ of a single, isolated quark:
+
+\begin{equation}
+	\expval{\phi(\vec{x})} \sim e^{-\flatfrac{F}{T}}.
+\end{equation}
+
+We can then distinguish between confinement and deconfinement phase thanks to the expectation value of the Polyakov loop. A confined
+phase is characterized by $F = \infty$, which implies $\expval{\phi(\vec{x})} = 0$; a deconfined phase is, on the contrary, characterized
+by a finite $F$, thus $\expval{\phi(\vec{x})} \neq 0$. Not only is the Polyakov loop the order parameter of the center symmetry breaking phase
+transition, but it is also the order parameter of the confinement-deconfinement phase transition. In the confined phase, the center symmetry
+is unbroken, while is it spontaneously broken in the deconfined phase. 
+
+As discussed in \cite{pepe}, while this is true in the infinite volume case, in a finite size scale analysis with a finite volume, 
+the expectation value of a Polyakov loop is always zero: no spontaneous symmetry breaking occurs. We thus use the expectation
+value of the magnitude of the Polyakov loop $\expval{|\phi(\vec{x})|}$ as order parameter. This quantity is always non-zero in a finite
+volume $V$, but in the confined phase, for $V \rightarrow \infty$, we have $\expval{|\phi(\vec{x})|} = 0$.
+
+Recalling the role that $\beta$ has in the LGT action \eqref{eq:lgt_action}, we can define a critical value of $\beta$, 
+$\beta_c(N_t)$, which depends on $N_t$ and corresponds to the point at which a phase transition occurs. Inverting $\beta_c(N_t)$ and
+using \eqref{eq:lattice_temperature}, we can define a critical temperature $T_c$:
+
+\begin{equation}
+	T_c = \frac{1}{N_{t,c}(\beta)},
+\end{equation}
+
+which represents the temperature at which the system undergoes a phase transition.
+
+\subsection{The Svetitsky–Yaffe conjecture}
+
+\subsection{Sp(N) group}
+
 \section{Simulation and algorithm}
+\red{Probably remove this intro because theory is described above}
+
 Define the partition function of the $(2+1)$ dimensional system to be
 
 \begin{equation}
@@ -191,7 +399,7 @@ We parametrize $a_k$ as
 	a_k = \alpha_0 \id + i \vec{\alpha} \cdot \vec{\sigma},
 \end{equation}
 
-where $\alpha_\mu \in \mathbb{C} \ \forall \mu = 1, 2, 3, 4$ with the constraint that 
+where $\alpha_\mu \in \mathbb{R} \ \forall \mu = 1, 2, 3, 4$ with the constraint that 
 
 \begin{equation}
 	\alpha^2 \equiv \alpha_0^2 + |\vec{\alpha}|^2 = 1
@@ -237,10 +445,10 @@ because $\Tr(a_k) = 2\alpha_0$. Noting that $\delta(\alpha^2 - 1)\dd[4]{\alpha} 
 	\frac{1}{2\pi^2} \frac{1}{2}(1 - \alpha_0^2)^{\flatfrac{1}{2}} e^{\frac{\beta}{2}c \alpha_0} \dd{\alpha_0}\dd{\Omega}
 \end{equation}
 
-with $\alpha_0 \in (-1,1)$ and $\dd{\Omega}$ being the differential solid angle of the three-vector $\vec{a}$,
+with $\alpha_0 \in (-1,1)$ and $\dd{\Omega}$ is the differential solid angle of the three-vector $\vec{\alpha}$,
 which is of length $(1 - \alpha_0^2)^{\flatfrac{1}{2}}$.
 
-The problem is now generating the four-vector $\alpha_\mu$ according to the distribution above, thus obtaining
+The problem is now about generating the four-vector $\alpha_\mu$ according to the distribution above, thus obtaining
 $a_k \in \SU(2)$. Finally, we obtain $A_k$ by embedding $a_k \bar{u}_k^{-1} \in \SU(2)$ into Sp(2). Doing this for every 
 SU(2) subgroup will yield the new link $U'$.
 
@@ -270,8 +478,8 @@ The unit vector $\vec{\alpha} = (\alpha_1, \alpha_2, \alpha_3)$ is constructed b
 
 \begin{equation}
 	\begin{aligned}
-		0 < &\phi < 2\pi, \\
-		-1 < &y < 1
+		\phi &\in (0, 2\pi), \\
+		y &\in (-1, 1)
 	\end{aligned}
 \end{equation}
 
@@ -284,7 +492,7 @@ and defining
 	\end{aligned}
 \end{equation}
 
-Of course, $\alpha_0$ being the trial random number that has been accepted according to \eqref{eq:probdist}. 
+$\alpha_0$ being the trial random number that has been accepted according to \eqref{eq:probdist}. 
 
 We finally have, for $\vec{\alpha} = (\alpha_1, \alpha_2, \alpha_3)$,
 
@@ -311,14 +519,14 @@ slowing down.
 The idea is to choose a new link element $U'$ "as far as possible" from $U$ (the original link), without actually changing the
 action $S$ of the system. \cite{montvay} describes overrelaxation in the case of SU(2) gauge group. For more
 complex groups, it is not as straightforward to generate new links. Again, we use Cabibbo and Marinari's idea:
-the new link is chosen left multiplying the old $U$ link by randomly generated $A_k$ elements which belongs
+the new link is chosen left multiplying the old link $U$ by randomly generated $A_k$ elements belonging
 to Sp(2), which are in turn built embedding SU(2) elements into Sp(2). $k$ labels the SU(2) subgroups and runs
-from 1 to 4, as above. 
+from 1 to 4, as for the heat-bath algorithm. 
 
 Note that overrelaxation is applied at each simulation step along with heat-bath: in fact,
 a single complete simulation step consists of one or more steps of overrelaxation and one step of heat-bath, where
 a step is the update of the entire lattice exactly once. In our case, overrelaxation is applied three times
-before each heat-bath step. This is possible because, as noted above, overrelaxation doesn't actually change
+before each heat-bath step. This is possible because, as mentioned, overrelaxation doesn't actually change
 the action of the system.
 
 Consider $\widetilde{U}_i$ to be one staple surrounding the link $U$, and let us define
@@ -380,8 +588,10 @@ We also define
 Using the fact that a sum of SU(2) elements is proportional to a SU(2) element, we can write
 
 \begin{equation}
-	u_k r_k = u_k \sum_i r_k^{(i)} = c \bar{u}_k \qc c = \det(r_k)^{\flatfrac{1}{2}}.
+	u_k r_k = u_k \sum_i r_k^{(i)} = c \bar{u}_k
 \end{equation}
+
+with $c = \det(r_k)^{\flatfrac{1}{2}}$ and $\bar{u}_k \in \SU(2)$.
 
 Rewriting \eqref{eq:overrelaxation_Ak} as
 
