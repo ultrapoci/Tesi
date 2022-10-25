@@ -1,6 +1,9 @@
 using DocStringExtensions, DrWatson, Statistics, DataFrames, Measurements, Plots, JLD2, LegibleLambdas, LsqFit, GLM, CSV
 import Distributions: quantile, Normal, TDist
 import Base.MathConstants: γ
+import SpecialFunctions
+
+picsfolder = raw"E:\Università\2020-2021\Tesi\tesi_doc\pics"
 
 jld2dir(args...) = DrWatson.projectdir("jld2", args...)
 
@@ -14,9 +17,9 @@ betamodel = LegibleLambdas.@λ (nt, p) -> p[1] .* nt .+ p[2] .+ p[3] ./ nt
 linearmodel = LegibleLambdas.@λ (nt, p) -> p[1] .+ p[2] .* nt
 
 # Bessel function
-@. K₀(t) = sqrt(π / (2t)) * ℯ^(-t)
+@. K₀(t) = SpecialFunctions.besselk(0, t) # sqrt(π / (2t)) * ℯ^(-t)
 
-@. longdistance(R, p) = p[2] * (K₀(R / p[1]) + K₀((100 - R) / p[1]))
+@. longdistance(R, p) = p[2] * (K₀(R / p[1]) + K₀((80 - R) / p[1]))
 
 # Caristo's paper uses t = R / ξ
 @. shortdistance(R, p) = p[2]/(R^(1/4)) * (
@@ -39,7 +42,7 @@ merr(x) = merr.(x)
 ### chi_squared ###
 
 @doc "$(TYPEDSIGNATURES)"
-function chi_squared(y, f)
+function chi_squared(y, f)	
 	acc = 0.0
 	for (yi, yr, fi) in zip(mval(y), merr(y), f)
 		acc += (yi - fi)^2 / yr^2
@@ -163,4 +166,31 @@ function τ(y, cutoff)
 	m = Statistics.mean(y)
 	d = Γ(y, 0, mean = m)
 	(1 + 2*sum([Γ(y, t, mean = m) / d for t in 1:cutoff])) / 2
+end
+
+function readfilelist(filelist; betarange = nothing, betas = nothing, regex = r"beta=(.*).csv")
+	is_valid = if isnothing(betarange)
+		if isnothing(betas)
+			b -> 0.0 <= b <= Inf
+		else
+			b -> b in betas
+		end
+	else
+		b -> first(betarange) <= b <= last(betarange)
+	end
+
+	files = map(filelist) do f
+		beta = parse(Float64, match(regex, f).captures[1])
+		(beta, f)
+	end
+
+	files = filter(files) do (beta, _)
+		is_valid(beta)
+	end
+
+	sort!(files, by = x -> first(x))
+
+	map(files) do (beta, f)
+		(beta, CSV.read(f, DataFrame)[200:end, :])
+	end
 end
