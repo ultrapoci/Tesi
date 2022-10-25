@@ -1,6 +1,7 @@
 using DocStringExtensions, DrWatson, Statistics, DataFrames, Measurements, Plots, JLD2, LegibleLambdas, LsqFit, GLM, CSV
 import Distributions: quantile, Normal, TDist
 import Base.MathConstants: γ
+import SpecialFunctions
 
 jld2dir(args...) = DrWatson.projectdir("jld2", args...)
 
@@ -14,9 +15,9 @@ betamodel = LegibleLambdas.@λ (nt, p) -> p[1] .* nt .+ p[2] .+ p[3] ./ nt
 linearmodel = LegibleLambdas.@λ (nt, p) -> p[1] .+ p[2] .* nt
 
 # Bessel function
-@. K₀(t) = sqrt(π / (2t)) * ℯ^(-t)
+@. K₀(t) = SpecialFunctions.besselk(0, t) # sqrt(π / (2t)) * ℯ^(-t)
 
-@. longdistance(R, p) = p[2] * (K₀(R / p[1]) + K₀((100 - R) / p[1]))
+@. longdistance(R, p) = p[2] * (K₀(R / p[1]) + K₀((80 - R) / p[1]))
 
 # Caristo's paper uses t = R / ξ
 @. shortdistance(R, p) = p[2]/(R^(1/4)) * (
