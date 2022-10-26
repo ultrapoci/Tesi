@@ -4,6 +4,7 @@ import Base.MathConstants: γ
 import SpecialFunctions
 
 picsfolder = raw"E:\Università\2020-2021\Tesi\tesi_doc\pics"
+desktopfolder = "C:\\Users\\Niky\\Desktop\\"
 
 jld2dir(args...) = DrWatson.projectdir("jld2", args...)
 
