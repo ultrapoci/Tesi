@@ -253,6 +253,57 @@ which represents the temperature at which the system undergoes a phase transitio
 
 \subsection{The Svetitsky–Yaffe conjecture}
 
+Given the discussion above about the role of Polyakov loops, it is interesting to study the confinement-deconfinement phase transition
+using an effective action, built by integrating out the spacelike links of the LGT \cite{caristo} \cite{caselle}. This effectively
+amounts to a \textit{dimensional reduction}: we end up with a $d$ dimensional spin model with global symmetry the center of the
+gauge group, from a $(d+1)$ dimensional LGT, as first argued by Svetisky and Yaffe.
+
+For a second order deconfinement transition, the long range dynamics is dominated by fluctuations in the Polyakov loop. Also,
+interactions between Polyakov loops are suppressed exponentially in the long distance limit. Thus, in the vicinity of the 
+critical point, the fine details of the Hamiltonian describing the effective spin model can be neglected, and the system will belong
+to the same universality class of the simplest spin model, with the same spontaneous symmetry breaking and nearest neighbor interactions
+only. For example, an SU(2) Yang-Mills theory in $(2+1)$, $(3+1)$ dimensions will be mapped to a $2$, $3$ dimensional spin model, with
+global symmetry $\mathbb{Z}_2$, the center of the SU(2) gauge group. In particular, the 2 dimensional spin model is exactly integrable,
+and it is an excellent starting pointing for studying the conjecture. 
+
+In particular, the conjecture claims the following:
+\begin{itemize}
+	\item The high temperature, deconfined phase of the original Yang-Mills theory corresponds to the low temperature, ordered phase of 
+	the effective spin model. In both of these phases, the corresponding order parameter has non-zero expectation value.
+
+	\item The correlator between Polyakov loops in the confining phase (which is the one we are interested in) is mapped to the spin-spin
+	correlator in the disordered phase of the spin model. 
+\end{itemize}
+
+As the second point suggests, the spin-spin correlator will be an important quantity for testing the conjecture. Indeed, in the 2 dimensional
+spin model they are well known (see \cite{caristo}). Defining $R$ to be the distance characterizing the two-point function, $\xi$ the
+correlation length of the system and $\phi(x)$ the spin operator at $x$, we have
+\begin{itemize}
+	\item for $R \ll \xi$:
+		\begin{equation}
+			\begin{aligned}
+				\expval{\phi(0) \phi(R)} &= \frac{k_s}{R^{\flatfrac{1}{4}}} \biggl[ 1 + \frac{R}{2\xi} \ln(\frac{e^{\gamma_e}R}{8\xi}) + \frac{R^2}{16\xi^2} \\
+				&+ \frac{R^3}{32\xi^3} \ln(\frac{e^{\gamma_e}R}{8\xi}) + O\qty(\frac{R^4}{\xi^4}\ln^2\frac{R}{\xi}) \biggr]
+			\end{aligned}
+		\end{equation}
+
+	\item for $R \gg \xi$:
+		\begin{equation}
+			\expval{\phi(0) \phi(R)} = k_l K_0\qty(\frac{R}{\xi})
+		\end{equation}
+\end{itemize}
+
+where $k_l$, $k_s$ are constants, $\gamma_e$ is the Euler-Mascheroni constant and $K_0$ is the modified Bessel function of order zero. 
+Note that in the analysis of this work, we will be using, in the case $R \gg \xi$,
+\begin{equation}
+	\expval{\phi(0) \phi(R)} = k_l \qty(K_0\qty(\frac{R}{\xi}) - K_0\qty(\frac{L - R}{\xi})),
+\end{equation}
+
+where $L$ is the length of the space dimensions (which are all the same length). This is to account for the periodic boundary conditions
+imposed on the simulated lattice.
+
+\subsection{Effective string theory}
+
 \subsection{Sp(N) group}
 
 \section{Simulation and algorithm}
