@@ -3,6 +3,8 @@ import Distributions: quantile, Normal, TDist
 import Base.MathConstants: γ
 import SpecialFunctions
 
+includet(srcdir("Jackknife.jl"))
+
 picsfolder = raw"E:\Università\2020-2021\Tesi\tesi_doc\pics"
 desktopfolder = "C:\\Users\\Niky\\Desktop\\"
 
@@ -193,5 +195,74 @@ function readfilelist(filelist; betarange = nothing, betas = nothing, regex = r"
 
 	map(files) do (beta, f)
 		(beta, CSV.read(f, DataFrame)[200:end, :])
+	end
+end
+
+function readproffiles(folder)
+	files = readdir(folder, join = true)
+	map(files) do file
+		filename = basename(file)
+		@info "Reading $filename"
+
+		info = split(filename, '_')
+		l = parse(Int64, strip(info[2], 's'))
+		nt = parse(Int64, strip(info[3], 't'))
+		beta = parse(Float64, strip(info[4], 'b'))
+		v = open(file) do f
+			parse.(Float64, eachline(f))
+		end
+
+		(l = l, nt = nt, beta = beta, v = v)
+	end
+end
+
+function makestephist(d, nt::Int, l::Int, betarange = nothing; bins = 400)
+	(betamin, betamax) = if isnothing(betarange)
+		(-Inf, Inf)
+	else
+		betarange
+	end
+
+	x = filter(d) do t
+		t.nt == nt && t.l == l && betamin <= t.beta <= betamax
+	end
+	sort!(x, by = y -> y.beta)
+
+	s = stephist(
+		dpi = 300,
+		title = "Polyakov loop, Nt = $nt, L = $l",
+		xlabel = "ϕ",
+		legendtitle = "beta",
+	)
+	for y in x
+		stephist!(s, y.v, bins = bins, label = y.beta)
+	end
+
+	s
+end
+
+function getsusc(data, nt, l, betarange = nothing; binsize = 600, skip = nothing)
+	isinrange = if isnothing(betarange)
+		_ -> true
+	else
+		x -> first(betarange) <= x <= last(betarange)
+	end
+
+	points = sort(
+		filter(d -> d.nt == nt && d.l == l && isinrange(d.beta), data), 
+		by = d -> d.beta
+	)
+
+	susceptibility(ϕ², modϕ) = ϕ² - modϕ^2
+
+	map(points) do p
+		thermalized = if isnothing(skip)
+			p.v
+		else
+			p.v[skip:end] # thermalization
+		end
+		uncorrelated = mean.(binsamples(thermalized, binsize)) # uncorrelated data
+		y = jackknife(susceptibility, uncorrelated .^ 2, abs.(uncorrelated))
+		(l = p.l, nt = p.nt, beta = p.beta, y = y)
 	end
 end
