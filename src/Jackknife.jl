@@ -36,7 +36,7 @@ end
 """
 	binsamples(v, binsize)
 Divide a vector `v` into bins of size `binsize`. If `v` cannot be divided perfectly, increase the binsize of the first bins \
-by one, until the vector is completely divided. This implies that each bin is identical to each or at most has one more element.
+by one, until the vector is completely divided. This implies that each bin is identical to each other or at most has one more element.
 """
 function binsamples(v, binsize)
 	r = length(v) % binsize
