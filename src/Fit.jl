@@ -1,4 +1,4 @@
-using DocStringExtensions, DrWatson, Statistics, DataFrames, Measurements, Plots, JLD2, LegibleLambdas, LsqFit, GLM, CSV
+using DocStringExtensions, DrWatson, Statistics, DataFrames, Measurements, Plots, JLD2, LegibleLambdas, LsqFit, GLM, CSV, LaTeXStrings
 import Distributions: quantile, Normal, TDist
 import Base.MathConstants: γ
 import SpecialFunctions
@@ -6,9 +6,21 @@ import SpecialFunctions
 includet(srcdir("Jackknife.jl"))
 
 picsfolder = raw"E:\Università\2020-2021\Tesi\tesi_doc\pics"
-desktopfolder = "C:\\Users\\Niky\\Desktop\\"
+desktopfolder = raw"C:\Users\Niky\Desktop"
 
+picsdir(args...) = joinpath(picsfolder, args...)
+desktopdir(args...) = joinpath(desktopfolder, args...)
 jld2dir(args...) = DrWatson.projectdir("jld2", args...)
+
+if !@isdefined susc
+	@info "Loading 'susc' dictionary"
+	susc = JLD2.load(jld2dir("susc.jld2"));
+end
+
+if !@isdefined polyloops
+	@info "Loading 'polyloops' dictionary"
+	polyloops = JLD2.load(jld2dir("polyloops.jld2"));
+end
 
 model4 = LegibleLambdas.@λ (x, p) -> p[2] .+ p[3] .* (x .- p[1]) .^ 2 + p[4] .* (x .- p[1]) .^ 3 + p[5] .* (x .- p[1]) .^ 4
 model3 = LegibleLambdas.@λ (x, p) -> p[2] .+ p[3] .* (x .- p[1]) .^ 2 + p[4] .* (x .- p[1]) .^ 3
@@ -86,7 +98,7 @@ $(TYPEDSIGNATURES)
 
 `y` must be a vector of Measurements.
 """
-function fitmodel(model::Function, x, y, params; weighted = true, label1 = "y1", label2 = "y2", kwargs...)
+function fitmodel(model::Function, x, y, params; weighted = true, label1 = "data points", label2 = "fit", kwargs...)
 	yavg = mval(y)
 
 	fit = if weighted
@@ -171,10 +183,11 @@ function τ(y, cutoff)
 	(1 + 2*sum([Γ(y, t, mean = m) / d for t in 1:cutoff])) / 2
 end
 
-function readfilelist(filelist; betarange = nothing, betas = nothing, regex = r"beta=(.*).csv")
+function readfilelist(folder; betarange = nothing, betas = nothing, regex = r"beta=(.*).csv")
+	filelist = readdir(folder, join=true)
 	is_valid = if isnothing(betarange)
 		if isnothing(betas)
-			b -> 0.0 <= b <= Inf
+			_ -> true
 		else
 			b -> b in betas
 		end
@@ -194,7 +207,8 @@ function readfilelist(filelist; betarange = nothing, betas = nothing, regex = r"
 	sort!(files, by = x -> first(x))
 
 	map(files) do (beta, f)
-		(beta, CSV.read(f, DataFrame)[200:end, :])
+		df = CSV.read(f, DataFrame)[200:end, :]
+		(beta = beta, v = df.polyloop_sum_over_v)
 	end
 end
 
@@ -241,6 +255,36 @@ function makestephist(d, nt::Int, l::Int, betarange = nothing; bins = 400)
 	s
 end
 
+function getsusc(data, betarange = nothing; binsize = 600, skip = nothing)
+	isinrange = if isnothing(betarange)
+		_ -> true
+	else
+		x -> first(betarange) <= x <= last(betarange)
+	end
+
+	points = filter(d -> isinrange(d.beta), data)
+	susceptibility(ϕ², modϕ) = ϕ² - modϕ^2
+
+	s = map(points) do p
+		thermalized = if isnothing(skip)
+			p.v
+		else
+			p.v[skip:end] # thermalization
+		end
+		phi2 = mean.(binsamples(thermalized .^ 2, binsize)) # uncorrelated data
+		phimod = mean.(binsamples(abs.(thermalized), binsize)) # uncorrelated data
+		y = jackknife(susceptibility, phi2, phimod)
+		(beta = p.beta, y = y)
+	end
+
+	DataFrames.DataFrame(
+		:beta => first.(s),
+		:susc_over_v => mval.(last.(s)),
+		:susc_over_v_error => merr.(last.(s)),
+		:y => last.(s)
+	)
+end
+
 function getsusc(data, nt, l, betarange = nothing; binsize = 600, skip = nothing)
 	isinrange = if isnothing(betarange)
 		_ -> true
@@ -255,14 +299,146 @@ function getsusc(data, nt, l, betarange = nothing; binsize = 600, skip = nothing
 
 	susceptibility(ϕ², modϕ) = ϕ² - modϕ^2
 
-	map(points) do p
+	s = map(points) do p
 		thermalized = if isnothing(skip)
 			p.v
 		else
 			p.v[skip:end] # thermalization
 		end
-		uncorrelated = mean.(binsamples(thermalized, binsize)) # uncorrelated data
-		y = jackknife(susceptibility, uncorrelated .^ 2, abs.(uncorrelated))
-		(l = p.l, nt = p.nt, beta = p.beta, y = y)
+		phi2 = mean.(binsamples(thermalized .^ 2, binsize)) # uncorrelated data
+		phimod = mean.(binsamples(abs.(thermalized), binsize)) # uncorrelated data
+		y = jackknife(susceptibility, phi2, phimod)
+		(beta = p.beta, y = y)
 	end
+
+	DataFrames.DataFrame(
+		:beta => first.(s),
+		:susc_over_v => mval.(last.(s)),
+		:susc_over_v_error => merr.(last.(s)),
+		:y => last.(s)
+	)
+end
+
+function getsusc(data::Dict, nt, l, betarange = nothing; binsize = 600, skip = nothing)
+	kn = "nt$nt"
+	kl = "L$l"
+
+	points = if isnothing(betarange)
+		data[kn][kl]
+	else
+		filter(
+			p -> first(betarange) <= p.beta <= last(betarange), 
+			data[kn][kl]
+		)
+	end
+
+	susceptibility(ϕ², modϕ) = ϕ² - modϕ^2
+
+	s = map(points) do p
+		thermalized = if isnothing(skip)
+			p.v
+		else
+			p.v[skip:end] # thermalization
+		end
+		phi2 = mean.(binsamples(thermalized .^ 2, binsize)) # uncorrelated data
+		phimod = mean.(binsamples(abs.(thermalized), binsize)) # uncorrelated data
+		y = jackknife(susceptibility, phi2, phimod)
+		(beta = p.beta, y = y)
+	end
+
+	DataFrames.DataFrame(
+		:beta => first.(s),
+		:susc_over_v => mval.(last.(s)),
+		:susc_over_v_error => merr.(last.(s)),
+		:y => last.(s)
+	)
+end
+
+function betafit(susc::Dict, nt, L)
+	kn = "nt$nt"
+	kl = "L$L"
+	fit = susc[kn][kl]["fit"]
+	df = susc[kn][kl]["points"]
+	f(x) = model4(x, coef(fit))
+	chi = round(chi_squared(df.y, f(df.beta)) / dof(fit), digits = 4)
+	βc = measurement(coef(fit)[begin], stderror(fit)[begin])
+	p = plot(
+		df.beta,
+		df.y,
+		legend = :topleft,
+		dpi = 300,
+		xminorticks = 5,
+		minorgrid = 5,
+		titlefontsize = 10,
+		xlabel = "beta",
+		ylabel = "χ / L²",
+		title = "Susceptibility fit (quartic model)\nNt=$nt, L=$L, βc=$βc, χ²=$chi, binsize=600",
+		label = "data points",
+	)
+	plot!(p, f, label = "fit")
+	(fit = fit, plot = p, beta_c = βc, f = f, df = df, chi = chi)
+end
+
+function fssmod(susc, polyloops, nt, L = 40:20:100; kwargs...)
+	kn = "nt$nt"
+
+	p = scatter(;
+		dpi = 300,
+		xlabel = L"xL^{1/\nu}",
+		ylabel = L"\langle|\phi|\rangle L^{\beta/\nu}",
+		xminorticks = 5,
+		minorgrid = true,
+		legend = :topleft,
+		title = "Nt = $nt",
+		kwargs...
+	)
+
+	for l in L
+		kl = "L$l"
+		if haskey(susc[kn], kl) && haskey(polyloops[kn], kl)
+			beta_c = coef(susc[kn][kl]["fit"])[begin]
+			data = map(polyloops[kn][kl]) do (beta, v)
+				phimod = mean(abs.(v))
+				x = beta^2 / beta_c^2 - 1
+				(x * l, phimod * l^(1/8))
+			end
+			scatter!(p, first.(data), last.(data), label = "L = $l")
+		else
+			@info "Nt = $nt, L = $l not found, skipping"
+		end
+	end
+
+	p
+end
+
+function fss2(susc, polyloops, nt, L = 40:20:100; kwargs...)
+	kn = "nt$nt"
+
+	p = scatter(;
+		dpi = 300,
+		xlabel = L"xL^{1/\nu}",
+		ylabel = L"\langle\phi^2\rangle L^{-\gamma/\nu}",
+		xminorticks = 5,
+		minorgrid = true,
+		legend = :topleft,
+		title = "Nt = $nt",
+		kwargs...
+	)
+
+	for l in L
+		kl = "L$l"
+		if haskey(susc[kn], kl) && haskey(polyloops[kn], kl)
+			beta_c = coef(susc[kn][kl]["fit"])[begin]
+			data = map(polyloops[kn][kl]) do (beta, v)
+				phi2 = mean(v .^ 2)
+				x = beta^2 / beta_c^2 - 1
+				(x * l, phi2 * l^(-7/4))
+			end
+			scatter!(p, first.(data), last.(data), label = "L = $l")
+		else
+			@info "Nt = $nt, L = $l not found, skipping"
+		end
+	end
+
+	p
 end
