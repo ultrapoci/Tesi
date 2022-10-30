@@ -40,19 +40,16 @@
 \maketitle
 
 \begin{abstract}
-	abstract
+	\red{TODO}
 \end{abstract}
 
 \tableofcontents
 
 \section{Introduction}
-\red{Brief intro about the paper. Past work, theory, references.}
+\red{TODO}
 
 
 \section{Theoretical background}
-\red{Explain the concepts of lattice gauge theory, Wilson and Polyakov loops, center symmetry and Sp(2) group. 
-Mostly from Pepe's work. Read the paper by Caselle to see if there is something to pure here (SY conjecture? String tension? 
-Universality with spin model? EST?)}
 
 \subsection{Lattice gauge theory}
 In this work, we will be focusing on a (2+1) dimensional lattice gauge theory (two spatial dimensions and one time dimension).
@@ -139,7 +136,7 @@ between these two quarks to the expectation value of the Wilson loop for the $R 
 
 In a confining theory, the potential $V(R)$ is linearly rising, and the Wilson loop exhibits a so-called "area law":
 
-\begin{equation}
+\begin{equation} \label{eq:arealaw}
 	\expval{W(\mathcal{C})} \sim e^{-\sigma_0 R T}.
 \end{equation}
 
@@ -165,10 +162,10 @@ is interpreted as the temperature $T$ of the system, through the relation
 
 Thus, the length of the lattice in the time direction is inversely proportional to the temperature of the system.
 
-The Wilson loop is not suitable anymore in describing the interquark potential in a finite temperature context. Fortunately,
+The Wilson loop is not suitable anymore for describing the interquark potential in a finite temperature context. Fortunately,
 there is another quantity we can consider: the correlation function of two \textit{Polyakov loops}. 
 
-A Polyakov loop is the trace of the ordered product of all time-like links ($U_\mu(t, \vec{x})$ with $\mu = t$) 
+A Polyakov loop $\phi(\vec{x})$ is the trace of the ordered product of all time-like links ($U_\mu(t, \vec{x})$ with $\mu = t$) 
 with the same space coordinates:
 
 \begin{equation} \label{eq:polyloop_def}
@@ -191,7 +188,7 @@ Now, the finite temperature interquark potential $V(R, T)$ can be extracted from
 
 where the lattice spacing is set to $a = 1$ for simplicity and $|\vec{x} - \vec{y}| = R$.
 
-Assuming an area law as with the Wilson loops, we have
+Assuming an area law as with the Wilson loops \eqref{eq:arealaw}, we have
 
 \begin{equation} \label{eq:corr_fun_polyloops}
 	\expval{\phi(\vec{x}) \phi(\vec{y})}_{N_t} \sim e^{-\sigma(T) N_t R},
@@ -203,10 +200,10 @@ extensive overview about Polyakov loops.
 \subsection{Polyakov loop as order parameter}
 
 A compactified time direction with periodic boundary conditions has as consequence the appearance of a new
-global symmetry in action $S$: its symmetry group is the center of the gauge group. In the case of an SU(N) gauge
+global symmetry in the action $S$: its symmetry group is the center of the gauge group. In the case of an SU(N) gauge
 group, the center is $\mathbb{Z}_N$; in the case of a Sp(N) gauge group, the center is always $\mathbb{Z}_2$.
 
-Applying a center symmetry transformation has the effect of multiplying all time-like links belonging to the same space-like slice (they have
+Applying a center symmetry transformation has the effect of multiplying all time-like links belonging to the same space-like slice (links having
 the same coordinate $t$) by the same element $W_0$ belonging to the center of the gauge group:
 
 \begin{equation}
@@ -261,7 +258,7 @@ gauge group, from a $(d+1)$ dimensional LGT, as first argued by Svetisky and Yaf
 For a second order deconfinement transition, the long range dynamics is dominated by fluctuations in the Polyakov loop. Also,
 interactions between Polyakov loops are suppressed exponentially in the long distance limit. Thus, in the vicinity of the 
 critical point, the fine details of the Hamiltonian describing the effective spin model can be neglected, and the system will belong
-to the same universality class of the simplest spin model, with the same spontaneous symmetry breaking and nearest neighbor interactions
+to the same universality class of the simplest spin model, with the same spontaneous symmetry breaking and nearest neighbors interactions
 only. For example, an SU(2) Yang-Mills theory in $(2+1)$, $(3+1)$ dimensions will be mapped to a $2$, $3$ dimensional spin model, with
 global symmetry $\mathbb{Z}_2$, the center of the SU(2) gauge group. In particular, the 2 dimensional spin model is exactly integrable,
 and it is an excellent starting pointing for studying the conjecture. 
@@ -275,8 +272,8 @@ In particular, the conjecture claims the following:
 	correlator in the disordered phase of the spin model. 
 \end{itemize}
 
-As the second point suggests, the spin-spin correlator will be an important quantity for testing the conjecture. Indeed, in the 2 dimensional
-spin model they are well known (see \cite{caristo}). Defining $R$ to be the distance characterizing the two-point function, $\xi$ the
+As the second point suggests, the spin-spin correlator will be an important quantity for testing the conjecture. Indeed, for the 2 dimensional
+spin model these are well known (see \cite{caristo}). Defining $R$ to be the distance characterizing the two-point function, $\xi$ the
 correlation length of the system and $\phi(x)$ the spin operator at $x$, we have
 \begin{itemize}
 	\item for $R \ll \xi$:
@@ -288,7 +285,7 @@ correlation length of the system and $\phi(x)$ the spin operator at $x$, we have
 		\end{equation}
 
 	\item for $R \gg \xi$:
-		\begin{equation}
+		\begin{equation} \label{eq:large_distance_spin}
 			\expval{\phi(0) \phi(R)} = k_l K_0\qty(\frac{R}{\xi})
 		\end{equation}
 \end{itemize}
@@ -296,30 +293,165 @@ correlation length of the system and $\phi(x)$ the spin operator at $x$, we have
 where $k_l$, $k_s$ are constants, $\gamma_e$ is the Euler-Mascheroni constant and $K_0$ is the modified Bessel function of order zero. 
 Note that in the analysis of this work, we will be using, in the case $R \gg \xi$,
 \begin{equation}
-	\expval{\phi(0) \phi(R)} = k_l \qty(K_0\qty(\frac{R}{\xi}) - K_0\qty(\frac{L - R}{\xi})),
+	\expval{\phi(0) \phi(R)} = k_l \qty(K_0\qty(\frac{R}{\xi}) - K_0\qty(\frac{N_s - R}{\xi})),
 \end{equation}
 
-where $L$ is the length of the space dimensions (which are all the same length). This is to account for the periodic boundary conditions
+where $N_s$ is the length of the space dimensions (which are all the same length). This is to account for the periodic boundary conditions
 imposed on the simulated lattice.
 
 \subsection{Effective string theory}
 
-A well established way to model two interacting quarks through an Effective String Theory (EST). The basic idea is to consider the interquark
-as a tiny, fluctuating string-like flux tube, which causes a linearly rising potential for large distances.
+A well established way to model two interacting quarks is through an Effective String Theory (EST). The basic idea is to consider the interquark
+potential as a tiny, fluctuating string-like flux tube, which causes a linearly rising potential for large distances, a phenomenon associated
+with color confinement.
 
-While a free Gaussian action can be used to describe the string and to extract the Luscher term \cite{caselle}
+While a free Gaussian action can be used to describe the string and to extract the L{\"u}scher term \cite{caselle}
 (a correction to the linear term in the potential), the simplest Poincaré invariant EST is described by the Nambu-Goto action:
 \begin{equation}
 	S_\text{NG} = \sigma_0 \int_\Sigma \dd[2]\xi \sqrt{g},
 \end{equation}
 
 where $g = \det g_{\alpha\beta}$ and $g_{\alpha\beta} = \partial_\alpha X_\mu \partial_\beta X^\mu$. $\Sigma$ is the surface of the
-world-sheet, on which are defined the coordinates $\xi = (\xi^0, \xi^1)$.
+world-sheet, on which are defined the coordinates $\xi = (\xi^0, \xi^1)$. This action is simply the generalization of the relativistic
+action for a pointlike particle. In fact, every possible configuration of the string is weighted proportionally to the area spanned by
+the string. Both \cite{caselle} and \cite{caristo} go into more detail about the expansion of the Nambu-Goto action: the idea is to
+use the so-called "physical gauge", in which 
+\begin{equation}
+	\xi^0 = X^0 \qc \xi^1 = X^1.
+\end{equation} 
+
+In other words, the worldsheet coordinates are identified with the longitudinal degrees of freedom of the string: the string action is left with
+$(D-2)$ degrees of freedom representing the transverse displacement. 
+
+In the large distance expansion of the Nambu-Goto model, the first term of the expanded action corresponds to the Gaussian model
+used in \cite{caselle} to extract the L{\"u}scher term. This is
+
+\begin{equation}
+	S_\text{G} = \frac{\sigma_0}{2} \int \dd[2]{\xi} \partial_a X_\mu \partial^a X^\mu.
+\end{equation}
+
+The other terms in the expansion can be shown to be exactly integrable, and leave an irrelevant perturbation term in the full action.
+This interesting property makes it possible to exactly compute the partition function of the model, and to exactly write the two-point
+function of the Polyakov loop in $D$ dimensions as
+
+\begin{equation} \label{eq:polyloop_expansion}
+	\expval{\phi(0) \phi(R)} = 
+	\sum_{n=0}^{\infty} w_n \frac{2R\sigma_0N_t}{E_n} \qty(\frac{\pi}{\sigma_0})^{\frac{D-2}{2}} 
+	\qty(\frac{E_n}{2\pi R})^{\frac{D-1}{2}} K_{\flatfrac{(D-3)}{2}}(E_n R),
+\end{equation}
+
+where $K_\nu$ is the modified Bessel function, $w_n$ are the weights (in the $D=3$ case, they are equal to the number of partitions
+of the integer $n$), and $E_n$ are the energy levels:
+
+\begin{equation}
+	E_n = \sigma_0 N_t \sqrt{1 + \frac{8\pi}{\sigma_0 N_t^2}\qty(n - \frac{D-2}{24})}.
+\end{equation}
+
+In particular, for $D=3$ the lowest state is
+
+\begin{equation} \label{eq:lowest_state}
+	E_0 = \sigma_0 N_t \sqrt{1 - \frac{\pi}{3 \sigma_0 N_t^2}} = \sigma(T) N_t,
+\end{equation}
+
+having defined the \textit{temperature dependent string tension} as
+
+\begin{equation} \label{eq:sigma_t}
+	\sigma(T) = \sigma_0 \sqrt{1 - \frac{\pi}{3\sigma_0 N_t^2}}.
+\end{equation}
+
+At large distances, $E_0$ dominates the summation in \eqref{eq:polyloop_expansion}, and we end up with the same expression in
+\eqref{eq:large_distance_spin}. Note that this is true in general: any spin model with an isolated ground state is described
+by a modified Bessel function, and the general form of \eqref{eq:polyloop_expansion} is fixed by the EST description itself, with very
+mild assumptions: only the weights change. This prompts us to identify the inverse of the lowest state with the correlation length, namely:
+
+\begin{equation} \label{eq:correlation_length}
+	\xi = \frac{1}{E_0}
+\end{equation}
+
+Recalling the relation \eqref{eq:lattice_temperature}, setting $a=1$, we have
+
+\begin{equation}
+	E_0 = \sigma_0 N_t \sqrt{1 - \frac{\pi T^2}{3 \sigma_0}} = \sigma_0 N_t \sqrt{1 - \frac{T^2}{T_c^2}}
+	\qc T_c \equiv \sqrt{\frac{3\sigma_0}{\pi}},
+\end{equation}
+
+where $T_c$ represents the critical temperature at which the system described by the Nambu-Goto action has a phase transition.
+
+This implies that, using \eqref{eq:correlation_length},
+
+\begin{equation}
+	\xi \sim \qty(1 - \frac{T^2}{T_c^2})^{-\flatfrac{1}{2}}.
+\end{equation}
+
+The Nambu-Goto model predicts a mean-field critical index $\nu$, namely $\nu = \flatfrac{1}{2}$. This is in contrast with
+Svetisky and Yaffe's conjecture, which states that the system near the critical point should be in the same universality class
+of the Ising 2D spin model, which would imply a critical index $\nu = 1$. 
+
+This shows that Nambu-Goto's model, while being an extremely good approximation, is not the entire picture. In fact, it is possible
+to reason about the coefficients of higher order terms in the action's expansion, and to show that they are highly constrained. We will not
+go into much detail here (a brief discussion can be found in \cite{caristo}), but what we ultimately find is that the first correction
+to the Nambu-Goto model in the high temperature regime is of order $\flatfrac{1}{N_t^7}$: this demonstrates why the Nambu-Goto model
+is such a good approximation.  
 
 \subsection{Sp(N) group}
 
+In this work, we will focus on Yang-Mills LGT with the Sp(2) gauge group: not only this deviates from the usual choice of SU(N), but
+it has the important property of having $\mathbb{Z}_2$ as center symmetry, regardless of the dimension of the group itself. 
+
+Let us lay out a brief description of the Sp(N) group. Sp(N) is a subgroup of SU(2N), where its elements leave the skew-symmetric
+matrix $J$ invariant, for
+
+\begin{equation}
+	J = \mqty(0 & \id_{N \times N} \\ -\id_{N \times N} & 0) = i\sigma^2 \otimes \id_{N \times N}.
+\end{equation}
+
+Note that $J$ also belongs to Sp(N).
+
+Given $U \in \Sp(N)$ (which, of course, also implies $U \in \SU(N)$), it holds that
+
+\begin{equation}
+	U^* = J U J^\dagger.
+\end{equation}
+
+$U$ and $U^*$ are related by a unitary transformation, and thus the 2N dimensional fundamental representation of Sp(N) is pseudo-real.
+Also, charge conjugation is simply a global gauge transformation.
+
+Let us show that Sp(N) is indeed a group. First of all, the identity matrix belongs to the group. Given $U \in \Sp(N)$, $U^\dagger$ also
+belongs to the group:
+
+\begin{equation}
+	(U^\dagger)^* = (U^*)^\dagger = (J U J^\dagger)^\dagger = J U^\dagger J^\dagger \implies U^\dagger \in \Sp(N).
+\end{equation}
+
+Finally, a product of Sp(N) elements $U$, $V$ belongs to the group itself:
+
+\begin{equation}
+	(U V)^* = U^* V^* = J U J^\dagger J V J^\dagger = J U V J^\dagger \implies UV \in \Sp(N).
+\end{equation}
+
+Considering the constraints above, a generic element of Sp(N) has complex entries of the form
+
+\begin{equation}
+	U = \mqty(W_{N \times N} & X_{N \times N} \\ -X_{N \times N}^* & W_{N \times N}^*).
+\end{equation}
+
+Note, however, that $U$ also must belong to SU(2N), which implies that $U$'s eigenvalues come in conjugate pairs. Since center elements
+are multiples of the identity matrix, we have that $W = W^*$, and that the center group is, in fact, $\mathbb{Z}_2$.
+
+In the specific case of Sp(2), which is the gauge group we will be considering, the generic form of its elements we chose is
+
+\begin{equation}
+	U = \mqty(
+		W_{11} & W_{12} & X_{11} & X_{12} \\
+		W_{21} & W_{22} & X_{21} & X_{22} \\
+		X^*_{22} & -X^*_{21} & W^*_{22} & -W^*_{21} \\
+		-X^*_{12} & X^*_{11} & -W^*_{12} & W^*_{11}
+	),
+\end{equation}
+
+where each of its entries is a complex number. 
+
 \section{Simulation and algorithm}
-\red{Probably remove this intro because theory is described above}
 
 Define the partition function of the $(2+1)$ dimensional system to be
 
@@ -375,6 +507,10 @@ we can construct four SU(2) subgroups, by extracting two complex numbers $t_1$ a
 	\item $\begin{cases} t_1 = W_{11} + W_{22} \\ t_2 = X_{11} - X_{22} \end{cases}$
 	\item $\begin{cases} t_1 = W_{11} + W^*_{22} \\ t_2 = W_{12} - W^*_{21} \end{cases}$
 \end{itemize}
+
+These come from considering the weights of the representation of the group (which are briefly discussed here \cite{pepe}) and that
+ultimately we are interested in taking the trace of group elements.
+
 We can then build an SU(2) group element as
 
 \begin{equation} \label{eq:su2element}
@@ -495,20 +631,20 @@ The group measure is invariant under multiplication by another SU(2) element:
 \end{equation}
 
 so we can write
-\begin{equation}
+\begin{equation} \label{eq:probdist_ak_uk}
 	\dd{P(a_k \bar{u}_k^{-1})} \sim e^{\frac{1}{4}\beta c \Tr(a_k)} \dd{a_k} 
 	= \frac{1}{2\pi^2} e^{\frac{\beta}{2}c \alpha_0} \delta(\alpha^2 - 1) \dd[4]{\alpha},
 \end{equation}
 
 because $\Tr(a_k) = 2\alpha_0$. Noting that $\delta(\alpha^2 - 1)\dd[4]{\alpha} = 
-\frac{1}{2}(1 - \alpha_0^2)^{\flatfrac{1}{2}} \dd{\alpha_0}\dd{\Omega}$, we rewrite $\dd{P(a_k \bar{u}_k^{-1})}$ as
+\frac{1}{2}(1 - \alpha_0^2)^{\flatfrac{1}{2}} \dd{\alpha_0}\dd{\Omega}$, we rewrite eq. \eqref{eq:probdist_ak_uk} as
 
 \begin{equation}
 	\dd{P(a_k \bar{u}_k^{-1})} \sim 
 	\frac{1}{2\pi^2} \frac{1}{2}(1 - \alpha_0^2)^{\flatfrac{1}{2}} e^{\frac{\beta}{2}c \alpha_0} \dd{\alpha_0}\dd{\Omega}
 \end{equation}
 
-with $\alpha_0 \in (-1,1)$ and $\dd{\Omega}$ is the differential solid angle of the three-vector $\vec{\alpha}$,
+where $\alpha_0 \in (-1,1)$ and $\dd{\Omega}$ is the differential solid angle of the three-vector $\vec{\alpha}$,
 which is of length $(1 - \alpha_0^2)^{\flatfrac{1}{2}}$.
 
 The problem is now about generating the four-vector $\alpha_\mu$ according to the distribution above, thus obtaining
@@ -682,7 +818,10 @@ Exactly as with the heat-bath algorithm, once we find $a_k$, we can embed it int
 subgroup it belongs to, which yields the corresponding $A_k$, and find the new link using \eqref{eq:overrelaxation_newlink}.
 
 \section{Results}
-\red{Put plots and results of the fit and simulations: fit of susceptibility peaks, fit of beta vs nt, etc.}
+\red{TODO}
+
+\section{Conclusion}
+\red{TODO}
 
 \printbibliography
 % https://www.overleaf.com/learn/latex/Bibliography_management_in_LaTeX
