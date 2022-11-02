@@ -1,0 +1,76 @@
+\documentclass[reqno,11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[tbtags]{amsmath}
+\usepackage[english]{babel}
+\usepackage{bm}
+\usepackage{bbm} % \mathbbm{1}
+\usepackage{amsfonts}
+\usepackage{microtype}
+\usepackage{physics}
+\usepackage{tensor}
+\usepackage{slashed}
+\usepackage{subfig}
+\usepackage{mathtools}
+\usepackage[subfigure]{tocloft}
+\usepackage[parfill]{parskip}
+\usepackage{multirow}
+\usepackage{xcolor}
+
+\numberwithin{equation}{section}
+
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+
+\newcommand{\red}[1]{\textbf{\textcolor{red}{#1}}}
+
+\newcommand{\SU}{\mathrm{SU}}
+\newcommand{\Sp}{\mathrm{Sp}}
+\newcommand{\id}{\mathbbm{1}}
+
+\begin{document}
+
+\begin{otherlanguage}{italian}
+
+\pagestyle{empty}
+    \begin{center}
+        \textbf{\huge{Sintesi della relazione per la prova finale}} 
+    \end{center}
+    \medskip
+    \textbf{Studente:} Nicholas Pini \hfill \textbf{Relatore:} prof. Leonardo Giusti \\
+    \textbf{Matricola:} 813484       \hfill \textbf{Correlatore:} prof. Michele Pepe \\
+    \textbf{Corso di laurea:} Fisica (magistrale) \\
+	\textbf{Data seduta di laurea:} 21/11/2022 \\
+    \textbf{Telefono:} 345 6954331
+
+\subsection*{La transizione di deconfinamento nella teoria di Yang-Mills con gruppo di gauge Sp(2) in 3 dimensioni e studio degli effetti di stringa}
+
+La cromodinamica quantistica (QCD) viene spesso studiata in modo non perturbativo sfruttando la regolarizzazione su reticolo: 
+si considera lo spaziotempo discretizzato, e gli elementi del gruppo di gauge, detti "link", connettono i vari punti del reticolo.
+In questo contesto, si è molto studiato il fenomeno del confinamento, per il quale una coppia di quark interagenti è caratterizzata da un potenziale
+d'interazione che cresce linearmente con la distanza. È possibile modellare il potenziale d'interazione come una stringa che connette
+le due particelle interagenti, avente la possibilità di vibrare: questo è un modello effettivo detto Effective String Theory. 
+Nonostante sia un'approssimazione, risulta particolarmente efficace nel descrivere la dinamica a lunghe distanze. È interessante studiare
+questo modello a temperatura finita (che in teorie su reticolo si realizza rendendo la direzione temporale periodica): il parametro d'ordine
+della transizione di deconfinamento è il loop di Polyakov, che risulta essere anche il parametro d'ordine della rottura di simmetria
+del centro del gruppo di gauge che compare a temperature finite. A questo proposito esiste una congettura di Svetisky e Yaffe che mette in corrispondenza il modello effettivo di stringa e la transizione di fase
+di confinamento-deconfinamento in $(d+1)$ dimensioni con il modello di Ising in $d$ dimensioni e la sua transizione di fase ordinata-disordinata:
+secondo la congettura, questi due sistemi appartengono alla stessa classe di universalità, e condividono perciò gli stessi esponenti critici.
+La descrizione effettiva di stringa, per quanto efficace, non è completamente compatibile con la congettura, come è possibile vedere
+dalla differenza degli esponenti critici con cui il modello di stringa approccia il punto critico rispetto agli esponenti critici
+del modello di Ising.
+
+Lo scopo di questo lavoro è di simulare la teoria di Yang-Mills con gruppo di gauge Sp(2) su un reticolo 3D a temperatura finita 
+e studiare il potenziale di interazione fra due quark statici (massa infinita) in temperature appena inferiori alla temperatura
+critica di transizione di fase. La simulazione è effettuata sfruttando l'algoritmo Heat-Bath come descritto da Cabibbo e Marinari.
+La scelta del gruppo Sp(2) è dovuta al ruolo che il centro del gruppo di gauge ha nella transizione di deconfinamento: per i gruppi
+Sp(N), infatti, il centro è sempre $\mathbb{Z}_2$, e non dipende quindi dalle dimensioni del gruppo di gauge stesso. Lo studio
+della congettura è fatto misurando i valori che assume il loop di Polyakov su reticolo e calcolandone la funzione di correlazione
+a due punti. Questa è messa in corrispondenza con l'andamento del correlatore spin-spin a corte e lunghe distanze del modello di Ising 2D,
+che, secondo la congettura, appartiene alla stessa classe di universalità del modello studiato.
+
+\end{otherlanguage}
+\subsection*{Deconfinement transition in 3D Yang-Mills theory with Sp(2) gauge group and study of string effects}
+
+\red{TODO}
+
+\end{document}
