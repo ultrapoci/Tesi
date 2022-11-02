@@ -5,22 +5,9 @@ import SpecialFunctions
 
 includet(srcdir("Jackknife.jl"))
 
-picsfolder = raw"E:\Università\2020-2021\Tesi\tesi_doc\pics"
-desktopfolder = raw"C:\Users\Niky\Desktop"
-
-picsdir(args...) = joinpath(picsfolder, args...)
-desktopdir(args...) = joinpath(desktopfolder, args...)
+picsdir(args...) = joinpath(raw"E:\Università\2020-2021\Tesi\tesi_doc\pics", args...)
+desktopdir(args...) = joinpath(raw"C:\Users\Niky\Desktop", args...)
 jld2dir(args...) = DrWatson.projectdir("jld2", args...)
-
-if !@isdefined susc
-	@info "Loading 'susc' dictionary"
-	susc = JLD2.load(jld2dir("susc.jld2"));
-end
-
-if !@isdefined polyloops
-	@info "Loading 'polyloops' dictionary"
-	polyloops = JLD2.load(jld2dir("polyloops.jld2"));
-end
 
 model4 = LegibleLambdas.@λ (x, p) -> p[2] .+ p[3] .* (x .- p[1]) .^ 2 + p[4] .* (x .- p[1]) .^ 3 + p[5] .* (x .- p[1]) .^ 4
 model3 = LegibleLambdas.@λ (x, p) -> p[2] .+ p[3] .* (x .- p[1]) .^ 2 + p[4] .* (x .- p[1]) .^ 3
@@ -28,7 +15,7 @@ model2 = LegibleLambdas.@λ (x, p) -> p[2] .+ p[3] .* (x .- p[1]) .^ 2
 
 model = model4 # default model
 
-betamodel = LegibleLambdas.@λ (nt, p) -> p[1] .* nt .+ p[2] .+ p[3] ./ nt
+betamodel = LegibleLambdas.@λ (nt, p) -> p[2] .* nt .+ p[1] .+ p[3] ./ nt
 linearmodel = LegibleLambdas.@λ (nt, p) -> p[1] .+ p[2] .* nt
 
 # Bessel function
@@ -255,7 +242,7 @@ function makestephist(d, nt::Int, l::Int, betarange = nothing; bins = 400)
 	s
 end
 
-function getsusc(data, betarange = nothing; binsize = 600, skip = nothing)
+function getsusc(data, betarange = nothing; binsize = 5000, skip = nothing)
 	isinrange = if isnothing(betarange)
 		_ -> true
 	else
@@ -285,7 +272,7 @@ function getsusc(data, betarange = nothing; binsize = 600, skip = nothing)
 	)
 end
 
-function getsusc(data, nt, l, betarange = nothing; binsize = 600, skip = nothing)
+function getsusc(data, nt, l, betarange = nothing; binsize = 5000, skip = nothing)
 	isinrange = if isnothing(betarange)
 		_ -> true
 	else
@@ -319,16 +306,16 @@ function getsusc(data, nt, l, betarange = nothing; binsize = 600, skip = nothing
 	)
 end
 
-function getsusc(data::Dict, nt, l, betarange = nothing; binsize = 600, skip = nothing)
+function getsusc(rawdata::Dict, nt, l, betarange = nothing; binsize = 5000, skip = nothing)
 	kn = "nt$nt"
 	kl = "L$l"
 
 	points = if isnothing(betarange)
-		data[kn][kl]
+		rawdata[kn][kl]
 	else
 		filter(
 			p -> first(betarange) <= p.beta <= last(betarange), 
-			data[kn][kl]
+			rawdata[kn][kl]
 		)
 	end
 
@@ -354,17 +341,18 @@ function getsusc(data::Dict, nt, l, betarange = nothing; binsize = 600, skip = n
 	)
 end
 
-function betafit(susc::Dict, nt, L)
+function suscplot(data::Dict, nt, L; kwargs...)
 	kn = "nt$nt"
 	kl = "L$L"
-	fit = susc[kn][kl]["fit"]
-	df = susc[kn][kl]["points"]
-	f(x) = model4(x, coef(fit))
-	chi = round(chi_squared(df.y, f(df.beta)) / dof(fit), digits = 4)
-	βc = measurement(coef(fit)[begin], stderror(fit)[begin])
+	df = data[kn][kl]["points"]
+	f(x) = data[kn][kl]["r"].f(x)
+	chi = round(data[kn][kl]["r"].chi, digits = 4)
+	beta_c = data[kn][kl]["beta_c"]
+	m = data[kn][kl]["model"]
+	binsize = data[kn][kl]["binsize"]
 	p = plot(
 		df.beta,
-		df.y,
+		df.y;
 		legend = :topleft,
 		dpi = 300,
 		xminorticks = 5,
@@ -372,20 +360,30 @@ function betafit(susc::Dict, nt, L)
 		titlefontsize = 10,
 		xlabel = "beta",
 		ylabel = "χ / L²",
-		title = "Susceptibility fit (quartic model)\nNt=$nt, L=$L, βc=$βc, χ²=$chi, binsize=600",
+		title = "Susceptibility fit: Nt=$nt, L=$L, binsize=$binsize\nβc=$beta_c, χ²=$chi",
 		label = "data points",
+		kwargs...
 	)
-	plot!(p, f, label = "fit")
-	(fit = fit, plot = p, beta_c = βc, f = f, df = df, chi = chi)
+	plot!(p, f, label = "fit ($m model)")
+	p
 end
 
-function fssmod(susc, polyloops, nt, L = 40:20:100; kwargs...)
+function fssplot(data, kind::Symbol, nt, L = 60:20:100; kwargs...)
 	kn = "nt$nt"
+
+	(kk, exp_c, ylabel) = if kind == :modphi
+		("modphi", 1/8, L"\langle|\phi|\rangle L^{\beta/\nu}")
+	elseif kind == :phi2
+		# -7/4 is gamma, 2 is to multiply by the volume
+		("phi2", -7/4 + 2, L"L^2 \langle\phi^2\rangle L^{-\gamma/\nu}")
+	else
+		throw(ArgumentError("Curve's kind must be either :phi2 or :modphi, got :$kind"))
+	end
 
 	p = scatter(;
 		dpi = 300,
 		xlabel = L"xL^{1/\nu}",
-		ylabel = L"\langle|\phi|\rangle L^{\beta/\nu}",
+		ylabel = ylabel,
 		xminorticks = 5,
 		minorgrid = true,
 		legend = :topleft,
@@ -395,14 +393,18 @@ function fssmod(susc, polyloops, nt, L = 40:20:100; kwargs...)
 
 	for l in L
 		kl = "L$l"
-		if haskey(susc[kn], kl) && haskey(polyloops[kn], kl)
-			beta_c = coef(susc[kn][kl]["fit"])[begin]
-			data = map(polyloops[kn][kl]) do (beta, v)
-				phimod = mean(abs.(v))
+		if haskey(data[kn], kl)
+			beta_c = mval(data[kn][kl]["beta_c"])
+			points = map(data[kn][kl][kk]) do (beta, y)
 				x = beta^2 / beta_c^2 - 1
-				(x * l, phimod * l^(1/8))
+				(x * l, y * l^exp_c)
 			end
-			scatter!(p, first.(data), last.(data), label = "L = $l")
+			scatter!(p, 
+				first.(points), 
+				last.(points), 
+				markershape = :cross,
+				label = "L = $l"
+			)
 		else
 			@info "Nt = $nt, L = $l not found, skipping"
 		end
@@ -411,34 +413,132 @@ function fssmod(susc, polyloops, nt, L = 40:20:100; kwargs...)
 	p
 end
 
-function fss2(susc, polyloops, nt, L = 40:20:100; kwargs...)
+function fssplot2(data, kind::Symbol, nt, L = 60:20:100; kwargs...)
 	kn = "nt$nt"
 
-	p = scatter(;
+	(kk, exp_c, ylabel) = if kind == :modphi
+		("modphi", 1/8, L"\langle|\phi|\rangle L^{\beta/\nu}")
+	elseif kind == :phi2
+		# -7/4 is gamma, 2 is to multiply by the volume
+		("phi2", -7/4 + 2, L"L^2 \langle\phi^2\rangle L^{-\gamma/\nu}")
+	else
+		throw(ArgumentError("Curve's kind must be either :phi2 or :modphi, got :$kind"))
+	end
+
+	pl = scatter(;
 		dpi = 300,
 		xlabel = L"xL^{1/\nu}",
-		ylabel = L"\langle\phi^2\rangle L^{-\gamma/\nu}",
+		ylabel = ylabel,
 		xminorticks = 5,
 		minorgrid = true,
 		legend = :topleft,
-		title = "Nt = $nt",
+		title = "Nt = $nt (with beta_c adjusted)",
+		legendfontsize = 7,
 		kwargs...
 	)
 
+	@. m(x, p) = p[3] / (1 + p[2] * exp(-p[1]*x))
+	@. m_inv(y, p) = -log((p[3] / y - 1) / p[2]) / p[1]
+
+	v = data[kn]["L100"][kk]
+	beta_c100 = mval(data[kn]["L100"]["beta_c"])
+	x = map(d -> 100 * (d.beta^2 / beta_c100^2 - 1), v)
+	y = map(d -> last(d) * 100^exp_c, v)
+	fit = curve_fit(m, x, y, [1.0, 1.0, 1.0])
+	f_inv(x) = m_inv(x, coef(fit))
+
+	new_betas = []
+
 	for l in L
-		kl = "L$l"
-		if haskey(susc[kn], kl) && haskey(polyloops[kn], kl)
-			beta_c = coef(susc[kn][kl]["fit"])[begin]
-			data = map(polyloops[kn][kl]) do (beta, v)
-				phi2 = mean(v .^ 2)
-				x = beta^2 / beta_c^2 - 1
-				(x * l, phi2 * l^(-7/4))
+		if l != 100
+			kl = "L$l"
+			if haskey(data[kn], kl)
+				beta_c = mval(data[kn][kl]["beta_c"])
+				beta_err = merr(data[kn][kl]["beta_c"])
+				v = map(data[kn][kl][kk]) do (beta, p)
+					(beta = beta, x = l * (beta^2 / beta_c^2 - 1), y = p * l^exp_c)
+				end
+
+				(beta, _, ymin) = argmin(d -> abs(d.x), v)
+				x2 = f_inv(ymin)
+				new_beta_c = sqrt(beta^2 * (x2 / l + 1)^(-1))
+
+				push!(new_betas, (L = l, beta = measurement(new_beta_c, beta_err)))
+
+				points = map(data[kn][kl][kk]) do (beta, p)
+					(x = l * (beta^2 / new_beta_c^2 - 1), y = p * l^exp_c)
+				end		
+
+				scatter!(pl, 
+					first.(points), 
+					last.(points), 
+					markershape = :cross,
+					label = "L = $l.\n" *
+					"old beta = $(data[kn][kl]["beta_c"])\n" *
+					"new beta = $(measurement(new_beta_c, beta_err))"
+					#"old beta = $(round(beta_c, digits = 4))\n" *
+					#"new beta = $(round(new_beta_c, digits = 4))"
+				)
+			else
+				@info "Nt = $nt, L = $l not found, skipping"
 			end
-			scatter!(p, first.(data), last.(data), label = "L = $l")
-		else
-			@info "Nt = $nt, L = $l not found, skipping"
 		end
 	end
 
-	p
+	if 100 in L
+		scatter!(pl, 
+			x, 
+			y, 
+			markershape = :cross,
+			label = "L = 100\n" *
+			"beta = $(data[kn]["L100"]["beta_c"])"
+			#"beta = $(round(beta_c100, digits = 4))"
+		)
+		push!(new_betas, (L = 100, beta = data[kn]["L100"]["beta_c"]))
+	end
+
+	(plot = pl, betas = new_betas)
+end
+
+function beta_vs_l(data, nt, L = 60:20:100; kwargs...)
+	kn = "nt$nt"
+	b = map(L) do l 
+		kl = "L$l"
+		if haskey(data[kn], kl)
+			(l, data[kn][kl]["beta_c"])
+		else
+			@info "Couldn't find nt=$nt L=$l, skipping"
+			nothing
+		end
+	end
+	filter!(x -> !isnothing(x), b)
+	plot(
+		first.(b),
+		last.(b),
+		dpi = 300,
+		title = "Nt = $nt",
+		xlabel = L"L",
+		ylabel = L"\beta_c",
+		legend = nothing,
+		kwargs...
+	)
+end
+
+function getribbon(fit::LsqFit.LsqFitResult, xs, der; alpha = 0.05, dist::Symbol = :t)
+	cov = estimate_covar(fit)
+	D = if dist == :t
+		TDist(dof(fit))
+	elseif dist == :normal
+		Normal()
+	else
+		throw(ArgumentError("'dist' must be either :t or :normal, got :$dist")) 
+	end
+
+	σ = map(xs) do x
+		j = map(d -> d(x), der)
+		sqrt(j' * cov * j)
+	end
+
+	z = quantile(D, 1 - alpha / 2)
+	σ .* z
 end
