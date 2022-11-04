@@ -16,6 +16,7 @@
 \usepackage[parfill]{parskip}
 \usepackage{multirow}
 \usepackage{xcolor}
+\usepackage{verbatim} % for multiline comments
 
 \numberwithin{equation}{section}
 
@@ -26,6 +27,38 @@
 \newcommand{\SU}{\mathrm{SU}}
 \newcommand{\Sp}{\mathrm{Sp}}
 \newcommand{\id}{\mathbbm{1}}
+
+\begin{otherlanguage}{italian}
+\begin{comment}
+Teorie di gauge non abeliane sono caratterizzate da fase confinante di bassa temp
+
+Due cariche di colore quark statici interagiscono con potenziale linearmente con distanza
+
+Linee di forza sono nel tubo di flusso -> EST (corda vibrante a basse energie)
+
+Conseguenze su andamento del potenziale -> Luscher
+
+Teoria a T finita -> transizione di deconfinamento -> trans di fase di 1 o 2 ordine
+
+2 ordine -> universale -> caratteristiche indipendenti dalla teoria: dipende da dim spazio e simm
+rotta -> simmetria centro -> centro Z2 -> secondo ordine modello di Ising 2D -> è la congettura
+di Svetisky Yaffe -> prevede una lung di correlazione con esponente critico nu = 1
+
+Si ricollega a EST -> sebbene sia valida in regime di bassa temperatura, prevede la presenza
+di trans di fase a T finita con nu = 1/2 
+
+Problema: cercare di capire se EST e congettura possono essere concigliati. Sono fenomeni
+non perturbativi => regolarizzazione della teoria su reticolo => simulazioni monte carlo
+=> info non perturbative
+
+Occupato di studiare questi fenomeni nel caso Sp(2) con 2+1 dimensioni che ha trans di secondo
+ordine => studio del comportamento critico e gli aspetti legati a EST 
+
+Sviluppo di codice parallelo da zero => effettuato simulazione numeriche non perturbative 
+per Nt = 5, 6, 7, 8 e L = 40,60,80,100 => misura del correlatore del loop di Polyakov 
+a T critica (regime critico di stringa)
+\end{comment}    
+\end{otherlanguage}
 
 \begin{document}
 
@@ -44,29 +77,57 @@
 
 \subsection*{La transizione di deconfinamento nella teoria di Yang-Mills con gruppo di gauge Sp(2) in 3 dimensioni e studio degli effetti di stringa}
 
-La cromodinamica quantistica (QCD) viene spesso studiata in modo non perturbativo sfruttando la regolarizzazione su reticolo: 
-si considera lo spaziotempo discretizzato, e gli elementi del gruppo di gauge, detti "link", connettono i vari punti del reticolo.
-In questo contesto, si è molto studiato il fenomeno del confinamento, per il quale una coppia di quark interagenti è caratterizzata da un potenziale
-d'interazione che cresce linearmente con la distanza. È possibile modellare il potenziale d'interazione come una stringa che connette
-le due particelle interagenti, avente la possibilità di vibrare: questo è un modello effettivo detto Effective String Theory. 
-Nonostante sia un'approssimazione, risulta particolarmente efficace nel descrivere la dinamica a lunghe distanze. È interessante studiare
-questo modello a temperatura finita (che in teorie su reticolo si realizza rendendo la direzione temporale periodica): il parametro d'ordine
-della transizione di deconfinamento è il loop di Polyakov, che risulta essere anche il parametro d'ordine della rottura di simmetria
-del centro del gruppo di gauge che compare a temperature finite. A questo proposito esiste una congettura di Svetisky e Yaffe che mette in corrispondenza il modello effettivo di stringa e la transizione di fase
-di confinamento-deconfinamento in $(d+1)$ dimensioni con il modello di Ising in $d$ dimensioni e la sua transizione di fase ordinata-disordinata:
-secondo la congettura, questi due sistemi appartengono alla stessa classe di universalità, e condividono perciò gli stessi esponenti critici.
-La descrizione effettiva di stringa, per quanto efficace, non è completamente compatibile con la congettura, come è possibile vedere
-dalla differenza degli esponenti critici con cui il modello di stringa approccia il punto critico rispetto agli esponenti critici
-del modello di Ising.
+Le teorie di gauge non abeliane sono caratterizzate dal fenomeno del confinamento di colore: al di sotto di una certa
+temperatura critica, quindi nella fase detta "confinante", due cariche di colore (quark) interagiscono con un potenziale che
+cresce linearmente con la distanza, nel limite di grandi distanze. Questo fa sì che una carica di colore non è direttamente
+osservabile singolarmente. Nonostante non ci sia ancora una rigorosa dimostrazione del fenomeno del confinamento, ne esistono
+varie prove sperimentali. 
 
-Lo scopo di questo lavoro è di simulare la teoria di Yang-Mills con gruppo di gauge Sp(2) su un reticolo 3D a temperatura finita 
-e studiare il potenziale di interazione fra due quark statici (massa infinita) in temperature appena inferiori alla temperatura
-critica di transizione di fase. La simulazione è effettuata sfruttando l'algoritmo Heat-Bath come descritto da Cabibbo e Marinari.
-La scelta del gruppo Sp(2) è dovuta al ruolo che il centro del gruppo di gauge ha nella transizione di deconfinamento: per i gruppi
-Sp(N), infatti, il centro è sempre $\mathbb{Z}_2$, e non dipende quindi dalle dimensioni del gruppo di gauge stesso. Lo studio
-della congettura è fatto misurando i valori che assume il loop di Polyakov su reticolo e calcolandone la funzione di correlazione
-a due punti. Questa è messa in corrispondenza con l'andamento del correlatore spin-spin a corte e lunghe distanze del modello di Ising 2D,
-che, secondo la congettura, appartiene alla stessa classe di universalità del modello studiato.
+Il potenziale di interazione fra due quark genera un tubo di flusso che connette le due cariche: ciò
+suggerisce di modellare questo potenziale come una sottile stringa vibrante che collega i due quark. Questo modello
+è detto Effective String Theory (EST) e, come suggerisce il nome, è solo un modello effettivo valido a grandi distanze e
+non una completa descrizione non perturbativa della teoria. Ciò nonostante, è un modello estremamente efficace e predittivo: 
+già solo il primo termine dell'espansione a lunghe distanze di questo modello ha come conseguenza la presenza di un termine
+correttivo nel potenziale d'interazione fra quark, detto termine di L{\"u}scher, il quale ha avuto molti riscontri 
+in simulazioni della teoria su reticolo. 
+
+Il fenomeno del confinamento dipende dalla temperatura della teoria, e comporta una transizione di fase: a una certa 
+temperatura critica, il sistema passa dalla fase confinata (bassa temperatura) ad una fase deconfinata (alta
+temperatura), nella quale il tubo di flusso viene distrutto dalle fluttuazioni di stringa e non c'è più presenza
+di potenziale confinante fra le due cariche di colore. Di particolare interesse nell'ambito delle transizioni di fase
+è lo studio degli esponenti critici: descrivono l'andamento di quantità fondamentali del sistema nell'intorno della 
+temperatura critica. A questo proposito, una di queste quantità è la lunghezza di correlazione del sistema, e la descrizione
+effettiva di stringa prevede che l'esponente critico associato a tale quantità è $\nu = \flatfrac{1}{2}$. In generale,
+le transizioni di fase possono essere di 1° o 2° ordine: nel secondo caso, è particolarmente importante il concetto
+di classi di universalità, per il quale sistemi fisici molto diversi fra loro, aventi però la stessa dimensionalità e
+rottura di simmetria, sono descritti dagli stessi esponenti critici. Per quanto riguarda il confinamento di cariche di
+colore, esiste una congettura dovuta a Svetisky e Yaffe: in un sistema $(d+1)$ dimensionale, se la transizione 
+di fase di deconfinamento è di secondo ordine, allora il sistema è nella stessa classe di universalità del modello di
+Ising $d$ dimensionale: in entrambi i sistemi, la simmetria rotta è una simmetria globale associata al centro del gruppo
+di gauge della teoria originale. Questo significa che l'esponente critico $\nu$ associato alla lunghezza di
+correlazione della teoria di gauge in $(2+1)$ dimensioni è lo stesso del modello di Ising in 2 dimensioni, cioè
+$\nu = 1$. Questo risultato però è in contrasto con l'analisi fatta usando la EST, che prevede $\nu = \flatfrac{1}{2}$.
+
+L'obiettivo quindi è quello di studiare teorie di gauge non abeliane e verificare se la discrepanza fra EST e la
+congettura di Svetisky e Yaffe può essere risolta. Trattandosi di fenomeni non perturbativi, si ricorre alla Lattice Gauge
+Theory (LGT) per studiarli: si tratta di una regolarizzazione della teoria per la quale si discretizza lo spaziotempo
+su un reticolo a passo reticolare costante. Ciò rende la teoria e il path integral ben definiti, e, simulando la teoria
+su un calcolatore, permette di ottenere informazioni non perturbative sul sistema e le sue osservabili. La teoria è definita
+con temperatura finita rendendo la direzione temporale periodica. 
+
+Questo lavoro si occupa di studiare il fenomeno del confinamento nella teoria di Yang-Mills in $(2+1)$ dimensioni con 
+gruppo di gauge Sp(2): la scelta di questo gruppo è dovuta al fatto che la transizione di deconfimento è ben risaputo
+essere del secondo ordine, ed inoltre i gruppi Sp(N) hanno $\mathbb{Z}_2$ come centro del gruppo per ogni valore di $N$, 
+perciò la simmetria rotta non dipende dalla dimensionalità del gruppo di gauge stesso (come invece avviene coi gruppi
+SU(N) più comunemente scelti). Si è sviluppato un codice su calcolatore da zero che permette di simulare la LGT tramite
+metodi Monte Carlo: in particolare, si è utilizzato l'algoritmo Heat-Bath come sviluppato da Cabibbo e Marinari per la 
+generazione di nuove configurazioni Monte Carlo del sistema con gruppo di gauge Sp(2). Sono state effettuate simulazioni
+per valori della lunghezza del reticolo in direzione temporale $N_t = 5, 6, 7, 8$ e in direzione spaziale 
+$L = 40, 60, 80, 100$, con l'obiettivo di studiare la transizione di fase e ridurre effetti di finite size scaling dovuti a volumi finiti. È stato 
+inoltre misurato il loop di Polyakov (il parametro d'ordine della transizione di fase a cui siamo interessati) 
+a temperature appena sotto la temperatura critica di transizione di fase di deconfinamento, con l'obiettivo 
+di studiarne il correlatore, a cui è associato il potenziale di interazione fra le due cariche di colore, e gli effetti
+di stringa.
 
 \end{otherlanguage}
 \subsection*{Deconfinement transition in 3D Yang-Mills theory with Sp(2) gauge group and study of string effects}
