@@ -368,7 +368,7 @@ function suscplot(data::Dict, nt, L; kwargs...)
 	p
 end
 
-function fssplot(data, kind::Symbol, nt, L = 60:20:100; kwargs...)
+#= function fssplot(data, kind::Symbol, nt, L = 60:20:100; kwargs...)
 	kn = "nt$nt"
 
 	(kk, exp_c, ylabel) = if kind == :modphi
@@ -396,7 +396,7 @@ function fssplot(data, kind::Symbol, nt, L = 60:20:100; kwargs...)
 		if haskey(data[kn], kl)
 			beta_c = mval(data[kn][kl]["beta_c"])
 			points = map(data[kn][kl][kk]) do (beta, y)
-				x = beta^2 / beta_c^2 - 1
+				x = beta / beta_c - 1
 				(x * l, y * l^exp_c)
 			end
 			scatter!(p, 
@@ -411,10 +411,14 @@ function fssplot(data, kind::Symbol, nt, L = 60:20:100; kwargs...)
 	end
 
 	p
-end
+end =#
 
-function fssplot2(data, kind::Symbol, nt, L = 60:20:100; kwargs...)
+function fssplot(data, kind::Symbol, nt, L = 40:20:100; adj = nothing, kwargs...)
 	kn = "nt$nt"
+
+	if adj == :auto
+		return fssplot(data, kind, nt, L; adj = data[kn]["adj"][String(kind)], kwargs...)
+	end
 
 	(kk, exp_c, ylabel) = if kind == :modphi
 		("modphi", 1/8, L"\langle|\phi|\rangle L^{\beta/\nu}")
@@ -432,7 +436,13 @@ function fssplot2(data, kind::Symbol, nt, L = 60:20:100; kwargs...)
 		xminorticks = 5,
 		minorgrid = true,
 		legend = :topleft,
-		title = "Nt = $nt (with beta_c adjusted)",
+		title = if isnothing(adj)
+			"Nt = $nt"
+		elseif adj == :fit
+			"Nt = $nt (beta_c adjusted fitting L=100)"
+		else
+			"Nt = $nt (beta_c adjusted)"
+		end,
 		legendfontsize = 7,
 		kwargs...
 	)
@@ -442,43 +452,87 @@ function fssplot2(data, kind::Symbol, nt, L = 60:20:100; kwargs...)
 
 	v = data[kn]["L100"][kk]
 	beta_c100 = mval(data[kn]["L100"]["beta_c"])
-	x = map(d -> 100 * (d.beta^2 / beta_c100^2 - 1), v)
-	y = map(d -> last(d) * 100^exp_c, v)
+	x = map(d -> 100 * (d.beta / beta_c100 - 1), v)
+	y = map(d -> mval(last(d)) * 100^exp_c, v)
 	fit = curve_fit(m, x, y, [1.0, 1.0, 1.0])
 	f_inv(x) = m_inv(x, coef(fit))
 
 	new_betas = []
+	t_names = []
+	t_points = []
 
-	for l in L
+	for (i, l) in enumerate(L)
 		if l != 100
 			kl = "L$l"
 			if haskey(data[kn], kl)
-				beta_c = mval(data[kn][kl]["beta_c"])
-				beta_err = merr(data[kn][kl]["beta_c"])
-				v = map(data[kn][kl][kk]) do (beta, p)
-					(beta = beta, x = l * (beta^2 / beta_c^2 - 1), y = p * l^exp_c)
+				push!(t_names, Symbol(kl))
+				if isnothing(adj)
+					beta_c = mval(data[kn][kl]["beta_c"])
+					points = map(data[kn][kl][kk]) do (beta, p)
+						(x = (beta / beta_c - 1) * l, y = p * l^exp_c)
+					end
+					push!(new_betas, (L = l, beta = data[kn][kl]["beta_c"]))
+					push!(t_points, points)
+					scatter!(pl, 
+						first.(points), 
+						last.(points), 
+						markershape = :cross,
+						label = "L = $l\n" *
+						"beta = $(data[kn][kl]["beta_c"])"
+					)
+				elseif adj == :fit
+					@info "Using fit to find new beta_c"
+
+					beta_c = mval(data[kn][kl]["beta_c"])
+					beta_err = merr(data[kn][kl]["beta_c"])
+					v = map(data[kn][kl][kk]) do (beta, p)
+						(beta = beta, x = l * (beta / beta_c - 1), y = p * l^exp_c)
+					end
+
+					(beta, _, ymin) = argmin(d -> abs(d.x), v)
+					x2 = f_inv(mval(ymin))
+					new_beta_c = beta * (x2 / l + 1)^(-1)
+
+					push!(new_betas, (L = l, beta = measurement(new_beta_c, beta_err)))
+
+					points = map(data[kn][kl][kk]) do (beta, p)
+						(x = l * (beta / new_beta_c - 1), y = p * l^exp_c)
+					end		
+
+					push!(t_points, points)
+
+					scatter!(pl, 
+						first.(points), 
+						last.(points), 
+						markershape = :cross,
+						label = "L = $l.\n" *
+						"old beta = $(data[kn][kl]["beta_c"])\n" *
+						"new beta = $(measurement(new_beta_c, beta_err))"
+						#"old beta = $(round(beta_c, digits = 4))\n" *
+						#"new beta = $(round(new_beta_c, digits = 4))"
+					)
+				else
+					beta_c = data[kn][kl]["beta_c"]
+					new_beta_c = beta_c + adj[i]
+					push!(new_betas, (L = l, beta = new_beta_c))
+
+					points = map(data[kn][kl][kk]) do (beta, p)
+						(x = l * (beta / mval(new_beta_c) - 1), y = p * l^exp_c)
+					end
+
+					push!(t_points, points)
+
+					scatter!(pl, 
+						first.(points), 
+						last.(points), 
+						markershape = :cross,
+						label = "L = $l.\n" *
+						"old beta = $(beta_c)\n" *
+						"new beta = $(new_beta_c)"
+						#"old beta = $(round(beta_c, digits = 4))\n" *
+						#"new beta = $(round(new_beta_c, digits = 4))"
+					)
 				end
-
-				(beta, _, ymin) = argmin(d -> abs(d.x), v)
-				x2 = f_inv(ymin)
-				new_beta_c = sqrt(beta^2 * (x2 / l + 1)^(-1))
-
-				push!(new_betas, (L = l, beta = measurement(new_beta_c, beta_err)))
-
-				points = map(data[kn][kl][kk]) do (beta, p)
-					(x = l * (beta^2 / new_beta_c^2 - 1), y = p * l^exp_c)
-				end		
-
-				scatter!(pl, 
-					first.(points), 
-					last.(points), 
-					markershape = :cross,
-					label = "L = $l.\n" *
-					"old beta = $(data[kn][kl]["beta_c"])\n" *
-					"new beta = $(measurement(new_beta_c, beta_err))"
-					#"old beta = $(round(beta_c, digits = 4))\n" *
-					#"new beta = $(round(new_beta_c, digits = 4))"
-				)
 			else
 				@info "Nt = $nt, L = $l not found, skipping"
 			end
@@ -486,9 +540,14 @@ function fssplot2(data, kind::Symbol, nt, L = 60:20:100; kwargs...)
 	end
 
 	if 100 in L
+		push!(t_names, :L100)
+		points = map(data[kn]["L100"][kk]) do (beta, p)
+			(x = 100 * (beta / beta_c100 - 1), y = p * 100^exp_c)
+		end
+		push!(t_points, points)
 		scatter!(pl, 
-			x, 
-			y, 
+			first.(points), 
+			last.(points), 
 			markershape = :cross,
 			label = "L = 100\n" *
 			"beta = $(data[kn]["L100"]["beta_c"])"
@@ -497,10 +556,11 @@ function fssplot2(data, kind::Symbol, nt, L = 60:20:100; kwargs...)
 		push!(new_betas, (L = 100, beta = data[kn]["L100"]["beta_c"]))
 	end
 
-	(plot = pl, betas = new_betas)
+	t = NamedTuple{tuple(t_names...)}(t_points)
+	(plot = pl, betas = new_betas, adj = adj, t...)
 end
 
-function beta_vs_l(data, nt, L = 60:20:100; kwargs...)
+function beta_vs_l(data, nt, L = 40:20:100; kwargs...)
 	kn = "nt$nt"
 	b = map(L) do l 
 		kl = "L$l"
@@ -542,3 +602,60 @@ function getribbon(fit::LsqFit.LsqFitResult, xs, der; alpha = 0.05, dist::Symbol
 	z = quantile(D, 1 - alpha / 2)
 	σ .* z
 end
+
+#=
+
+Teorie di gauge non abeliane sono caratterizzate da fase confinante di bassa temp
+
+Due cariche di colore quark statici interagiscono con potenziale linearmente con distanza
+
+Linee di forza sono nel tubo di flusso -> EST (corda vibrante a basse energie)
+
+Conseguenze su andamento del potenziale -> Luscher
+
+Teoria a T finita -> transizione di deconfinamento -> trans di fase di 1 o 2 ordine
+
+2 ordine -> universale -> caratteristiche indipendenti dalla teoria: dipende da dim spazio e simm
+rotta -> simmetria centro -> centro Z2 -> secondo ordine modello di Ising 2D -> è la congettura
+di Svetisky Yaffe -> prevede una lung di correlazione con esponente critico nu = 1
+
+Si ricollega a EST -> sebbene sia valida in regime di bassa temperatura, prevede la presenza
+di trans di fase a T finita con nu = 1/2 
+
+Problema: cercare di capire se EST e congettura possono essere concigliati. Sono fenomeni
+non perturbativi => regolarizzazione della teoria su reticolo => simulazioni monte carlo
+=> info non perturbative
+
+Occupato di studiare questi fenomeni nel caso Sp(2) con 2+1 dimensioni che ha trans di secondo
+ordine => studio del comportamento critico e gli aspetti legati a EST 
+
+Sviluppo di codice parallelo da zero => effettuato simulazione numeriche non perturbative 
+per Nt = 5, 6, 7, 8 e L = 40,60,80,100 => misura del correlatore del loop di Polyakov 
+a T critica (regime critico di stringa)
+
+
+
+TESI almeno 100 pagine:
+
+più dettagli, non citazioni
+
+Teoria di gauge su reticolo: gruppo anziché algebra
+
+Placchetta: nel limite riproduce il termine Fmunu Fmunu nel continuo
+
+Notazione più consistente (L, Ns, Nt)
+
+T: temp o dimensione loop Wilson?
+
+Fai vedere che la trasf di centro è simmetria. Cos'è il centro del gruppo?
+
+MonteCarlo, catene di Markov, Metropolis: aggiornamento progressivo delle configurazioni
+
+S è azione con beta
+
+Nel dettaglio:
+
+Teoria di gauge nel continuo, discretizza e limite nel continuo
+
+Mecca statistica e trans di fase e FSS nel dettaglio
+=#
