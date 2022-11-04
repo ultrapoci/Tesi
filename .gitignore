@@ -11,7 +11,7 @@ _research
 Rubbish # from syncing with MEGA
 
 tesi_doc/*
-!tesi_doc/tesi.pdf
+!tesi_doc/*.pdf
 !tesi_doc/tex
 
 ################################################################################
