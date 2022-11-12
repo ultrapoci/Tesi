@@ -20,8 +20,18 @@ linearmodel = LegibleLambdas.@λ (nt, p) -> p[1] .+ p[2] .* nt
 
 # Bessel function
 @. K₀(t) = SpecialFunctions.besselk(0, t) # sqrt(π / (2t)) * ℯ^(-t)
+@. K2₀(t) = sqrt(π / (2t)) * exp(-t) * (
+	1
+	- 1 / (8t)
+	+ 9 / (2 * (8t)^2)
+	- 225 / (6 * (8t)^3) 
+)
 
-@. longdistance(R, p) = p[2] * (K₀(R / p[1]) + K₀((80 - R) / p[1]))
+@. longdistance80(R, p) = p[2] * (K₀(R / p[1]) + K₀((80 - R) / p[1]))
+@. longdistance100(R, p) = p[2] * (K₀(R / p[1]) + K₀((100 - R) / p[1]))
+
+@. longdistance80_2(R, p) = p[2] * (K2₀(R / p[1]) + K2₀((80 - R) / p[1]))
+@. longdistance100_2(R, p) = p[2] * (K2₀(R / p[1]) + K2₀((100 - R) / p[1]))
 
 # Caristo's paper uses t = R / ξ
 @. shortdistance(R, p) = p[2]/(R^(1/4)) * (
@@ -144,13 +154,47 @@ end
 Plots.plot(d::Dict, nt::Integer; kwargs...) = Plots.plot(model, d, nt; kwargs...)
 
 @doc "$(TYPEDSIGNATURES)"
-function get_temperatures(linearfit, beta, nts)
-	c = coef(linearfit)
+function temperature_from_nt(linearfit, beta, nts)
+	c = measurement.(coef(linearfit), stderror(linearfit))
 	nt(β) = (β - c[1]) / c[2]
 	T_c = 1 / nt(beta)
 	T = 1 ./ nts
 	T ./ T_c
 end
+
+@doc "$(TYPEDSIGNATURES)"
+function temperature_from_T(linearfit, beta, T)
+	c = measurement.(coef(linearfit), stderror(linearfit))
+	nt(β) = (β - c[1]) / c[2]
+	T_c = 1 / nt(beta)
+	T ./ T_c
+end
+
+@doc "$(TYPEDSIGNATURES)"
+function temperature_from_beta(linearfit, nt, betas)
+	c = measurement.(coef(linearfit), stderror(linearfit))
+	β_c = c[1] + c[2] * nt
+	betas ./ β_c
+end
+
+@doc "$(TYPEDSIGNATURES)"
+function beta_from_temperature(linearfit, nt, T)
+	c = measurement.(coef(linearfit), stderror(linearfit))
+	beta_c = c[1] + c[2] * nt
+	T * beta_c
+end
+
+@doc "$(TYPEDSIGNATURES)"
+function beta_T_conv(linearfit, nt; beta = nothing, T = nothing)
+	if !isnothing(beta)
+		temperature_from_beta(linearfit, nt, beta)
+	elseif !isnothing(T)
+		beta_from_temperature(linearfit, nt, T)
+	else
+		throw(ArgumentError("Both beta and T are nothing"))
+	end
+end
+
 
 ### autocorrelation ###
 
@@ -217,29 +261,63 @@ function readproffiles(folder)
 	end
 end
 
-function makestephist(d, nt::Int, l::Int, betarange = nothing; bins = 400)
-	(betamin, betamax) = if isnothing(betarange)
-		(-Inf, Inf)
+function montecarlohistory(rawdata, nt::Int, l::Int, beta::Real; range = nothing, kwargs...)
+	i = findfirst(x -> x.beta == beta, rawdata["nt$nt"]["L$l"])
+	if isnothing(i)
+		throw("beta = $beta not found")
 	else
-		betarange
+		b = first(rawdata["nt$nt"]["L$l"][i])
+		v = last(rawdata["nt$nt"]["L$l"][i])
+		if isnothing(range)
+			range = 1:length(v)
+		end
+		plot(
+			v[range];
+			dpi = 300,
+			xlabel = "n",
+			ylabel = "ϕ",
+			legend = nothing,
+			minorgrid = true,
+			kwargs...
+		)
 	end
+end
 
-	x = filter(d) do t
-		t.nt == nt && t.l == l && betamin <= t.beta <= betamax
-	end
-	sort!(x, by = y -> y.beta)
+function makestephist(rawdata, nt::Int, l::Int, betafilter::Function; bins = 400, usetitle = false, kwargs...)
+	polyloops = filter(x -> betafilter(x.beta), rawdata["nt$nt"]["L$l"])
 
-	s = stephist(
+	s = stephist(;
 		dpi = 300,
-		title = "Polyakov loop, Nt = $nt, L = $l",
 		xlabel = "ϕ",
+		ylabel = "P(ϕ)",
 		legendtitle = "beta",
+		kwargs...
 	)
-	for y in x
-		stephist!(s, y.v, bins = bins, label = y.beta)
+
+	for p in polyloops
+		stephist!(s, p.v, bins = bins, label = p.beta)
 	end
 
+	if usetitle 
+		plot!(s; title = "Polyakov loop, Nt = $nt, Ns = $l")
+	end
+	
 	s
+end
+
+makestephist(rawdata, nt::Int, l::Int, (bmin, bmax)::Tuple{Real, Real}; kwargs...) = makestephist(rawdata, nt, l, b -> bmin <= b <= bmax; kwargs...)
+makestephist(rawdata, nt::Int, l::Int, betas; kwargs...) = makestephist(rawdata, nt, l, b -> b in betas; kwargs...)
+
+function makestephist(data, rawdata, nt::Int, l::Int; kwargs...)
+	kn = "nt$nt"
+	kl = "L$l"
+
+	beta_c = mval(data[kn][kl]["beta_c"])
+	v = rawdata[kn][kl]
+	(_, minindex) = findmin(map(x -> abs(x.beta - beta_c), v))
+	(lowerindex, higherindex) = clamp.((minindex - 2, minindex + 2), 1, length(v))
+	betas = map(x -> x.beta, v[lowerindex:higherindex])
+	makestephist(rawdata, nt, l, betas)
 end
 
 function getsusc(data, betarange = nothing; binsize = 5000, skip = nothing)
@@ -341,16 +419,59 @@ function getsusc(rawdata::Dict, nt, l, betarange = nothing; binsize = 5000, skip
 	)
 end
 
-function suscplot(data::Dict, nt, L; kwargs...)
+function getbinder(rawdata::Dict, nt, l, betarange = nothing; binsize = 5000, skip = nothing)
+	kn = "nt$nt"
+	kl = "L$l"
+
+	points = if isnothing(betarange)
+		rawdata[kn][kl]
+	else
+		filter(
+			p -> first(betarange) <= p.beta <= last(betarange), 
+			rawdata[kn][kl]
+		)
+	end
+
+	binder(ϕ⁴, ϕ²) = ϕ⁴ / ϕ²^2 - 3.0
+
+	s = map(points) do p
+		thermalized = if isnothing(skip)
+			p.v
+		else
+			p.v[skip:end] # thermalization
+		end
+		phi4 = mean.(binsamples(thermalized .^ 4, binsize)) # uncorrelated data
+		phi2 = mean.(binsamples(thermalized .^ 2, binsize)) # uncorrelated data
+		y = jackknife(binder, phi4, phi2)
+		(beta = p.beta, y = y)
+	end
+
+	DataFrames.DataFrame(
+		:beta => first.(s),
+		:binder => mval.(last.(s)),
+		:binder_error => merr.(last.(s)),
+		:y => last.(s)
+	)
+end
+
+function suscplot(data::Dict, nt, L; usetitle = false, kwargs...)
 	kn = "nt$nt"
 	kl = "L$L"
 	df = data[kn][kl]["points"]
-	f(x) = data[kn][kl]["r"].f(x)
+
+	f = if data[kn][kl]["model"] == "quartic"
+		x -> model4(x, coef(data[kn][kl]["fit"]))
+	elseif data[kn][kl]["model"] == "cubic"
+		x -> model3(x, coef(data[kn][kl]["fit"]))
+	else
+		throw(ArgumentError("Found model = $(data[kn][kl]["model"])"))
+	end
+
 	chi = round(data[kn][kl]["r"].chi, digits = 4)
 	beta_c = data[kn][kl]["beta_c"]
 	m = data[kn][kl]["model"]
 	binsize = data[kn][kl]["binsize"]
-	p = plot(
+	p = scatter(
 		df.beta,
 		df.y;
 		legend = :topleft,
@@ -359,12 +480,16 @@ function suscplot(data::Dict, nt, L; kwargs...)
 		minorgrid = 5,
 		titlefontsize = 10,
 		xlabel = "beta",
-		ylabel = "χ / L²",
-		title = "Susceptibility fit: Nt=$nt, L=$L, binsize=$binsize\nβc=$beta_c, χ²=$chi",
+		ylabel = "χ / Nₛ²",
 		label = "data points",
 		kwargs...
 	)
 	plot!(p, f, label = "fit ($m model)")
+
+	if usetitle
+		plot!(p, title = "Susceptibility fit: Nt=$nt, L=$L, binsize=$binsize\nβc=$beta_c, χ²=$chi")
+	end
+
 	p
 end
 
@@ -413,7 +538,7 @@ end
 	p
 end =#
 
-function fssplot(data, kind::Symbol, nt, L = 40:20:100; adj = nothing, kwargs...)
+function fssplot(data, kind::Symbol, nt, L = 40:20:100; adj = nothing, usetitle = false, kwargs...)
 	kn = "nt$nt"
 
 	if adj == :auto
@@ -421,31 +546,36 @@ function fssplot(data, kind::Symbol, nt, L = 40:20:100; adj = nothing, kwargs...
 	end
 
 	(kk, exp_c, ylabel) = if kind == :modphi
-		("modphi", 1/8, L"\langle|\phi|\rangle L^{\beta/\nu}")
+		("modphi", 1/8, L"\langle|\phi|\rangle N_s^{\beta/\nu}")
 	elseif kind == :phi2
 		# -7/4 is gamma, 2 is to multiply by the volume
-		("phi2", -7/4 + 2, L"L^2 \langle\phi^2\rangle L^{-\gamma/\nu}")
+		("phi2", -7/4 + 2, L"L^2 \langle\phi^2\rangle N_s^{-\gamma/\nu}")
 	else
 		throw(ArgumentError("Curve's kind must be either :phi2 or :modphi, got :$kind"))
 	end
 
 	pl = scatter(;
 		dpi = 300,
-		xlabel = L"xL^{1/\nu}",
+		xlabel = L"x N_s^{1/\nu}",
 		ylabel = ylabel,
 		xminorticks = 5,
 		minorgrid = true,
 		legend = :topleft,
-		title = if isnothing(adj)
-			"Nt = $nt"
-		elseif adj == :fit
-			"Nt = $nt (beta_c adjusted fitting L=100)"
-		else
-			"Nt = $nt (beta_c adjusted)"
-		end,
 		legendfontsize = 7,
 		kwargs...
 	)
+
+	if usetitle
+		plot!(pl, 
+			title = if isnothing(adj)
+				"Nt = $nt"
+			elseif adj == :fit
+				"Nt = $nt (beta_c adjusted fitting L=100)"
+			else
+				"Nt = $nt (beta_c adjusted)"
+			end
+		)
+	end
 
 	@. m(x, p) = p[3] / (1 + p[2] * exp(-p[1]*x))
 	@. m_inv(y, p) = -log((p[3] / y - 1) / p[2]) / p[1]
@@ -477,7 +607,7 @@ function fssplot(data, kind::Symbol, nt, L = 40:20:100; adj = nothing, kwargs...
 						first.(points), 
 						last.(points), 
 						markershape = :cross,
-						label = "L = $l\n" *
+						label = "Nₛ = $l\n" *
 						"beta = $(data[kn][kl]["beta_c"])"
 					)
 				elseif adj == :fit
@@ -505,7 +635,7 @@ function fssplot(data, kind::Symbol, nt, L = 40:20:100; adj = nothing, kwargs...
 						first.(points), 
 						last.(points), 
 						markershape = :cross,
-						label = "L = $l.\n" *
+						label = "Nₛ = $l.\n" *
 						"old beta = $(data[kn][kl]["beta_c"])\n" *
 						"new beta = $(measurement(new_beta_c, beta_err))"
 						#"old beta = $(round(beta_c, digits = 4))\n" *
@@ -526,7 +656,7 @@ function fssplot(data, kind::Symbol, nt, L = 40:20:100; adj = nothing, kwargs...
 						first.(points), 
 						last.(points), 
 						markershape = :cross,
-						label = "L = $l.\n" *
+						label = "Nₛ = $l.\n" *
 						"old beta = $(beta_c)\n" *
 						"new beta = $(new_beta_c)"
 						#"old beta = $(round(beta_c, digits = 4))\n" *
@@ -549,7 +679,7 @@ function fssplot(data, kind::Symbol, nt, L = 40:20:100; adj = nothing, kwargs...
 			first.(points), 
 			last.(points), 
 			markershape = :cross,
-			label = "L = 100\n" *
+			label = "Nₛ = 100\n" *
 			"beta = $(data[kn]["L100"]["beta_c"])"
 			#"beta = $(round(beta_c100, digits = 4))"
 		)
@@ -560,7 +690,7 @@ function fssplot(data, kind::Symbol, nt, L = 40:20:100; adj = nothing, kwargs...
 	(plot = pl, betas = new_betas, adj = adj, t...)
 end
 
-function beta_vs_l(data, nt, L = 40:20:100; kwargs...)
+function beta_vs_l(data, nt, L = 40:20:100; usetitle = false, kwargs...)
 	kn = "nt$nt"
 	b = map(L) do l 
 		kl = "L$l"
@@ -572,20 +702,25 @@ function beta_vs_l(data, nt, L = 40:20:100; kwargs...)
 		end
 	end
 	filter!(x -> !isnothing(x), b)
-	plot(
+	p = plot(
 		first.(b),
-		last.(b),
+		last.(b);
 		dpi = 300,
-		title = "Nt = $nt",
-		xlabel = L"L",
+		xlabel = L"N_s",
 		ylabel = L"\beta_c",
 		legend = nothing,
 		kwargs...
 	)
+
+	if usetitle
+		plot!(p; title = "Nt = $nt")
+	end
+
+	p
 end
 
 function getribbon(fit::LsqFit.LsqFitResult, xs, der; alpha = 0.05, dist::Symbol = :t)
-	cov = estimate_covar(fit)
+	cov = LsqFit.estimate_covar(fit)
 	D = if dist == :t
 		TDist(dof(fit))
 	elseif dist == :normal
@@ -603,59 +738,52 @@ function getribbon(fit::LsqFit.LsqFitResult, xs, der; alpha = 0.05, dist::Symbol
 	σ .* z
 end
 
-#=
+function betafit(data::Dict, model::Symbol; alpha = 0.05, dist::Symbol = :t, params = nothing, usetitle = false, kwargs...)
+	(model, der, default_params, label, title) = if model == :linear
+		(linearmodel, [_ -> 1, x -> x], [1.0, 1.0], "Linear fit", L"\beta_c(N_t) = a + bN_t")
+	elseif model == :nonlinear
+		(betamodel, [_ -> 1, x -> x, x -> 1 / x], [1.0, 1.0, 1.0], "Non linear fit", L"\beta_c(N_t) = a + bN_t + c/N_t")
+	else
+		throw(ArgumentError("'model' must be either :linear or :nonlinear, got :$model"))
+	end
 
-Teorie di gauge non abeliane sono caratterizzate da fase confinante di bassa temp
+	if isnothing(params)
+		params = default_params
+	end
 
-Due cariche di colore quark statici interagiscono con potenziale linearmente con distanza
+	nts = vcat(5:8...)
+	betas = map(nt -> data["nt$nt"]["L100"]["beta_c"], nts)
+	df = DataFrame(:nt => nts, :beta => betas)
+	r = fitmodel(model, df.nt, df.beta, params) 
+	
+	c = measurement.(coef(r.fit), stderror(r.fit))
+	c_names = ["a", "b", "c"]
 
-Linee di forza sono nel tubo di flusso -> EST (corda vibrante a basse energie)
+	annotations = [((0.8, y), (rpad("$n = $k", 18), 10)) for (k, n, y) in zip(c, c_names, [0.5, 0.4, 0.3])]
 
-Conseguenze su andamento del potenziale -> Luscher
+	pl = plot(nts, r.f;
+		ribbon = getribbon(r.fit, df.nt, der; alpha = alpha, dist = dist),
+		minorgrid = true,
+		xlabel = L"N_t",
+		ylabel = L"\beta_c",
+		dpi = 300,
+		legend = :topleft,
+		label = label,
+		annotation = annotations,
+		kwargs...
+	)
+	scatter!(pl, df.nt, df.beta, markershape = :cross, label = "Data points")
 
-Teoria a T finita -> transizione di deconfinamento -> trans di fase di 1 o 2 ordine
+	if usetitle
+		plot!(p, title = title * L",\ L=100,\ \chi^2 = %$(round(r.chi, digits = 4))")
+	end
 
-2 ordine -> universale -> caratteristiche indipendenti dalla teoria: dipende da dim spazio e simm
-rotta -> simmetria centro -> centro Z2 -> secondo ordine modello di Ising 2D -> è la congettura
-di Svetisky Yaffe -> prevede una lung di correlazione con esponente critico nu = 1
+	(plot = pl, chi = r.chi, f = r.f, fit = r.fit, points = df)
+end
 
-Si ricollega a EST -> sebbene sia valida in regime di bassa temperatura, prevede la presenza
-di trans di fase a T finita con nu = 1/2 
+function corrplot(data, nt, L; usetitle = false, kwargs...)
+	dict = data["nt$nt"]["L$L"]["corr"]
+	ks = keys(dict)
 
-Problema: cercare di capire se EST e congettura possono essere concigliati. Sono fenomeni
-non perturbativi => regolarizzazione della teoria su reticolo => simulazioni monte carlo
-=> info non perturbative
-
-Occupato di studiare questi fenomeni nel caso Sp(2) con 2+1 dimensioni che ha trans di secondo
-ordine => studio del comportamento critico e gli aspetti legati a EST 
-
-Sviluppo di codice parallelo da zero => effettuato simulazione numeriche non perturbative 
-per Nt = 5, 6, 7, 8 e L = 40,60,80,100 => misura del correlatore del loop di Polyakov 
-a T critica (regime critico di stringa)
-
-
-
-TESI almeno 100 pagine:
-
-più dettagli, non citazioni
-
-Teoria di gauge su reticolo: gruppo anziché algebra
-
-Placchetta: nel limite riproduce il termine Fmunu Fmunu nel continuo
-
-Notazione più consistente (L, Ns, Nt)
-
-T: temp o dimensione loop Wilson?
-
-Fai vedere che la trasf di centro è simmetria. Cos'è il centro del gruppo?
-
-MonteCarlo, catene di Markov, Metropolis: aggiornamento progressivo delle configurazioni
-
-S è azione con beta
-
-Nel dettaglio:
-
-Teoria di gauge nel continuo, discretizza e limite nel continuo
-
-Mecca statistica e trans di fase e FSS nel dettaglio
-=#
+	
+end
