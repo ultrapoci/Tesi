@@ -76,62 +76,122 @@ a T critica (regime critico di stringa)
     \textbf{Telefono:} 345 6954331
 
 \subsection*{La transizione di deconfinamento nella teoria di Yang-Mills con gruppo di gauge Sp(2) in 3 dimensioni e studio degli effetti di stringa}
+Le teorie di gauge non abeliane sono caratterizzate dal fenomeno del confinamento di colore: sotto una certa temperatura 
+critica -- nella fase detta ”confinante” -- due cariche di colore in rappresentazione fondamentale (quark) interagiscono con un 
+potenziale che cresce asintoticamente in modo lineare con la distanza. Ciò fa sì che una carica di colore isolata non sia 
+direttamente osservabile. Nonostante non ci sia una dimostrazione analitica del fenomeno del confinamento, ne esistono evidenze 
+tramite calcoli numerici.
 
-Le teorie di gauge non abeliane sono caratterizzate dal fenomeno del confinamento di colore: al di sotto di una certa
-temperatura critica, quindi nella fase detta "confinante", due cariche di colore (quark) interagiscono con un potenziale che
-cresce linearmente con la distanza, nel limite di grandi distanze. Questo fa sì che una carica di colore non è direttamente
-osservabile singolarmente. Nonostante non ci sia ancora una rigorosa dimostrazione del fenomeno del confinamento, ne esistono
-varie prove sperimentali. 
+Le linee di forza tra le due cariche di colore sono focalizzate in un tubo di flusso che può essere descritto come una stringa 
+vibrante. Questo modello è detto Effective String Theory (EST) e rappresenta una teoria effettiva di bassa energia per 
+l’interazione tra quark statici, valida a grandi distanze $R$ e basse temperature. Esso risulta essere efficace e predittivo: 
+ad esempio, il primo termine dell’espansione a lunghe distanze di questo modello ha come conseguenza la presenza di un termine 
+correttivo proporzionale a $\flatfrac{1}{R}$ nel potenziale d’interazione fra quark, detto termine di L{\"u}scher. Tale termine
+ha un coefficiente numerico ben definito ed ha avuto molti riscontri in simulazioni di varie teorie di gauge su reticolo.
 
-Il potenziale di interazione fra due quark genera un tubo di flusso che connette le due cariche: ciò
-suggerisce di modellare questo potenziale come una sottile stringa vibrante che collega i due quark. Questo modello
-è detto Effective String Theory (EST) e, come suggerisce il nome, è solo un modello effettivo valido a grandi distanze e
-non una completa descrizione non perturbativa della teoria. Ciò nonostante, è un modello estremamente efficace e predittivo: 
-già solo il primo termine dell'espansione a lunghe distanze di questo modello ha come conseguenza la presenza di un termine
-correttivo nel potenziale d'interazione fra quark, detto termine di L{\"u}scher, il quale ha avuto molti riscontri 
-in simulazioni della teoria su reticolo. 
+Il fenomeno del confinamento dipende dalla temperatura della teoria: a una data temperatura critica il sistema passa dalla fase 
+confinata (bassa temperatura) ad una fase deconfinata (alta temperatura), nella quale il tubo di flusso viene dissolto dalle 
+fluttuazioni di stringa e il potenziale fra le due cariche di colore non è più confinante ma schermato. Estrapolando la 
+descrizione effettiva di stringa alla temperatura critica, essa prevede una transizione di fase di deconfinamento di secondo 
+ordine con esponente critico $\nu = \flatfrac{1}{2}$ per la lunghezza di correlazione. 
+In generale, le transizioni di fase possono essere di primo o secondo ordine: per quelle di secondo ordine, la lunghezza di correlazione 
+diverge al punto critico. A ciò è associato il concetto particolarmente importante di classe di universalità, per il quale 
+sistemi fisici molto diversi fra loro, aventi però la stessa dimensionalità e la stessa simmetria, sono descritti dalla stessa 
+teoria nell’intorno della transizione di fase. In particolare, gli esponenti che caratterizzano il comportamento critico di 
+osservabili corrispondenti sono gli stessi nelle diverse teorie.
 
-Il fenomeno del confinamento dipende dalla temperatura della teoria, e comporta una transizione di fase: a una certa 
-temperatura critica, il sistema passa dalla fase confinata (bassa temperatura) ad una fase deconfinata (alta
-temperatura), nella quale il tubo di flusso viene distrutto dalle fluttuazioni di stringa e non c'è più presenza
-di potenziale confinante fra le due cariche di colore. Di particolare interesse nell'ambito delle transizioni di fase
-è lo studio degli esponenti critici: descrivono l'andamento di quantità fondamentali del sistema nell'intorno della 
-temperatura critica. A questo proposito, una di queste quantità è la lunghezza di correlazione del sistema, e la descrizione
-effettiva di stringa prevede che l'esponente critico associato a tale quantità è $\nu = \flatfrac{1}{2}$. In generale,
-le transizioni di fase possono essere di 1° o 2° ordine: nel secondo caso, è particolarmente importante il concetto
-di classi di universalità, per il quale sistemi fisici molto diversi fra loro, aventi però la stessa dimensionalità e
-rottura di simmetria, sono descritti dagli stessi esponenti critici. Per quanto riguarda il confinamento di cariche di
-colore, esiste una congettura dovuta a Svetisky e Yaffe: in un sistema $(d+1)$ dimensionale, se la transizione 
-di fase di deconfinamento è di secondo ordine, allora il sistema è nella stessa classe di universalità del modello di
-Ising $d$ dimensionale: in entrambi i sistemi, la simmetria rotta è una simmetria globale associata al centro del gruppo
-di gauge della teoria originale. Questo significa che l'esponente critico $\nu$ associato alla lunghezza di
-correlazione della teoria di gauge in $(2+1)$ dimensioni è lo stesso del modello di Ising in 2 dimensioni, cioè
-$\nu = 1$. Questo risultato però è in contrasto con l'analisi fatta usando la EST, che prevede $\nu = \flatfrac{1}{2}$.
+Per quanto riguarda le teorie di gauge non abeliane, alla transizione di deconfinamento avviene la rottura spontanea della 
+simmetria del centro del gruppo di gauge. Esiste una congettura dovuta a Svetitsky e Yaffe, secondo cui, considerando ad esempio 
+una teoria di gauge $(d+1)$ dimensionale con centro del gruppo di gauge $\mathbb{Z}_2$, se la transizione di fase di deconfinamento
+è di secondo ordine, allora il sistema è nella stessa classe di universalità del modello di Ising $d$ dimensionale. Questo 
+significa che l’esponente critico $\nu$ associato alla lunghezza di correlazione della teoria di gauge in $(2+1)$ dimensioni è lo 
+stesso del modello di Ising in 2 dimensioni, il cui valore è ben conosciuto: $\nu = 1$. Questo risultato però è in contrasto 
+con l’analisi fatta usando la EST, che prevede $\nu = \flatfrac{1}{2}$. La teoria effettiva di stringa è molto accurata a 
+bassa temperatura mentre il regime critico è al limite del suo intervallo di applicabilità: risulta dunque interessante 
+studiare in modo quantitativo come si passa dal regime di validità della EST a quello critico regolato dalla congettura 
+di Svetistky e Yaffe.
 
-L'obiettivo quindi è quello di studiare teorie di gauge non abeliane e verificare se la discrepanza fra EST e la
-congettura di Svetisky e Yaffe può essere risolta. Trattandosi di fenomeni non perturbativi, si ricorre alla Lattice Gauge
-Theory (LGT) per studiarli: si tratta di una regolarizzazione della teoria per la quale si discretizza lo spaziotempo
-su un reticolo a passo reticolare costante. Ciò rende la teoria e il path integral ben definiti, e, simulando la teoria
-su un calcolatore, permette di ottenere informazioni non perturbative sul sistema e le sue osservabili. La teoria è definita
-con temperatura finita rendendo la direzione temporale periodica. 
+Dato che entrambi i regimi sono fortemente non perturbativi è utile considerare la formulazione della teoria di gauge non 
+abeliana su reticolo. Essa costituisce una regolarizzazione nella quale si discretizza lo spaziotempo su un reticolo rendendo
+la teoria e il path integral ben definiti. Considerando tale formulazione, è possibile effettuare lo studio 
+non perturbativo mediante simulazioni numeriche su un calcolatore. La teoria può essere studiata anche a temperatura finita 
+imponendo condizioni periodiche per la direzione temporale, con la temperatura data dall’inverso della lunghezza della 
+dimensione temporale.
 
-Questo lavoro si occupa di studiare il fenomeno del confinamento nella teoria di Yang-Mills in $(2+1)$ dimensioni con 
-gruppo di gauge Sp(2): la scelta di questo gruppo è dovuta al fatto che la transizione di deconfimento è ben risaputo
-essere del secondo ordine, ed inoltre i gruppi Sp(N) hanno $\mathbb{Z}_2$ come centro del gruppo per ogni valore di $N$, 
-perciò la simmetria rotta non dipende dalla dimensionalità del gruppo di gauge stesso (come invece avviene coi gruppi
-SU(N) più comunemente scelti). Si è sviluppato un codice su calcolatore da zero che permette di simulare la LGT tramite
-metodi Monte Carlo: in particolare, si è utilizzato l'algoritmo Heat-Bath come sviluppato da Cabibbo e Marinari per la 
-generazione di nuove configurazioni Monte Carlo del sistema con gruppo di gauge Sp(2). Sono state effettuate simulazioni
-per valori della lunghezza del reticolo in direzione temporale $N_t = 5, 6, 7, 8$ e in direzione spaziale 
-$L = 40, 60, 80, 100$, con l'obiettivo di studiare la transizione di fase e ridurre effetti di finite size scaling dovuti a volumi finiti. È stato 
-inoltre misurato il loop di Polyakov (il parametro d'ordine della transizione di fase a cui siamo interessati) 
-a temperature appena sotto la temperatura critica di transizione di fase di deconfinamento, con l'obiettivo 
-di studiarne il correlatore, a cui è associato il potenziale di interazione fra le due cariche di colore, e gli effetti
-di stringa.
+Nel lavoro di tesi mi sono occupato di studiare la transizione di fase di deconfinamento e gli effetti di stringa nella teoria 
+di Yang-Mills in $(2+1)$ dimensioni con gruppo di gauge $\Sp(2)$. La scelta di questo gruppo è dovuta al fatto che la transizione 
+di deconfimento è del secondo ordine, ed inoltre i gruppi $\Sp(N)$ hanno $\mathbb{Z}_2$ come centro del gruppo per ogni valore di 
+$N$: la simmetria rotta quindi non dipende dalla dimensionalità del gruppo di gauge stesso, come invece avviene coi gruppi 
+$\SU(N)$ più comunemente scelti. Si è sviluppato da zero un codice parallelo che permette di simulare la teoria di gauge tramite
+metodi Monte Carlo: in particolare, per l’aggiornamento delle configurazioni del campo di gauge, si è implementato l’algoritmo 
+Heat-Bath come sviluppato da Cabibbo e Marinari insieme con il metodo dell’over-relaxation per accelerare la decorrelazione 
+delle configurazioni che vengono progressivamente generate. Sono state effettuate simulazioni per valori della lunghezza del 
+reticolo in direzione temporale $N_t = 5, 6, 7, 8$ e in direzione spaziale $N_s = 40, 60, 80, 100$. Lo studio della transizione di 
+fase di deconfinamento è avvenuto mediante l’analisi di Finite Size Scaling del parametro d’ordine della rottura di simmetria 
+(il loop di Polyakov) e della sua suscettività. 
+Infine, in fase confinata a temperatura prossima alla transizione di deconfinamento si è studiata l’interazione tra due cariche 
+di colore statiche in rappresentazione fondamentale misurando con simulazioni Monte Carlo la funzione a due punti 
+del loop di Polyakov. Si è osservato che i risultati numerici sono ben descritti dalla EST a grandi distanze mentre il 
+comportamento a distanze dell’ordine della lunghezza di correlazione o inferiori, è ben rappresentato dal regime critico del 
+modello di Ising in $d = 2$. 
 
 \end{otherlanguage}
 \subsection*{Deconfinement transition in 3D Yang-Mills theory with Sp(2) gauge group and study of string effects}
 
-\red{TODO}
+Non abelian gauge theories exhibit color confinement, a phenomenon by which, under a certain critical temperature,
+two color charges in the fundamental representation (quarks) interact through an asymptotically linear potential which
+increases with distance: this is the "confined" phase. Because of color confinement, a single, isolated color charge
+is not directly observable. Despite numerical evidence of color confinement, an analytical proof of this phenomenon has
+yet to be found. 
+
+The field lines between the two color charges form a flux tube, which can be described as a vibrating string. This model
+is called Effective String Theory (EST) and it is a low energy effective theory for interacting static quarks, valid at
+low temperatures and large distances $R$. EST is highly predictive: indeed, the first term of the large distance expansion
+of this model predicts a term proportional to $\flatfrac{1}{R}$ present in the interquark potential, called L{\"u}scher term.
+The L{\"u}scher term has a well defined coefficient and it is in agreement with many simulated gauge theories on the lattice.
+
+Color confinement depends on the temperature of the theory: at a critical temperature, the system changes from the
+confined phase (low temperature) to the deconfined phase (high temperature). In the latter phase, the flux tube is disrupted
+by string fluctuations and the potential between the two color charges is screened and no longer confining. The string 
+description at the critical temperature predicts a second order phase transition with a critical exponent 
+$\nu = \flatfrac{1}{2}$ for the correlation length. In general, phase transitions can be of first or second order. In second
+order phase transitions, the correlation length diverges at the critical point. The concept of universality classes is
+of particular importance in studying these transitions: very different systems, sharing the same dimensionality and
+symmetry, are described by the same theory in the vicinity of the critical point. This is reflected by the critical exponents,
+which describe how some observables approach the critical point and are the same for theories belonging 
+to the same universality class.
+
+In non abelian gauge theories, the spontaneous symmetry breaking of the center of the gauge group is connected
+to the deconfinement transition. A conjecture by Svetisky and Yaffe states that a $(d+1)$ dimensional gauge theory with a
+second order deconfinement transition and $\mathbb{Z}_2$ as center of the gauge group is in the same universality class
+containing the $d$ dimensional Ising model. In particular, this implies that the critical exponent $\nu$ associated to the
+correlation length of a $(2+1)$ dimensional gauge theory is $\nu = 1$, the same critical exponent found in the 2 dimensional
+Ising model. This is contrast with the EST result of $\nu = \flatfrac{1}{2}$. At low temperatures, the string description
+is quite accurate, but it starts to become unreliable in the vicinity of the critical point: it is interesting to 
+quantitatively study how the system passes from the regime of valid EST description to the critical regime described by
+Svetisky and Yaffe's conjecture.
+
+It is useful to consider the non abelian gauge theory regularized on a lattice, considering the non perturbative nature
+of both the regimes. This regularization discretizes spacetime on a lattice, which causes the theory and its path integral
+to be well defined. This makes it possible to simulate the theory on a computer. The finite temperature theory is achieved
+by imposing periodic boundary conditions for the lattice's temporal direction, whose length is now interpreted
+as the inverse of the temperature of the system. 
+
+In making this thesis, I've studied the deconfined phase transition and string effects of the 3 dimensional Yang-Mills theory 
+with $\Sp(2)$ gauge group. The choice of this gauge group has been driven by the fact that the deconfinement phase transition
+is second order, and the center of $\Sp(N)$ gauge groups is $\mathbb{Z}_2$ for every value of $N$. 
+Thus, the spontaneous symmetry breaking does not depend on the dimensionality of the gauge group,
+in contrast with the more common $\SU(N)$ gauge groups. I've developed a parallel program from scratch in order to simulate
+the gauge theory using Monte Carlo methods: in particular, the Heat-Bath algorithm, as designed by Cabibbo and Marinari, has been
+used to update the gauge field's configurations, together with the overrelaxation algorithm which speeds up the
+decorrelation of the generated lattice configurations. Simulations where made for lattices of dimensions 
+$N_t = 5, 6, 7, 8$ and $N_s = 40, 60, 80, 100$. The deconfinement phase transition has been studied through
+the Finite Size Scaling analysis of the order parameter of the broken symmetry (the Polyakov loop) and its susceptibility. 
+Finally, the interaction of the two static color charges in fundamental representation has been studied in the
+confined phase slightly below the critical temperature of phase transition, by measuring the two point function of the Polyakov
+loop using Monte Carlo simulations. Numerical results of these simulations are well described by the EST for large
+distances. For distances below or near the correlation length, the behavior of the system is well described by the
+2D Ising model in the critical regime.    
+
 
 \end{document}
