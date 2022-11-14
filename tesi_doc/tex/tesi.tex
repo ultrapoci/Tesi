@@ -79,20 +79,25 @@
 	\end{center}
 \end{titlepage}
 
+\begin{comment}
+Le teorie di gauge non abeliane presentano il fenomeno del confinamento di colore: il potenziale d'interazione fra due cariche di colore cresce linearmente nel limite di lunghe distanze. Il tubo di flusso formato dalle linee di forza del potenziale può essere modellato come una stringa vibrante: questo modello è detto Effective String Theory (EST). È un modello molto predittivo a basse temperature e lunghe distanze, ma che perde affidabilità ad alte temperature, vicino al punto critico della transizione di deconfinamento. Nel regime critico, una congettura di Svetisky e Yaffe prevede che in una teoria di gauge (2+1) dimensionale, con transizione di deconfinamento di secondo ordine, i dettagli fini delle interazioni possono essere ignorati e il sistema è nella stessa classe di universalità del modello di Ising 2D, in quanto entrambi hanno la stessa simmetria Z2 e dimensionalità. Si è scritto un programma per simulare la teoria di Yang-Mills in tre dimensioni a temperatura finita regolarizzata su reticolo usando l'algoritmo Heat-Bath di Cabibbo e Marinari per verificare la congettura nel caso del gruppo di gauge Sp(2). Si è misurato il correlatore del loop di Polyakov (il parametro d'ordine della transizione di deconfinamento) e si è verificato che ha lo stesso andamento del correlatore fra spin del modello di Ising 2D, a corte e lunghe distanze, suggerendo che la congettura è vera per la teoria (2+1) dimensionale di Yang-Mills con gruppo di gauge Sp(2). 
+\end{comment}
 
 \begin{abstract}
-	Non abelian Yang-Mills gauge theories exhibit color confinement: the potential between two color charges is linearly
-	rising in the large distance limit. An Effective String Description exists which describes the flux tube formed by
-	the field lines of the potential as a vibrating string. This is an effective model with very good predictive power in
-	low temperatures, but it is not reliable in high temperature regimes, near the deconfinement critical point. Here,
+	Non abelian gauge theories exhibit color confinement: the potential between two color charges is linearly
+	rising in the large distance limit. An Effective String Theory (EST) exists which describes the flux tube formed by
+	the field lines of the potential as a vibrating string. This is an effective model with very good predictive power at
+	low temperatures and large distances, but it is not reliable in the high temperature regime, near the deconfinement critical point. Here,
 	the Svetisky-Yaffe conjecture predicts that a $(2+1)$ dimensional gauge theory is in the same universality class
-	of the 2D Ising model, because the fine details of the interactions can be neglegted in the case of a second order
-	deconfinement phase transition and because the two system share the same $\mathbb{Z}_2$ symmetry and dimensionality. 
+	of the 2D Ising model if the deconfinement phase transition is second order, 
+	because the fine details of the interactions can be neglected and the two systems share the same
+	$\mathbb{Z}_2$ symmetry and dimensionality. 
 	We wrote a computer simulation of the finite temperature 3D Yang-Mills theory regularized on a lattice,
 	in order to test this conjecture in the case
 	of the gauge group $\Sp(2)$, implementing the Heat-Bath algorithm by Cabibbo and Marinari. We measured the correlator
 	of Polyakov loops (the order parameter of the deconfinement phase transition) and verified that it behaves like the
-	spin-spin correlator of the 2D Ising model, hinting that the conjecture is true for the $(2+1)$ non abelian Yang-Mills
+	spin-spin correlator of the 2D Ising model for short and large distances,
+	hinting that the conjecture is true for the $(2+1)$ Yang-Mills
 	gauge theory with gauge group $\Sp(2)$.
 \end{abstract}
 
@@ -104,8 +109,8 @@
 
 \section{Introduction}
 
-Non abelian Yang-Mills gauge theories exhibit color confinement: this is a phenomenon for which two color charges cannot be
-observed separately because their interact through a confining interquark potential, which is linearly rising for
+Yang-Mills gauge theories exhibit color confinement: this is a phenomenon for which two color charges cannot be
+observed separately because they interact through a confining interquark potential, which is linearly rising for
 large distances. Despite a large body of numerical evidence, color confinement has no analytic proof.
 
 Color confinement is a non perturbative phenomenon, so the natural context to study it is Lattice Gauge Theory (LGT) which is
@@ -115,19 +120,22 @@ on computers, which enables us to measure observables and better understand the 
 
 We have some insights about the interquark potential: a confining potential makes the Wilson loop, an observable defined
 as a closed loop on the lattice, to follow an "area law", where the area is the one enclosed by said loop. In the
-finite temperature the role of the Wilson loop is taken by the correlator of the Polyakov loop, a closed loop that winds
+finite temperature LGT the role of the Wilson loop is taken by the correlator of the Polyakov loop, a closed loop that winds
 around the periodic time direction of the lattice. It is in the finite temperature theory that we talk about deconfinement
 phase transition: we find that the interquark potential is confining when the temperature of the system is below a certain
 critical temperature; above this temperature, the system is instead in the deconfined phase, in which the potential is 
-no longer confining. The interesting aspect of this phase transition is that it is second order, and its order parameter
-is the Polyakov loop. Moreover, the global symmetry that is spontaneously broken in the deconfinement phase transitions
-is the center of the theory's gauge group. An conjecture by Svetisky and Yaffe states that, in general, the deconfinement
-phase transition in a $(d+1)$ dimensional Yang-Mills gauge theory is in the same universality class of the $d$ Ising model.
+no longer confining. The order parameter of the deconfinement phase transition is the Polyakov loop, which is also 
+associated to the spontaneous symmetry breaking of the center of the gauge group. An interesting conjecture by
+Svetisky and Yaffe states that if the deconfinement transition is second order, then the $(d+1)$ dimensional
+Yang-Mills gauge theory belongs to the same universality class of the $d$ dimensional spin model, with symmetry
+the center of the gauge group. 
 
 An effective approach to studying the interquark potential is the Effective String Theory (EST). The field lines of the 
 potential form a flux tube, which the EST models as a vibrating string. It is only an effective model valid at low temperatures
-and large distances, but it has had an incredible predictive power. We will see that this is due to the fact that the simplest 
-EST, the Nambu-Goto model, has its first corrections at order $\flatfrac{1}{R^7}$. Despite its power, the EST is not consistent
+and large distances, but it has had an incredible predictive power. This is thanks to the fact that the coefficients of the
+first terms in the large distance expansion of this model are highly constrained by Poincaré invariance and match the one from
+the Nambu-Goto model, the simplest EST, up to order $\flatfrac{1}{R^7}$ in the high temperature regime.
+Despite its power, the EST is not consistent
 with the picture by Svetisky and Yaffe: near the critical point of the deconfinement phase transition, the EST is no longer
 as reliable. 
 
@@ -142,6 +150,7 @@ EST and a brief description of the $\Sp(2)$ group), section \ref{simulation} con
 algorithm used to simulate the LGT, section \ref{results} is about the actual simulations that have been run and the data that
 has been collected, and finally section \ref{conclusions} contains a recollection of the results and some final remarks.
 
+\newpage
 
 \section{Theoretical background} \label{background}
 
@@ -154,7 +163,7 @@ a pair of group elements $g$ and $h$ belonging to $G$ for which
 	[g, h] = gh - hg \ne 0.
 \end{equation}
 
-Non abelian Yang-Mills theories are defined on non abelian unitary groups, called $\SU(N)$. 
+Yang-Mills theories are defined on non abelian unitary groups, called $\SU(N)$. 
 $\SU(N)$ are compact, real Lie groups connected to the identity: these are groups of $N \times N$ matrices $U$
 such that
 
@@ -195,7 +204,7 @@ Note that the generators satisfy the commutation relation
 
 where $f_{abc}$ are the structure constants (which are totally antisymmetric) and depend on the algebra. 
 
-The construction of the non abelian Yang-Mills action is based on gauge invariance. Consider a set of real functions $\Lambda^a(x)$ 
+The construction of the Yang-Mills action is based on gauge invariance. Consider a set of real functions $\Lambda^a(x)$ 
 for $a = 1, \dots, N^2 - 1$, from which we can construct an element of the algebra doing a linear combination of generators
 $\Lambda^a(x)T^a$. Exponentiating this element, we get 
 
@@ -245,7 +254,7 @@ in Minkowski space time, whose line element is
 
 Let us now apply a \textit{Wick rotation}. This simply means defining new coordinates:
 
-\begin{equation}
+\begin{equation} \label{eq:wick_rotation}
 	x_0^E = i x^0_M \qc x_i^E = x_M^i.
 \end{equation}
 
@@ -273,7 +282,7 @@ The Wick rotation has the effect of transforming the action in \eqref{eq:ym_acti
 	S_E = -i S_M.
 \end{equation}
 
-Thus, the non abelian Yang-Mills action in Euclidean space is
+Thus, the Yang-Mills action in Euclidean space is
 
 \begin{equation} \label{eq:ym_action}
 	S_E = \frac{1}{2g^2} \int \dd[D]{x^E} \Tr[F_{\mu\nu}F_{\mu\nu}].
@@ -302,9 +311,9 @@ some observable $\mathcal{O}$ as
 	\expval{\mathcal{O}} = \frac{1}{\Z} \int \D{A} e^{iS_M[A]} \mathcal{O}.
 \end{equation}
 
-Note, however, that the integral defined in \eqref{eq:path_integral_mink} is not well behaved, due to the imaginary part in the
-exponent. But, when Wick rotated, the term $iS_M$ becomes $-S_E$, which is real and well behaved. Thus, the final form of the
-path integral we will be using is
+Note that applying a Wick rotation, as defined in \eqref{eq:wick_rotation}, to
+the path integral in \eqref{eq:path_integral_mink} transforms the exponential term $iS_M$ to $-S_E$,
+a real quantity. The final form of the path integral we will be using is 
 
 \begin{equation} \label{eq:path_integral}
 	\Z = \int \D{A} e^{-S_E[A]} \qc \D{A} = \prod_{x, \mu} \delta A_\mu(x),
@@ -421,7 +430,7 @@ a gauge invariant action for lattice regularization at any value of $a \ne 0$, a
 continuum limit.
 
 Since $S_W$ involves only traces of plaquettes, it is clearly gauge invariant. We now show that it also reproduces the
-non abelian Yang-Mills action for $a \rightarrow 0$. Consider the Campbell formula
+Yang-Mills action for $a \rightarrow 0$. Consider the Campbell formula
 
 \begin{equation}
 	e^A e^B = \exp(A + B + \frac{1}{2}\qty[A, B] + \dots).
@@ -460,6 +469,86 @@ the real part. Keeping only the term of order $a^4$, leaves us exactly with the 
 The theory is now suitable for being simulated on a computer: the Wick rotation guarantees that we are dealing with
 real quantities, and the path integral formulation along with the gauge invariant Wilson action makes it possible
 to consider the theory as a statistical system where fields are distributed with probability $e^{-S_W[U]}$.
+
+It is important to note that the Wilson action in \eqref{eq:wilson_action} is not the only valid action for LGT, and
+there are many ways to apply the lattice regularization to the gauge theory. Regardless, in the continuum limit
+$a \rightarrow 0$, it must be the case that physical observables agree with measured observables: this implies that,
+in general, bare quantities (like the coupling $g$) have a non trivial dependence on $a$, such that observables are 
+independent of $a$ in the continuum limit (so that we retrieve the actual physical observables) and are finite. In other words
+given a measured observable $\mathcal{O}$ and its actual physical value $\mathcal{O}_\text{phys}$, we have:
+
+\begin{equation}
+	\lim_{a \rightarrow 0} \mathcal{O}\qty(g(a), a) = \mathcal{O}_\text{phys},
+\end{equation}
+
+where $g(a)$ is the bare gauge coupling, now depending on $a$, in a way that keeps physics the same as we change $a$. In principle,
+the form of $g(a)$ will depend on the particular observable $\mathcal{O}$ taken into consideration. However, for small enough values
+of $a$, $g(a)$ should be universal, in order to ensure that physical observables are finite. This constraint on observables
+can be formulated as
+
+\begin{equation}
+	a \dv{\mathcal{O}\qty(g(a), a)}{a} = 0,
+\end{equation}
+
+which can be rewritten as
+
+\begin{equation} \label{eq:renormalization_group}
+	\qty(\pdv{\ln a} - \beta(g)\pdv{g}) \mathcal{O}\qty(g(a), a) = 0,
+\end{equation}
+
+where 
+
+\begin{equation} \label{eq:beta_function}
+	\beta(g) \equiv -a \pdv{g}{a} = -\pdv{g}{\ln a}.
+\end{equation}
+
+\eqref{eq:renormalization_group} is called \textit{renormalization group equation} and depends on the $\beta$-function in
+\eqref{eq:beta_function}, which is not the inverse coupling $\beta$ used in \eqref{eq:wilson_action}. The $\beta$-function
+describes how the bare coupling $g$ depends on the lattice spacing $a$. For a pure gauge theory in $\SU(N)$, the $\beta$-function has
+the form
+
+\begin{equation}
+	\beta(g) = -\beta_0 g^3 - \beta_1 g^5 + O\qty(g^7),
+\end{equation}
+
+where
+
+\begin{equation}
+	\begin{aligned}
+		\beta_0 &= \frac{1}{16\pi^2} \frac{11}{3}N, \\
+		\beta_1 &= \frac{1}{16\pi^2}\frac{34}{3}N^2
+	\end{aligned}
+\end{equation}
+
+are universal coefficients which don't depend on the regularization scheme (this is not true for higher order terms). Using
+\eqref{eq:beta_function}, we find
+
+\begin{equation}
+	a(g) = \frac{1}{\Lambda_L} \qty(\beta_0 g^2)^{\frac{\beta_1}{2\beta_0^2}} e^{-\frac{1}{2\beta_0 g^2}} \qty(1 + O\qty(g^2)),
+\end{equation}
+
+which can be inverted in order to find $g(a)$:
+
+\begin{equation}
+	g(a)^{-2} = \beta_0 \ln \qty(\frac{1}{a^2 \Lambda_L^2}) + \frac{\beta_1}{\beta_0} \ln \ln \qty(\frac{1}{a^2 \Lambda_L^2})
+	+ O\qty(\frac{1}{\ln \qty(a^2 \Lambda_L^2)}).
+\end{equation}
+
+$\Lambda_L$ is an integration constant that sets the scale: the observables will have values in terms of this scale.
+We can see that for $a \rightarrow 0$, we have $g(a) \rightarrow 0$. $g = 0$ is a zero for the $\beta$-function: thus, the
+renormalization group equation is valid, and we have that the actual physics does not ultimately depend on $a$ in the continuum limit.
+This behavior of the bare gauge coupling $g$ is called \textit{asymptotic freedom}, and it is typical of non abelian theories
+for which the $\beta$-function is negative. Asymptotic freedom causes the gauge coupling to decrease as we decrease
+the lattice spacing, meaning that we are making the lattice finer and finer. Note that lattice simulations can only
+infer dimensionless ratios of physical quantities. This is because, in general, an observable $\mathcal{O}_\text{phys}$
+will depend on $\Lambda_L$, as mentioned, in the following way:
+
+\begin{equation}
+	\mathcal{O}_\text{phys} = C \qty(\Lambda_L)^\delta,
+\end{equation}
+
+where $C$ is a constant and $\delta$ is the mass dimension of the observable. But recall that $\Lambda_L$ is not universal and
+in general depends on the regularization scheme. Ratios of measured quantities, however, will not depend on $\Lambda_L$.
 
 \subsection{Interquark potential} \label{potential}
 
@@ -903,7 +992,7 @@ At large distances $R$, the two points function is dominated by the lowest state
 
 and \eqref{eq:polyloop_expansion} goes like
 
-\begin{equation}
+\begin{equation} \label{eq:est_polyloop_corr}
 	\expval{\phi(0) \phi(R)} \sim \qty(\frac{1}{R})^{\frac{D-3}{2}} K_{\flatfrac{(D-3)}{2}}(E_n R).
 \end{equation}
 
@@ -958,7 +1047,7 @@ and their constraints. It can be shown that the first correction to the Nambu-Go
 is why the Nambu-Goto model and its first order expansion Gaussian term have been quite successful in describing the
 interquark potential at large distances.   
 
-\subsection{Sp(N) group} \label{sp2}
+\subsection{Sp(2) group} \label{sp2}
 
 In this work, we will focus on Yang-Mills LGT with the $\Sp(2)$ gauge group: not only this deviates from the usual choice of $\SU(N)$, but
 it has the important property of having $\mathbb{Z}_2$ as center symmetry, regardless of the dimension of the group itself. Also,
@@ -1027,6 +1116,7 @@ fundamental representation of the $\Sp(2)$ group.
 \label{fig:sp2weights}
 \end{figure}
 
+\newpage
 
 \section{Simulation and algorithm} \label{simulation}
 
@@ -1064,7 +1154,7 @@ direction. In other words:
 
 \subsection{Monte Carlo methods} \label{montecarlo}
 
-We have seen in section \ref{lgt} that we are able to formulate the non abelian Yang-Mills theory in a way
+We have seen in section \ref{lgt} that we are able to formulate the Yang-Mills theory in a way
 that makes the system treatable as a statistical system, where the fields are distributed according to the Boltzmann
 factor $e^{-S_W[U]}$: we can then use Monte Carlo methods to solve the integrals in the theory. 
 
@@ -1100,7 +1190,7 @@ distributed according to the Boltzmann factor in the path integral. Configuratio
 are then more probable to show up and end in up in the average \eqref{eq:mc_estimate_obs}: thus, in the limit of
 $N \rightarrow \infty$, we retrieve the observable as distributed according to \eqref{eq:montecarlo_obs_expval}. Of course,
 in actual simulations $N$ must be finite: in this case, the uncertainty of $\expval{\mathcal{O}}$ behaves like 
-$\qty(O(\flatfrac{1}{\sqrt{N}}))$. Importance sampling is extremely powerful: we simply need to simulate the lattice
+$O\qty(\flatfrac{1}{\sqrt{N}})$. Importance sampling is extremely powerful: we simply need to simulate the lattice
 in order to have links distributed as \eqref{eq:mc_links_probdist} and measure some observable $\mathcal{O}$.
 Doing it enough times and averaging over all values of $\mathcal{O}$, will yield an accurate estimate for the observable.
 
@@ -1174,14 +1264,14 @@ link variables that belongs to $\SU(2)$: these represent the random variables we
 If we focus on a single link that needs to be updated, we only need to consider the plaquettes in which it is
 present: the rest of the action does not depend on this particular link. We call \textit{staple} the product
 of the three links which, together with the link we are updating, forms a plaquette. In a 3D lattice, each link
-is surrounded by 6 staples (we don't consider links on the perimeter of the lattice, because our simulations will 
+is surrounded by 4 staples (we don't consider links on the perimeter of the lattice, because our simulations will 
 use periodic boundary conditions for all dimensions). We can then write the action as
 
 \begin{equation} \label{eq:heatbath_wilson_action_su2}
 	S_W[u] = -\frac{\beta}{4} \Tr(u \sum_i \tilde{u}_i) + \text{terms independent of } u,
 \end{equation}
 
-where $\tilde{u}_i$ represents one staple, and $i = 1, \dots, 6$. Note that we are
+where $\tilde{u}_i$ represents one staple, and $i = 1, \dots, 4$. Note that we are
 using the normalization for the $\Sp(2)$ in \eqref{eq:heatbath_wilson_action_su2} despite being defined for
 $\SU(2)$: the reason is to avoid confusion with the already defined $S_W$ and to be consistent with the actual implemented
 algorithm. Apart from a numerical factor, it does not change Creutz's algorithm in any way. 
@@ -1189,7 +1279,7 @@ algorithm. Apart from a numerical factor, it does not change Creutz's algorithm 
 Ignoring normalization constants, we can rewrite \eqref{eq:u_probdist} as
 
 \begin{equation} \label{eq:u_probdist_2}
-	\dd{P(u)} \sim \exp\qty[\frac{\beta}{4} \Tr(u \sum_i \tilde{u}_i)].
+	\dd{P(u)} \sim \exp\qty[\frac{\beta}{4} \Tr(u \sum_i \tilde{u}_i)] \dd{u}.
 \end{equation}
 
 Since $u \in \SU(2)$, we parametrize it in the following way:
@@ -1198,7 +1288,7 @@ Since $u \in \SU(2)$, we parametrize it in the following way:
 	u = \alpha_0 \id + i \va{\alpha} \cdot \va{\sigma},
 \end{equation}
 
-where $\alpha_\mu \in \mathbb{R} \ \forall \mu = 1, 2, 3, 4$ with the constraint that 
+where $\alpha_\mu \in \mathbb{R} \ \forall \mu = 0, 1, 2, 3$ with the constraint that 
 
 \begin{equation}
 	\alpha^2 \equiv \alpha_0^2 + |\va{\alpha}|^2 = 1
@@ -1214,8 +1304,8 @@ The $\SU(2)$ group measure is then
 
 Since the sum of $\SU(2)$ elements is proportional to an $\SU(2)$ element, we write
 
-\begin{equation}
-	u \sum_i \tilde{u}_i = c \bar{u} \qc \bar{u} \in \SU(2)
+\begin{equation} \label{eq:su2_sum}
+	\sum_i \tilde{u}_i = c \bar{u} \qc \bar{u} \in \SU(2)
 \end{equation}
 
 where 
@@ -1224,10 +1314,10 @@ where
 	c = \det(u \sum_i \tilde{u}_i)^{\flatfrac{1}{2}}.
 \end{equation}
 
-Inserting \eqref{eq:su2_group_measure} in \eqref{eq:u_probdist_2}, we have
+Inserting \eqref{eq:su2_sum} in \eqref{eq:u_probdist_2}, we have
 
 \begin{equation}
-	\dd{P(u)} \sim e^{\frac{1}{4}\beta\Tr(c \bar{u})} \dd{u}.
+	\dd{P(u)} \sim e^{\frac{1}{4}\beta\Tr(c u \bar{u})} \dd{u}.
 \end{equation}
 
 The group measure in \eqref{eq:su2_group_measure} is invariant under multiplication by another $\SU(2)$ element:
@@ -1356,7 +1446,7 @@ Each choice of $t_1$ and $t_2$ above gives a different $\SU(2)$ element belongin
 These come from considering the weights of the representation of the group as shown in figure \ref{fig:sp2weights} and from
 the fact that we ultimately only care about what ends up in the trace of $\Sp(2)$ elements. This choice of subgroup
 guarantees that each part of the $\Sp(2)$ group is touched by the algorithm and that each link can reach any point
-of the $\Sp(2)$, ensuring ergodicity.
+of the $\Sp(2)$ group, ensuring ergodicity.
 
 We define $A_k$ to be an $\SU(2)$ element belonging to the $k$th $\SU(2)$ subgroup, embedded into $\Sp(2)$. 
 For each subgroup in $F$, the $\Sp(2)$ embedding is constructed as follows:
@@ -1462,7 +1552,7 @@ Consider $\widetilde{U}_i$ to be one staple surrounding the link $U$, and let us
 	R = \sum_{i = 1}^6 \widetilde{U}_i.
 \end{equation}
 
-Evidently, there are six staples surrounding each link in a $(2+1)$ dimensional lattice, thus $i = 1,\dots,6$.
+Evidently, there are four staples surrounding each link in a $(2+1)$ dimensional lattice, thus $i = 1,\dots,4$.
 
 \cite{montvay} defines the new link to be
 \begin{equation}
@@ -1544,6 +1634,8 @@ Given that $c = \det(r_k)^{\flatfrac{1}{2}}$, we finally have
 
 Exactly as with the heat-bath algorithm, once we find $a_k$, we can embed it into Sp(2) according to the
 subgroup it belongs to, which yields the corresponding $A_k$, and find the new link using \eqref{eq:overrelaxation_newlink}.
+
+\newpage
 
 \section{Results} \label{results}
 
@@ -1661,32 +1753,35 @@ the peak widens: this is where the susceptibility is at the highest value.
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=0.7\textwidth]{susc_all_l/susc_over_v_nt6.png}
-	\includegraphics[width=0.7\textwidth]{susc_all_l/susc_over_v_nt8.png}
-	\caption[Susceptibility at all values of $N_s$]{Susceptibility divided by the spatial
-	volume of the lattice $N_s^2$. Above is for $N_t = 6$, below is for $N_t=8$.}
-\label{fig:susc_over_v_all_ls}
+		\includegraphics[width=0.7\textwidth]{susc_all_l/suscplot_nt=6.png} 
+
+		\includegraphics[width=0.7\textwidth]{susc_all_l/suscplot_nt=8.png}	
+	\caption[Susceptibility peaks for $N_t = 6, 8$]{Peak of the susceptibility over spatial volume for
+	$N_t = 6$ (above) and $N_t = 8$ (below), for all values of $N_s$ considered. }
+	\label{fig:susc_peaks}
 \end{figure}
 
-Figure \ref{fig:susc_over_v_all_ls} shows the susceptibility over spatial volume 
-$\flatfrac{\chi}{N_s^2}$ for two different values of $N_t$ and all values of $N_s$. To obtain this plot, various
-simulations have been made sweeping values of $\beta$ in order to define where the peak is located. We can see
-that indeed a peak is present: this signals the occurrence of the deconfinement transition in the vicinity of that
-particular value of $\beta$. 
-
+\begin{comment}
 \begin{figure}[h]
 	\centering
 	\begin{tabular}{c c}
-		\includegraphics[width=0.45\textwidth]{susc/suscplot_nt=6_l=40.png} &
-		\includegraphics[width=0.45\textwidth]{susc/suscplot_nt=6_l=60.png}
+		\includegraphics[width=0.45\textwidth]{susc/suscplot_nt=8_l=40.png} &
+		\includegraphics[width=0.45\textwidth]{susc/suscplot_nt=8_l=60.png}
 		\\
-		\includegraphics[width=0.45\textwidth]{susc/suscplot_nt=6_l=80.png} &
-		\includegraphics[width=0.45\textwidth]{susc/suscplot_nt=6_l=100.png}
+		\includegraphics[width=0.45\textwidth]{susc/suscplot_nt=8_l=80.png} &
+		\includegraphics[width=0.45\textwidth]{susc/suscplot_nt=8_l=100.png}
 	\end{tabular}	
-	\caption[Susceptibility peak for $N_t = 6$]{Peak of the susceptibility over spatial volume for
-	$N_t = 6$. From left to right and top to bottom, they are for $N_s = 40, 60, 80, 100$.}
-\label{fig:susc_peaks}
+	\caption[Susceptibility peak for $N_t = 8$]{Peak of the susceptibility over spatial volume for
+	$N_t = 8$. From left to right and top to bottom, they are for $N_s = 40, 60, 80, 100$.}
+	\label{fig:susc_peaks_nt8}
 \end{figure}
+\end{comment}
+
+Figure \ref{fig:susc_peaks} shows the susceptibility over spatial volume 
+$\flatfrac{\chi}{N_s^2}$ for $N_t = 6, 8$ and all values of $N_s$. To obtain this plot, various
+simulations have been made sweeping values of $\beta$ in order to define where the peak is located. We can see
+that indeed a peak is present: this signals the occurrence of the deconfinement transition in the vicinity of that
+particular value of $\beta$. 
 
 \begin{figure}[h]
 	\centering
@@ -1702,9 +1797,8 @@ particular value of $\beta$.
 \label{fig:susc_peaks_fit}
 \end{figure}
 
-Figure \ref{fig:susc_peaks} shows more data around the peak of the susceptibility for $N_t = 6$ and
-$L = 40, 60, 70, 80$. We stress that this analysis has been made for all values
-of $N_t$, and the cases with $N_t = 5, 7, 8$ reproduce similar results.
+We stress that this analysis has been made for all values
+of $N_t = 5, 6, 7, 8$ which produce similar results.
 
 In order to find the precise value of $\beta_c$, we fitted the susceptibility peak
 using a model of the form
@@ -1784,7 +1878,7 @@ universality class of a statistical system. We define
 \end{equation}
 
 The correlation length $\xi$ cannot actually be infinite in a finite volume lattice, and it is limited by $N_s$: 
-it is thus useful to set a length scale, hence the definition of $y$. We have that the order parameters
+it is thus useful to set a length scale, hence the definition of $y$. We have that the order parameter
 $\expval{|\phi|}$ and the susceptibility $N_s^2 \expval{\phi^2}$, if scaled correctly, both follow
 two universal scaling curves. Namely, we have
 
@@ -1905,6 +1999,59 @@ and proceed to use the linear fit from now on.
 					\cline{3-6}
 				& & \multirow{2}{*}{0.89} 
 					& $(3, 8)$   & $9.359(51)$ & 2.3199 \\
+					& & & $(8, 25)$  & $9.752(28)$ & 2.3932 \\
+		\hline
+		\multirow{4}{*}{8} & \multirow{4}{*}{100}
+				& \multirow{2}{*}{0.86}
+					& $(3, 7)$  & $10.543(65)$ & 0.5551 \\
+				& & & $(10, 20)$ & $10.615(49)$  & 2.4229 \\
+			\cline{3-6}
+				& & \multirow{2}{*}{0.89}
+					& $(3, 7)$   & $13.17(12)$  & 0.6701 \\
+				& & & $(11, 35)$ & $13.819(52)$ & 1.3252 \\
+		\hline
+		\multirow{2}{*}{5} & \multirow{2}{*}{100} & \multirow{2}{*}{0.95}
+			    & $(2, 13)$ & $14.157(66)$ & 1.433 \\
+			& & & $(12, 50)$ & $14.26(58)$ & 1.4986 \\
+		\hline
+		\multirow{2}{*}{6} & \multirow{2}{*}{100} & \multirow{2}{*}{0.95}
+			    & $(2, 17)$ & $17.42(11)$ & 0.8582 \\
+			& & & $(14, 42)$ & $16.86(12)$ & 0.513 \\
+		\hline
+		\multirow{2}{*}{7} & \multirow{2}{*}{100} & \multirow{2}{*}{0.95}
+			    & $(2, 20)$ & $20.97(15)$ & 0.5012 \\
+			& & & $(17, 50)$ & $20.66(17)$ & 0.4379 \\
+		\hline
+		\multirow{2}{*}{8} & \multirow{2}{*}{100} & \multirow{2}{*}{0.95}
+			    & $(1, 24)$ & $24.95(22)$ & 2.9113 \\
+			& & & $(18, 50)$ & $24.26(28)$ & 0.4311 \\
+		\hline
+	\end{tabular}
+\caption[Fitted correlation length]{Values for the correlation length $\xi$ found by fitting the short and large distance
+	Polyakov loop two point function with the spin-spin correlator.}
+\label{table:corr_length}
+\end{table}
+\begin{comment}
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{|c|c|c|c|c|c|}
+		\hline
+		$N_t$ & $N_s$ & $\flatfrac{T}{T_c} $ & $R$ & $\xi$ & $\chi^2$ \\
+		\hline
+		\multirow{6}{*}{6} 
+			& \multirow{2}{*}{80}
+				& \multirow{2}{*}{0.95}
+					& $(2, 14)$  & $18.106(92)$ & 1.5862 \\
+				& & & $(16, 38)$ & $18.09(12)$  & 0.6533 \\
+			\cline{2-6}
+			& \multirow{4}{*}{100} 
+				& \multirow{2}{*}{0.86} 
+					& $(2, 6)$   & $7.422(24)$ & 3.8806 \\
+					& & & $(8, 50)$ & $7.861(18)$  & 1.1264 \\
+					\cline{3-6}
+				& & \multirow{2}{*}{0.89} 
+					& $(3, 8)$   & $9.359(51)$ & 2.3199 \\
 					& & & $(8, 25)$  & $9.438(27)$ & 8.3842 \\
 		\hline
 		\multirow{4}{*}{8} & \multirow{4}{*}{100}
@@ -1937,6 +2084,7 @@ and proceed to use the linear fit from now on.
 	Polyakov loop two point function with the spin-spin correlator.}
 \label{table:corr_length}
 \end{table}
+\end{comment}
 
 \eqref{eq:beta_fit} represents the critical value of the coupling $\beta$ at which the deconfinement transition occurs.
 Using the way we have defined the critical temperature $T_c$ in \eqref{eq:critical_temperature}, we can invert $\beta_c(N_t)$
@@ -1958,7 +2106,7 @@ where $|\va{x} - \va{y}| = R$.
 	\includegraphics[width=0.7\textwidth]{corr_t095/corr_long_fit_nt6.png}
 	\caption[Polyakov loop correlator fit for $N_t=6$]{
 		Fit of the Polyakov loop two point function using the spin-spin correlator from the 2D Ising model
-		for $N_t = 6$. Above is the short distance $\xi < R$ fit; below is the large distance $\xi > R$ fit.
+		for $N_t = 6$ and $N_s = 100$. Above is the short distance $\xi < R$ fit; below is the large distance $\xi > R$ fit.
 	}
 \label{fig:corr_fit_nt6}
 \end{figure}
@@ -1969,7 +2117,7 @@ where $|\va{x} - \va{y}| = R$.
 	\includegraphics[width=0.7\textwidth]{corr_t095/corr_long_fit_nt8.png}
 	\caption[Polyakov loop correlator fit for $N_t=8$]{
 		Fit of the Polyakov loop two point function using the spin-spin correlator from the 2D Ising model
-		for $N_t = 8$. Above is the short distance $\xi < R$ fit; below is the large distance $\xi > R$ fit.
+		for $N_t = 8$ and $N_s = 100$. Above is the short distance $\xi < R$ fit; below is the large distance $\xi > R$ fit.
 	}
 \label{fig:corr_fit_nt8}
 \end{figure}
@@ -1983,8 +2131,14 @@ values of $\xi$ at different temperatures and values of $N_t$; figures \ref{fig:
 \ref{fig:corr_fit_nt8} show the short and large distance fit for $N_t = 6$ and $N_t = 8$, respectively.
 
 There is some degree of agreement in our data, and correlations lengths tend to be compatible in the short
-and large distance behavior, hinting that the 2D Ising model spin-spin correlator is indeed a good description
-of the deconfinement phase transition. We can also see that the measurement is not easy: when $\xi$ is low, there
+and large distance behavior. This confirms that the Svetisky and Yaffe conjecture
+is a good description of the theory near the critical point of the deconfinement phase transition, because the theory
+is in fact in the universality class of the 2D Ising model. 
+Also, these results are in line with the EST description
+of the gauge theory, which predicted the large distance behavior in \eqref{eq:est_polyloop_corr} for the two point 
+correlation function of Polyakov loops.
+
+We can also see that the measurement is not easy: when $\xi$ is low, there
 are not many values of $R$ to choose for the fit in the short distance regime. $R$ can take only integer values on the lattice,
 and when $\xi$ is small, changing $R$ by only 1 can drastically change the fit. In the large distance regime, instead, the
 uncertainty of the two point function tends to grow, and we would require more iterations of the simulations in order to reduce
@@ -1999,9 +2153,11 @@ to fit the correlator. Choosing higher values of $N_s$, while keeping $N_t$ smal
 for adjustments of the distance $R$: of course, this would translate to more complex simulations, given that the lattice
 volume increases. 
 
+\newpage
+
 \section{Conclusions} \label{conclusions}
 
-We have described how a non abelian Yang-Mills gauge theory can be simulated on a lattice, starting from theoretical principles
+We have described how a Yang-Mills gauge theory can be simulated on a lattice, starting from theoretical principles
 that enables us to make the theory real and well defined and treatable with statistical methods, i.e. Monte Carlo methods.
 We have also shown how importance sampling can be used to measure observables in the context of the lattice regularization
 of the gauge theory, and how to actually generate lattice configurations that respect the Boltzmann probability 
@@ -2017,20 +2173,14 @@ We successfully implemented the Heat-Bath and overrelaxation algorithms for the 
 Yang-Mills gauge theory regularized on the lattice: our simulations show that the LGT we have simulated
 does in fact exhibit a second order deconfinement phase transition, as expected for the $\Sp(2)$ group and predicted by
 the Svetisky and Yaffe conjecture. We have tested the conjecture by measuring the critical temperature at different lattice
-sizes and simulating the LGT for temperature values that are slightly below the critical temperature. In this regime,
-the EST description is no longer reliable, being a low temperature and large distance effective theory for the interquark
-potential, but the Svetisky-Yaffe conjecture states that the details of the
-interactions in the Yang-Mills theory can be ignored and the system is in the same universality class of the 2D Ising model.
-This would imply that the spin-spin correlator of the Ising model (which is well known) should also describe the 
-two point function of the Polyakov loop, the order parameter of the deconfinement phase transition. Our data of the two point
-function is a bit limited, due to the amount of iterations of the algorithm required to reduce the error at large distances
-and also the spatial volume of the lattice constraining the number of points in which the Polyakov loop correlator can be
-calculated before changing distance regime. Nonetheless, our data shows that the two point function of the Polyakov loop
-is reasonably described by the spin-spin correlator, and the value of the correlation length in the short distance regime
-is in reasonable accordance with the correlation length found in the large regime. This is particularly the case for
-the smaller volume $N_s = 80$ and $N_t = 6$ for which more data was collected, and should not incur into large 
-finite volume effects given that observables calculated at $N_s = 80$ and $N_s = 100$ do not receive big finite size
-scaling corrections. 
+sizes and simulating the LGT for temperature values that are slightly below the critical temperature. Data shows that
+indeed the (2+1) dimensional Yang-Mills at finite temperature with gauge group $\Sp(2)$ is in the same universality class
+of the 2D Ising model. In the vicinity of the critical point, the spin-spin correlator describes well the behavior
+of the Polyakov loop two point function: thus, the mapping by Svetisky and Yaffe described in section \ref{conjecture} appears
+to be valid, even in the case of the $\Sp(2)$ gauge group. Also, the large distance behavior of the Polyakov loop correlator
+is predicted by the EST description at large distaces: this is in line with the idea that EST is a good effective description
+of the theory far from the critical point, in the large distance limit. Near the critical point, the flux tube
+is disturbed by critical effects and the model of a vibrating string becomes a bad approximation.
 
 Going forward, it is quite interesting to increase the data collected in terms of iterations number but also increase 
 the spatial volume of the lattice: this would make the measurement of the two point function of the Polyakov loop more
@@ -2041,8 +2191,18 @@ be in the 2D Ising model universality class while also having a bigger gauge gro
 conjecture itself. 
 
 Also, the Polyakov loop correlator can be used to study the interquark potential: it would be interesting to accurately measure
-this quantity in the confined phase, but with high temperature, to push the limits of the EST description and search for
-correction term in the Nambu-Goto effective description.
+this quantity in the confined phase, but with high temperature, to push the limits of the EST description. 
+In particular, more work could be done to search for correction
+terms to the interquark potential (like the L{\"u}scher term) and to the EST model in general. We have seen that the
+Nambu-Goto model describes the theory quite well at large distances while not being as reliable in the vicinity
+of the critical point: the Polyakov loop correlator and its relationship with the interquark potential could be used
+in order to find corrections terms and to see how the system gets from being well described by the EST to being well
+described by the Svetisky and Yaffe conjecture near the critical point.
+Also, the EST makes prediction about $\sigma(T)$, the string tension
+above for temperatures above $T = 0$, which appears in the interquark potential: 
+this is also an area that could be more interesting to look into using Monte
+Carlo simulations in the case of the $\Sp(2)$ gauge group.
+
 
 \newpage
 
@@ -2126,8 +2286,10 @@ W = \mqty(V_1'^{(1)} & V_1'^{(2)} \\ V_2''^{(1)} & V_2''^{(2)}) \qc
 X = \mqty(V_1'^{(3)} & V_1'^{(4)} \\ V_2''^{(3)} & V_2''^{(4)}).
 \end{equation}
 
-
 \end{appendices}
+
+\newpage 
+
 \printbibliography
 % https://www.overleaf.com/learn/latex/Bibliography_management_in_LaTeX
 
