@@ -1,0 +1,991 @@
+\documentclass{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage{physics}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bbm} % \mathbbm{1}
+\usepackage{utopia} %font utopia imported
+\usepackage{tikz}
+\usepackage{graphicx}
+\usepackage[font=scriptsize,labelfont=bf]{caption}
+\usepackage[labelformat=empty]{subcaption}
+\usepackage{wrapfig}
+\usepackage{multirow}
+\usepackage{color}
+\usepackage{xcolor}
+\usepackage{changepage}
+
+\graphicspath{ {../pics/} }
+
+\newcommand{\D}[1]{\,\mathcal{D}#1\,}
+\newcommand{\Z}{\mathcal{Z}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\SU}{\operatorname{SU}}
+\newcommand{\Sp}{\operatorname{Sp}}
+\newcommand{\id}{\mathbbm{1}}
+
+\usetheme{default}
+\usecolortheme{seahorse}
+
+\title{Transizione di deconfinamento in 3D Yang-Mills con gruppo di gauge $\Sp(2)$ e studio degli effetti di stringa}
+
+\author{\texorpdfstring{Studente: \textbf{Pini Nicholas}\\ \small Relatore: prof. \textbf{Giusti Leonardo}\\ \small Correlatore: prof. \textbf{Pepe Michele}}{Pini Nicholas}}
+
+\institute
+{
+  Facoltà di Fisica Magistrale\\
+  Università degli Studi di Milano Bicocca
+}
+
+\date
+{Anno Accademico 2021/2022}
+
+\titlegraphic{\hspace*{9cm}\includegraphics[width=2cm]{logo.png}}
+
+\begin{document}
+\beamertemplatenavigationsymbolsempty
+
+\frame{\titlepage}
+
+
+\begin{frame}
+	\frametitle{Introduzione}
+
+	\begin{itemize}
+		\item teorie di Yang-Mills presentano \alert{confinamento di colore}: 
+			\begin{itemize}
+				\item potenziale fra cariche di colore cresce linearmente a grandi distanze
+				\item molte prove numeriche
+				\item ancora nessuna dimostrazione analitica
+			\end{itemize}
+		\item a temperature finite, transizione da fase confinata a fase deconfinata
+		\item congettura di Svetisky e Yaffe
+		\item EST: modello effettivo che descrive il potenziale in modo molto efficace 
+	\end{itemize}
+
+	\alert{Obiettivo}: studio della transizione di deconfinamento con gruppo di gauge $\Sp(2)$ usando simulazioni su reticolo.
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Teorie di gauge non abeliane}
+	\framesubtitle{Gruppi non abeliani}
+	
+	Gruppo $G$ \alert{non abeliano}: esiste almeno una coppia $g,h \in G$ tali che
+
+	\begin{equation*}
+		[g, h] = gh - hg \ne 0
+	\end{equation*}
+
+	Yang-Mills definita per gruppi unitari non abeliani: $\SU(N)$.
+
+	\begin{equation*}
+		U \in \SU(N) \implies UU^\dagger = \id \qq{e} \det U = 1.
+	\end{equation*}
+
+	Elementi $U$ parametrizzati da $\theta_a$, con $a = 1,\dots,N^2 - 1$. 
+
+	I generatori dell'algebra $T_a$ sono
+
+	\begin{equation*}
+		iT_a \equiv \eval{\pdv{U}{\theta_a}}_{\theta_i = 0\,\forall i} \implies U = 1 + i \theta_aT^a.
+	\end{equation*}
+
+	I generatori sono Hermitiani:
+
+	\begin{equation*}
+		T_a = T_a^\dagger
+	\end{equation*}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Teorie di gauge non abeliane}
+	\framesubtitle{Azione di pura gauge in Minkowski}
+	
+	\begin{equation*}
+		S_M = -\frac{1}{2g^2} \int \dd[D]{x_M} \Tr[F_{\mu\nu}^M F^{\mu\nu}_M]
+	\end{equation*}
+
+	\begin{itemize}
+		\item $x_M$ coordinate in spazio di Minkowski: $$ds_M^2 = \qty(dx_M^0)^2 - \sum_{i=1}^D \qty(dx_M^i)^2$$
+		\item Trasformazione di gauge: $G(x) = e^{i \Lambda_a(x) T^a} \qc \Lambda_a(x) \in \R$
+		\item Campo vettoriale reale $$A_\mu^M(x) \rightarrow G(x) A_\mu^M(x) G^\dagger(x) + i G(x) \partial_\mu G^\dagger(x)$$
+		\item $F_{\mu\nu}^M = \partial_\mu A_\nu^M - \partial_\nu A_\mu^M + i \qty[A_\mu^M, A_\nu^M]$ tale che
+			$$F_{\mu\nu}^M \rightarrow G(x) F_{\mu\nu}^M G(x)^\dagger$$
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Teorie di gauge non abeliane}
+	\framesubtitle{Rotazione di Wick e azione nell'Euclideo}
+	
+	\alert{Rotazione di Wick} $\rightarrow$ coordinata temporale complessa:
+
+	\begin{equation*}
+		x^0 = i x^0_M \qc x_i = x^i_M 
+	\end{equation*}
+
+	Siamo ora nello spazio Euclideo:
+
+	\begin{equation*}
+		ds^2 = -\qty(dx_0)^2 - \sum_{i=1}^D \qty(dx_i)^2
+	\end{equation*}
+
+	L'azione diventa
+
+	\begin{equation*}
+		S_E = -i S_M = \frac{1}{2g^2} \int \dd[D]{x} \Tr[F_{\mu\nu}F_{\mu\nu}]
+	\end{equation*}
+
+	con
+
+	\begin{equation*}
+		\partial_0 = -i \partial_0^M \qc \partial_i = \partial_i^M \qc A_0 = -i A^0_M \qc A_i = -A^i_M
+	\end{equation*}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Teorie di gauge non abeliane}
+	\framesubtitle{Path integral}
+	
+	Definiamo il \alert{path integral} della teoria:
+
+	\begin{equation*}
+		\Z = \int \D{A_M} e^{iS_M[A_M]} \xrightarrow{\text{ rotazione di Wick }} \Z = \int \D{A} e^{-S_E[A]}
+	\end{equation*}
+
+	con
+
+	\begin{equation*}
+		\D{A} = \prod_{x, \mu} \delta A_\mu(x)
+	\end{equation*}
+
+	$\Z$ si interpreta come la \alert{funzione di partizione} di un sistema statistico con fattore di Boltzmann $e^{-S_E[A]}$.
+
+	Data un'osservabile $\mathcal{O}$:
+
+	\begin{equation*}
+		\expval{\mathcal{O}} = \frac{1}{\Z} \int \D{A} e^{-S_E[A]} \mathcal{O}
+	\end{equation*}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Lattice gauge theory}
+
+	\alert{Lattice gauge theory} (LGT): discretizziamo lo spaziotempo Euclideo con passo reticolare $a$.
+	In questo modo, il momento $p$ riceve naturalmente un cutoff:
+
+	\begin{equation*}
+		p \in \qty(-\frac{\pi}{a}, \frac{\pi}{a})
+	\end{equation*}
+
+	Primo tentativo di discretizzazione dell'azione $S_E$: sostituiamo le derivate con la versione discretizzata su reticolo.
+	Si ottiene:
+
+	\begin{equation*}
+		\widetilde{S} = \frac{1}{2g^2} a^4 \sum_x \sum_{\mu,\nu} \qty(\Tr\qty[F_{\mu\nu}F_{\mu\nu}] + O(a))
+	\end{equation*}
+
+	$\widetilde{S} \rightarrow S_E$ nel limite al continuo $a \rightarrow 0$, ma se $a \ne 0$, $\widetilde{S}$
+	non è gauge invariante.
+\end{frame}
+
+\begin{frame}
+	\frametitle{Lattice gauge theory}
+	\framesubtitle{Link e placchetta}
+
+	Cambiamo errori di discretizzazione in modo che l'azione rimanga gauge invariante anche se $a \ne 0$
+	$\longrightarrow$ \alert{azione di Wilson}.
+
+	\begin{itemize}
+		\item Definiamo i \alert{link}:
+		
+		\begin{equation*}
+			U_\mu(x) = e^{-iaA_\mu(x)}
+		\end{equation*}
+		
+		Sono elementi del gruppo di gauge $\SU(N)$ e collegano due siti del reticolo adiacenti. Trasformazione di gauge è
+
+		\begin{equation*}
+			U_\mu(x) \rightarrow G(x) U_\mu(x) G^\dagger(x + \hat{\mu})
+		\end{equation*}
+		
+		\item Definiamo la \alert{placchetta}: 
+		
+		\begin{equation*}
+			U_{\mu\nu}(x) = U_\mu(x) U_\nu(x + \hat{\mu}) U_\mu^\dagger(x + \hat{\nu}) U_\nu^\dagger(x)
+		\end{equation*}
+		
+		È il prodotto ordinato di link attorno al più piccolo cammino possibile. 
+	\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Lattice gauge theory}
+	\framesubtitle{Azione di Wilson}
+	
+	Dato che $U_\mu(x) \rightarrow G(x) U_\mu(x) G^\dagger(x + \hat{\mu})$, la traccia di prodotti ordinati di link
+	su cammini chiusi è \alert{gauge invariante}.
+
+	\
+
+	Definiamo quindi l'\alert{azione di Wilson}:
+
+	\begin{equation*}
+		S_W = \frac{\beta}{N} \sum_x \sum_{\mu<\nu} \Re \Tr(\id - U_{\mu\nu}(x)) \qc \beta = \frac{2N}{g^2}
+	\end{equation*}
+
+	\begin{itemize}
+		\item nel limite al continuo $a \rightarrow 0$, abbiamo che $S_W \rightarrow S_E$
+		\item è \alert{gauge invariante} anche se $a > 0$
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Lattice gauge theory}
+	\framesubtitle{Libertà asintotica}
+	
+	Nel limite al continuo, le osservabili misurate devono riprodurre le osservabili fisiche
+	$\implies$ dipendenza delle quantità "bare" dell'azione dal passo reticolare $a$ (regolatore della teoria):
+
+	\begin{equation*}
+		\lim_{a \rightarrow 0} \mathcal{O}\qty(g(a), a) = \mathcal{O}_\text{phys}
+	\end{equation*}
+
+	In Yang-Mills, l'equazione del gruppo di rinormalizzazione ha $\beta$-function negativa ed è
+	risolvibile:
+	
+	\begin{equation*}
+		a \rightarrow 0 \implies g(a) \rightarrow 0 \implies \text{\alert{libertà asintotica}}
+	\end{equation*}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Potenziale d'interazione}
+	\framesubtitle{Wilson loop}
+
+	Consideriamo due cariche di colore statiche in rappresentazione fondamentale:
+	\begin{itemize}
+		\item create istantaneamente a distanza $R$
+		\item evolvono per un tempo $\tau$
+		\item vengono annichilate
+	\end{itemize}
+
+	Su reticolo formano un rettangolo $\tau \times R$ di link, detto \alert{Wilson loop}.
+	\begin{columns}
+		\column{0.5\textwidth}
+			\begin{equation*}
+				\begin{gathered}
+					W(\mathcal{C}) = \Tr[\prod_{(\mu,x)\in\mathcal{C}} U_\mu(x)] \\
+					\expval{W(\mathcal{C})} \sim e^{-\tau V(R)} \sim e^{-\sigma_0 \tau R}
+				\end{gathered}				
+			\end{equation*}
+
+			$\sigma_0$ è detta \alert{tensione di stringa a temperatura zero}
+		
+		\column{0.5\textwidth}
+			\begin{figure}[h]
+				\centering
+				\includegraphics[width=0.75\textwidth]{wilson_loop.png}
+				\caption{Gattringer, Christof, Lang, \textit{Quantum chromodynamics on the lattice}}
+			\end{figure}
+	\end{columns}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Potenziale d'interazione}
+	\framesubtitle{Temperatura finita e Polyakov loop}
+
+	Transizione di deconfinamento dipende dalla temperatura. Data una LGT su reticolo con $N_t$ lunghezza temporale,
+	si impongono \alert{condizioni periodiche sul tempo} per i campi bosonici; 
+	la temperatura $T$ del sistema allora è $T = \flatfrac{1}{(aN_t)}$.
+
+	\
+
+	Cariche statiche a $T > 0$ ora descritte dal \alert{loop di Polyakov}:
+
+	\begin{columns}
+		\column{0.5\textwidth}
+			\begin{equation*}
+				\begin{gathered}
+					\phi(\va{x}) = \Tr[\prod_{j = 0}^{N_t - 1} U_0(j, \va{x})] \\
+					\begin{aligned}
+						\expval{\phi(\va{x}) \phi(\va{y})^\dagger} &\sim e^{-\frac{1}{T} V(R, T)} \\
+						&\sim e^{-\frac{1}{T}\sigma(T) R}						
+					\end{aligned}
+				\end{gathered}
+			\end{equation*}
+
+			$\sigma(T)$ è detta \alert{tensione di stringa}
+			
+			\alert{a temperatura finita}
+
+		\column{0.5\textwidth}
+			$F_q \rightarrow$ free energy di una singola carica: $\expval{\phi} \sim e^{-\flatfrac{F_q}{T}}$
+
+			\begin{itemize}
+				\item $\expval{\phi} = 0 \implies F_q \rightarrow \infty \rightarrow$ fase confinata ($T < T_c$)
+				\item $\expval{\phi} \neq 0 \implies F_q$ finita $\rightarrow$ fase deconfinata ($T > T_c$)
+			\end{itemize}
+	\end{columns}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Simmetria di centro}
+
+	\alert{Centro del gruppo di gauge} $Z(G)$: sottogruppo di $G$ che commuta col resto del gruppo.
+
+	\
+
+	\alert{Trasformazione di centro}: moltiplichiamo per $z \in Z(G)$ tutti i link su uno stesso time-slice a $t = t_0$ fissato
+	$\rightarrow$ cammini chiusi su reticolo sono invarianti $\rightarrow$ azione di Wilson e Wilson loop
+	sono invarianti $\rightarrow$ \alert{simmetria di centro}.
+	
+	\
+
+	I Polyakov loop sono cammini chiusi solo grazie alle condizioni periodiche del tempo $\rightarrow$ \alert{non sono
+	invarianti sotto trasformazione di centro}. 
+
+	\begin{itemize}
+		\item Se $\expval{\phi} = 0$, la simmetria di centro è mantenuta
+		\item Se $\expval{\phi} \ne 0$, la simmetria di centro è rotta spontaneamente
+	\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Congettura di Svetisky e Yaffe}
+	\framesubtitle{Parametro d'ordine}
+
+	Il Polyakov loop è quindi il \alert{parametro d'ordine} della transizione di deconfinamento, la quale è 
+	associata alla rottura spontanea di simmetria del centro del gruppo di gauge.
+
+	\
+
+	\alert{Congettura di Svetisky e Yaffe}: una teoria di gauge $(d+1)$ dimensionale che ha transizione di deconfinamento del 
+	\alert{secondo ordine} è nella stessa classe di universalità del modello di spin $d$ dimensionale:
+
+	\begin{itemize}
+		\item correlatore di Polyakov loop $\iff$ correlatore fra spin 
+		\item fase deconfinata, $T > T_c$ $\iff$ fase ordinata, $T^{\text{spin}} < T_c^{\text{spin}}$
+	\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Congettura di Svetisky e Yaffe}
+	\framesubtitle{Classi di universalità}
+
+	Stessa classe di universalità $\implies$ stessi \alert{esponenti critici} nell'intorno del punto critico:
+
+	\begin{equation*}
+		\expval{\phi} \sim \qty(1 - \frac{T}{T_c})^\beta \qc 
+		\chi \sim \qty(1 - \frac{T}{T_c})^{-\gamma} \qc 
+		\xi \sim \qty(1 - \frac{T}{T_c})^{-\nu}
+	\end{equation*}
+
+	Nelle vicinanze del punto critico, i dettagli fini delle interazioni possono essere ignorati ($\xi \rightarrow \infty$)
+	$\rightarrow$ sistemi molto diversi fra loro sono descritti dagli stessi esponenti critici. Devono però avere
+	la stessa \alert{simmetria e dimensionalità}. 
+
+	\
+
+	Problema: fuori dal limite termodinamico (volume finito), $\expval{\phi} = 0$ sempre $\rightarrow$
+	useremo $\expval{|\phi|}$ come parametro d'ordine.
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Effective string theory}
+
+	Tubo di flusso fra cariche di colore interagenti $\rightarrow$ stringa vibrante $\rightarrow$ EST, modello
+	effettivo a basse temperature e lunghe distanze.
+
+	EST più semplice: \alert{azione di Nambu-Goto}
+
+	\begin{equation*}
+		S_\text{NG} = \sigma_0 \int_\Sigma \dd[2]\xi \sqrt{g}
+	\end{equation*}
+
+	Primo termine dell'espansione a lunghe distanze è 
+
+	\begin{equation*}
+		S_\text{G}[X] = \frac{\sigma_0}{2} \int \dd[2]{\xi} \partial_a X^\mu \partial^a X_\mu
+	\end{equation*}
+
+	Prevede correzione al potenziale $\rightarrow$ \alert{termine di L{\"u}scher}
+
+	\begin{equation*}
+		V(R) \sim \sigma_0 R - \frac{\pi (D-2)}{24R}
+	\end{equation*}
+
+	Ha moltissimo riscontro in simulazioni $\rightarrow$ EST è molto predittiva.
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{Effective string theory}
+
+	Nel regime a basse energie, il modello EST di Nambu-Goto permette di calcolare esattamente
+	la funzione a due punti del loop di Polyakov. In 3D:
+
+	\begin{equation*}
+		\begin{gathered}
+			\expval{\phi(0) \phi(R)} \sim K_0(E_0 R) \rightarrow \\
+			\rightarrow \text{stesso andamento a lunghe	distanze del correlatore fra spin}			
+		\end{gathered}
+	\end{equation*}
+
+	C'è \alert{discrepanza fra EST e congettura} nelle vicinanze del punto critico:
+
+	\begin{itemize}
+		\item EST prevede $\nu = \flatfrac{1}{2}$
+		\item la congettura prevede $\nu = 1$ (esponente del modello di Ising 2D)
+	\end{itemize}
+
+	EST non è più predittiva quando il sistema approccia la transizione di fase $\rightarrow$ stringa dissolta 
+	da fluttuazioni e potenziale schermato.
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Gruppo Sp(2)}
+
+	Useremo $\Sp(2)$ come gruppo di gauge: $U \in \Sp(2) \subset \SU(4)$ tali che
+	
+	\begin{equation*}
+		U^* = J U J^\dagger \qc J \equiv i \sigma_2 \otimes \id_{4 \times 4} 
+	\end{equation*}
+
+	Perché usare $\Sp(2)$? $\Sp(2) \subset \SU(4)$, ma ha $\mathbb{Z}_2$ come centro del gruppo $\implies$ classe di universalità del
+	modello di Ising 2D $\rightarrow$ esponenti critici ben conosciuti. 
+	
+	Per $\Sp(2)$, abbiamo che $\beta = \flatfrac{8}{g^2}$.
+
+	\
+	
+	Studio della congettura è \alert{indipendente dalla dimensionalità del gruppo di gauge}. Obiettivi:
+	\begin{itemize}
+		\item simulare la teoria con gruppo di gauge $\Sp(2)$ su reticolo $(2+1)$ dimensionale
+		\item misurare il correlatore di Polyakov loop a $T$ appena inferiore a $T_c$ (fase confinata)
+		\item verificare che sia ben descritto dal correlatore fra spin a corte e lunghe distanze del modello
+		di Ising 2D $\implies$ la congettura è valida
+	\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Metodi Monte Carlo}
+	\framesubtitle{Importance sampling}
+
+	Path integral $\Z$ interpretato come funzione di partizione $\rightarrow$ usiamo \alert{importance sampling}
+	per calcolare le osservabili. Data osservabile $\mathcal{O}$, consideriamo i link $U$ come variabili casuali distribuite come
+
+	\begin{equation*}
+		\dd{P(U)} = \frac{1}{\Z} e^{-S_W[U]} \D U
+	\end{equation*}
+
+	e calcoliamo $\expval{\mathcal{O}}$ come 
+
+	\begin{equation*}
+		\expval{\mathcal{O}} = \lim_{N \rightarrow \infty} \frac{1}{N} \sum_{n=1}^N \mathcal{O}_n(U)
+	\end{equation*}
+
+	L'incertezza di $\expval{\mathcal{O}}$ ha andamento $O\qty(\flatfrac{1}{\sqrt{N}})$. 
+	
+	Non possiamo estrarre direttamente
+	configurazioni di link distribuite come $\dd{P(U)}$ $\rightarrow$ usiamo algoritmi basati su \alert{catene di Markov}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Algoritmo}
+	\framesubtitle{Algoritmo di Creutz}
+
+	Heat-Bath è basato su \alert{idea di Creutz} $\rightarrow$ algoritmo che genera nuove configurazioni per gruppo di gauge
+	$\SU(2)$. Dato $u \in \SU(2)$, si basa sul fatto che per $\SU(2)$ vale la proprietà:
+
+	\begin{equation*}
+		\sum_i \tilde{u}_i = c \bar{u} \qc c = \det(u \sum_i \tilde{u}_i)^{\flatfrac{1}{2}} \qc \bar{u} \in \SU(2) 
+	\end{equation*}
+
+	$\tilde{u}_i$ sono le \textit{staple} attorno al link da aggiornare: in $(2+1)$ dimensioni $\implies i = 1,\dots,4$.
+
+	\begin{equation*}
+		\begin{gathered}
+			\dd{P(u)} \sim \exp\qty[\frac{\beta}{4} \Tr(u \sum_i \tilde{u}_i)] \dd{u}
+				= \exp\qty[\frac{\beta}{4}\Tr(c u \bar{u})] \dd{u} \implies \\
+			\implies \dd{P(u \bar{u}^{-1})} \sim \exp\qty[\frac{\beta}{4} c \Tr(u)] \dd{u}
+		\end{gathered}
+	\end{equation*}
+
+	Con $u = \alpha_0 \id + \va{\alpha} \cdot \va{\sigma} \rightarrow$ basta \alert{generare quadrivettore $\alpha_\mu$}.
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Algoritmo}
+	\framesubtitle{Algoritmo di Cabibbo e Marinari}
+
+	\alert{Heat-Bath di Cabibbo e Marinari}:
+
+	\begin{itemize}
+		\item consideriamo gruppo di gauge $\Sp(2)$ (vale per $\SU(N)$ in generale)
+		\item consideriamo set $F$ di sottogruppi $\SU(2)_k \subset \Sp(2)$
+		\item dato il link da aggiornare $U \in \Sp(2)$, si estrae elemento $u_k \in \SU(2)_k$ da $U$
+		\item si applica algoritmo di Creutz per $u_k$, ottenendo $u'_k$
+		\item si moltiplica il link originale $U$ per $u'_k$
+		\item si ripete quanto fatto per ogni $k$
+	\end{itemize}
+
+	Nel nostro caso, $k = 1,\dots,4 \implies U' = u'_4 u'_3 u'_2 u'_1 U$. Si applica questo procedimento per ogni link $U$
+	del reticolo. 
+
+	\
+
+	$F$ tale che algoritmo sia \alert{ergodico}: nessun sottogruppo di $\Sp(2)$ dev'essere invariante sotto 
+	moltiplicazioni di elementi di $\SU(2)_k$.
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Algoritmo}
+	\framesubtitle{Overrelaxation}
+
+	Vicino al punto critico, $\xi$ diverge $\rightarrow$ aggiornamenti del reticolo dell'ordine del passo reticolare $a$
+	sono piccoli rispetto a $\xi \rightarrow$ \alert{critical slowing down}.
+	
+	\
+
+	Soluzione: \alert{overrelaxation}. Scegliamo un nuovo link $U'$ "il più lontano possibile" da $U$, in modo che 
+	l'azione $S_W[U]$ rimanga invariata. Per gruppo di gauge $\SU(2)$:
+
+	\begin{equation*}
+		u' = v u^{-1} v \qc v = \det(R)^{\flatfrac{1}{2}} R^{-1} \qc R = \sum_{i=1}^4 \tilde{u}_i \rightarrow \text{somma staple}
+	\end{equation*}
+
+	Come per Heat-Bath, l'idea è di estrarre gruppi $\SU(2)_k$ da $\Sp(2)$, applicare overrelaxation, e moltiplicare
+	il link $U \in \Sp(2)$ originale.
+
+	\
+
+	\alert{Overrelaxation non è ergodico}. Nel nostro caso, viene applicato tre volte prima di applicare Heat-Bath.
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Algoritmo}
+	\framesubtitle{Implementazione}
+
+	Dettagli implementazione:
+
+	\begin{itemize}
+		\item reticolo 3D
+		\item $N_s = 40,60,80,100$: lunghezza dimensione spaziale
+		\item $N_t = 5,6,7,8$: lunghezza dimensione temporale
+		\item reticolo con condizioni periodiche anche in direzioni spaziali
+		\item $a = 1 \implies T = \flatfrac{1}{N_t}$
+		\item link aggiornati in parallelo
+			\begin{itemize}
+				\item divisione in siti pari e siti dispari
+				\item problema quando $N_t$ è dispari
+			\end{itemize}
+		\item configurazione iniziale: \textit{hot start}
+		\item numero iterazioni $\sim 10^6$
+		\item termalizzazione raggiunta saltando le prime 200 iterazioni
+		\item normalizzazione delle matrici ogni 100 iterazioni
+	\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Risultati}
+	\framesubtitle{Misura loop di Polyakov}
+
+	Per ogni valore di $N_s$ e $N_t$ considerato, abbiamo misurato il valore del loop di Polyakov. 
+	Per esempio, con $N_t = 6$ e $N_s = 100$:
+
+	\begin{columns}
+		\column{0.4\textwidth}
+			\begin{figure}[h]
+				\centering
+				\vspace{-1em}
+				\includegraphics[width=1.1\textwidth]{mchistory_nt=6_l=100_beta=27.png}
+				\includegraphics[width=1.1\textwidth]{mchistory_nt=6_l=100_beta=28.png}
+			\end{figure}
+			
+		\column{0.6\textwidth}
+			\begin{figure}[h]
+				\includegraphics[width=\textwidth]{polydist_nt=6_l=100.png}
+			\end{figure}
+
+			Comportamento tipico di transizione di fase di secondo ordine:
+			\begin{itemize}
+				\item fase confinata: $\expval{|\phi|} = 0$
+				\item fase deconfinata: $\expval{|\phi|} \ne 0$ e \alert{eventi di tunneling}
+			\end{itemize}
+			
+	\end{columns}
+	
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Risultati}
+	\framesubtitle{Misura temperatura critica}
+
+	$T = \flatfrac{1}{N_t}$ con $N_t$ fissato $\rightarrow$ modifichiamo il valore di $\beta = \flatfrac{8}{g^2}$ per modificare
+	la temperatura critica del sistema. 
+
+	\begin{itemize}
+		\item cerchiamo $\beta_c(N_t)$ tale che il sistema sia nel punto critico
+		\item invertiamo $\beta_c(N_t) \implies N_{t,c}(\beta)$
+		\item temperatura critica è infine $T_c = \flatfrac{1}{N_{t,c}(\beta)}$
+	\end{itemize}
+
+	\alert{Suscettività}: osservabile che misura la larghezza della distribuzione del loop di Polyakov:
+
+	\begin{columns}
+		\column{0.45\textwidth}
+			\begin{equation*}
+				\chi = \sum_{\va{x}} \expval{\phi(\va{0}) \phi(\va{x})} = N_s^2 \expval{\phi^2}
+			\end{equation*}
+		
+			$\chi$ è massima nel punto critico della transizione di deconfinamento $\rightarrow$ misuriamo $\chi$ per vari valori
+			di $\beta$ e fittiamo il picco per trovare $\beta_c$.
+
+		\column{0.55\textwidth}
+		\begin{figure}[h]
+				\includegraphics[width=\textwidth]{susc_all_l/suscplot_nt=6.png}
+				\caption{$N_t = 6$}
+			\end{figure}
+						
+	\end{columns}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Risultati}
+	\framesubtitle{Fit suscettività}
+
+	Picchi suscettività fittati con
+	$\chi(\beta) \sim a + b\qty(\beta^{(0)} - \beta)^2 + c\qty(\beta^{(0)} - \beta)^3 + d\qty(\beta^{(0)} - \beta)^4$
+
+	\begin{figure}[h]
+		\centering
+		\begin{tabular}{c c}
+			\includegraphics[width=0.47\textwidth]{susc_fit/suscfit_nt=6_l=40.png} &
+			\includegraphics[width=0.47\textwidth]{susc_fit/suscfit_nt=6_l=60.png}
+			\\
+			\includegraphics[width=0.47\textwidth]{susc_fit/suscfit_nt=6_l=80.png} &
+			\includegraphics[width=0.47\textwidth]{susc_fit/suscfit_nt=6_l=100.png}
+		\end{tabular}
+		\caption{$N_t = 6$. Da sinistra a destra e dall'alto in basso: $N_s = 40, 60, 80, 100$.}
+	\end{figure}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Risultati}
+	\framesubtitle{Fit suscettività}
+
+	Valori critici di $\beta$ trovati:
+
+	\
+
+	\begin{columns}
+	\column{0.5\textwidth}
+		\centering
+		\begin{tabular}{|c|c|c|c|}
+			\hline
+			$N_t$ & $N_s$ & $\beta_c$ & $\chi^2$ \\
+			\hline
+			\multirow{4}{*}{5} 
+			& 40  & $23.312(14)$   & 1.0933\\
+			& 60  & $23.2748(52)$ & 1.2741 \\
+			& 80  & $23.2886(64)$ & 0.5137 \\
+			& 100 & $23.2817(46)$ & 1.4615 \\
+			\hline
+			\multirow{4}{*}{6} 
+			& 40  & $27.589(30)$  & 0.781 \\
+			& 60  & $27.547(10)$  & 0.7684 \\
+			& 80  & $27.537(12)$ & 0.559 \\
+			& 100 & $27.566(13)$ & 1.6649 \\
+			\hline
+		\end{tabular}
+
+	\column{0.5\textwidth}
+		\centering
+		\begin{tabular}{|c|c|c|c|}
+			\hline
+			$N_t$ & $N_s$ & $\beta_c$ & $\chi^2$ \\
+			\hline
+			\multirow{4}{*}{7} 
+			& 40  & $32.103(31) $  & 0.1255 \\
+			& 60  & $31.8149(92)$ & 0.7616 \\
+			& 80  & $31.8190(97)$  & 0.6526 \\
+			& 100 & $31.8299(99)$ & 1.328 \\
+			\hline
+			\multirow{4}{*}{8} 
+			& 40  & $36.275(68)$ & 0.7747 \\
+			& 60  & $36.103(22)$ & 0.8324 \\
+			& 80  & $36.065(19)$ & 1.3907 \\
+			& 100 & $36.065(14)$ & 1.0921 \\
+			\hline			
+		\end{tabular}
+	\end{columns}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Risultati}
+	\framesubtitle{Finite size scaling}
+	
+	Simulazioni a volume finito, ma transizioni di fase valgono nel limite termodinamico $\rightarrow$ dobbiamo
+	tenere conto degli effetti di volume finito $\rightarrow$ \alert{finite size scaling analysis}.
+
+	\begin{columns}
+		\column{0.5\textwidth}
+			\begin{equation*}
+				\begin{gathered}
+					x = \frac{\beta}{\beta_c} - 1 \\
+					y = x N_s^{\flatfrac{1}{\nu}} \sim \qty(\frac{N_s}{\xi})^{\flatfrac{1}{\nu}}
+				\end{gathered}
+			\end{equation*}
+			\begin{equation*}
+				\begin{aligned}
+					\expval{|\phi|} &\sim N_s^{\flatfrac{-\beta}{\nu}} F_1(x N_s^{\flatfrac{1}{\nu}}) \\
+					N_s^2 \expval{\phi^2} &\sim N_s^{\flatfrac{\gamma}{\nu}} F_2(x N_s^{\flatfrac{1}{\nu}})
+				\end{aligned}
+			\end{equation*}
+			\begin{equation*}
+				\nu = 1 \qc \gamma = \frac{7}{4} \qc \beta = \frac{1}{8} \rightarrow \text{Ising 2D}
+			\end{equation*}
+		\column{0.5\textwidth}
+			\begin{figure}[h]
+				\centering
+				\includegraphics[width=\textwidth]{fss/modphi_fss_nt=6.png}
+				\includegraphics[width=\textwidth]{fss/phi2_fss_nt=6.png}
+				\caption{$N_t = 6$}
+			\end{figure}
+	\end{columns}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Risultati}
+	\framesubtitle{Finite size scaling}
+	
+	\begin{figure}
+		\begin{adjustwidth}{-1cm}{-0.5cm}
+			\begin{subfigure}[h]{0.24\textwidth}
+				\centering
+				\includegraphics[width=1.2\textwidth]{beta_vs_l/beta_vs_l_nt=5.png}
+				\caption{$N_t = 5$}
+			\end{subfigure}
+			\hfill
+			\begin{subfigure}[h]{0.24\textwidth}
+				\centering
+				\includegraphics[width=1.2\textwidth]{beta_vs_l/beta_vs_l_nt=6.png}
+				\caption{$N_t = 6$}
+			\end{subfigure}
+			\hfill
+			\begin{subfigure}[h]{0.24\textwidth}
+				\centering
+				\includegraphics[width=1.2\textwidth]{beta_vs_l/beta_vs_l_nt=7.png}
+				\caption{$N_t = 7$}
+			\end{subfigure}
+			\hfill
+			\begin{subfigure}[h]{0.24\textwidth}
+				\centering
+				\includegraphics[width=1.2\textwidth]{beta_vs_l/beta_vs_l_nt=8.png}
+				\caption{$N_t = 8$}
+			\end{subfigure}
+		\end{adjustwidth}
+	\end{figure}
+
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.47\textwidth]{adj_fss/adj_modphi_fss_nt=6.png}
+		\includegraphics[width=0.47\textwidth]{adj_fss/adj_phi2_fss_nt=6.png}
+	\end{figure}
+
+	Per $N_s = 80, 100$, effetti dovuti al volume finito sono piccoli $\rightarrow$ \alert{usiamo i valori di $\beta_c$ trovati
+	a $N_s = 100$} come valori effettivi validi nel limite termodinamico.
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Risultati}
+	\framesubtitle{$\beta_c$ in funzione di $N_t$}
+
+	\begin{columns}
+		\column{0.5\textwidth}
+			Fissato $N_s = 100$, fittiamo $\beta_c$ al variare di $N_t$ usando una retta. 
+			
+			
+		\column{0.5\textwidth}
+		\begin{equation*}
+			\begin{gathered}
+				\beta_c(N_t) \sim a + bN_t \\
+				\chi^2 = 2.5612
+			\end{gathered}
+		\end{equation*}
+	\end{columns}
+
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=\textwidth]{linear_betafit.png}
+	\end{figure}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Risultati}
+	\framesubtitle{Correlatore del loop di Polyakov}
+
+	\small
+	
+	Correlatore del loop di Polyakov:
+
+	\begin{equation*}
+		\expval{\phi(0) \phi(R)} = \frac{1}{\Z} \int \D U e^{-S_W[U]} \frac{1}{2N_s^2} \sum_{\va{x}, \va{y}} \phi(\va{x}) \phi(\va{y})
+		\qc |\va{x} - \va{y}| = R 
+	\end{equation*}
+
+	Se la congettura è vera, deve essere ben descritto a corte e lunghe distanze dal correlatore fra spin del modello di Ising 2D
+	nell'intorno del punto critico:
+
+	\begin{itemize}
+		\item $R < \xi$
+			\begin{equation*} 
+				\begin{aligned}
+					\expval{\phi(0) \phi(R)} &= \frac{k_s}{R^{\flatfrac{1}{4}}} \biggl[ 1 + \frac{R}{2\xi} \ln(\frac{e^{\gamma_e}R}{8\xi}) + \frac{R^2}{16\xi^2} \\
+					&+ \frac{R^3}{32\xi^3} \ln(\frac{e^{\gamma_e}R}{8\xi}) + O\qty(\frac{R^4}{\xi^4}\ln^2\frac{R}{\xi}) \biggr]
+				\end{aligned}
+			\end{equation*}
+
+		\item $R > \xi$
+			\begin{equation*}
+				\expval{\phi(0) \phi(R)} = k_l \qty(K_0\qty(\frac{R}{\xi}) - K_0\qty(\frac{N_s - R}{\xi})),
+			\end{equation*}
+
+			\alert{Effetto specchio} $\implies$ massimo valore di $R$ è $\flatfrac{N_s}{2}$. 
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Risultati}
+	\framesubtitle{Lunghezza di correlazione}
+	
+	Valori di $\xi$ fittati dal correlatore di loop di Polyakov:
+
+	\
+
+	\begin{table}
+		\centering
+		\begin{tabular}{|c|c|c|c|c|c|}
+			\hline
+			$N_t$ & $N_s$ & $\flatfrac{T}{T_c} $ & $R$ & $\xi$ & $\chi^2$ \\
+			\hline
+			\multirow{2}{*}{5} & \multirow{2}{*}{100} & \multirow{2}{*}{0.95}
+					& $(2, 13)$ & $14.157(66)$ & 1.433 \\
+				& & & $(12, 50)$ & $14.26(58)$ & 1.4986 \\
+			\hline
+			\multirow{2}{*}{6} & \multirow{2}{*}{100} & \multirow{2}{*}{0.95}
+					& $(2, 17)$ & $17.42(11)$ & 0.8582 \\
+				& & & $(14, 42)$ & $16.86(12)$ & 0.513 \\
+			\hline
+			\multirow{2}{*}{7} & \multirow{2}{*}{100} & \multirow{2}{*}{0.95}
+					& $(2, 20)$ & $20.97(15)$ & 0.5012 \\
+				& & & $(17, 50)$ & $20.66(17)$ & 0.4379 \\
+			\hline
+			\multirow{2}{*}{8} & \multirow{2}{*}{100} & \multirow{2}{*}{0.95}
+					& $(1, 24)$ & $24.95(22)$ & 2.9113 \\
+				& & & $(18, 50)$ & $24.26(28)$ & 0.4311 \\
+			\hline
+		\end{tabular}
+	\end{table}
+
+	Misura complicata dalla scelta limita di valori di $R$ se $\xi$ è troppo grande o troppo piccolo.
+\end{frame}
+
+\begin{frame}
+	\frametitle{Risultati}
+	\framesubtitle{Lunghezza di correlazione}
+
+	\begin{columns}
+		\column{\dimexpr\paperwidth-10pt}
+			\begin{figure}
+				\begin{subfigure}[h]{\textwidth}
+					\includegraphics[width=0.48\textwidth]{corr_t095/corr_short_fit_nt6.png}
+					\includegraphics[width=0.48\textwidth]{corr_t095/corr_long_fit_nt6.png}
+					\caption{$N_t = 6$}
+				\end{subfigure}
+				
+				\par\medskip
+
+				\begin{subfigure}[h]{\textwidth}
+					\includegraphics[width=0.48\textwidth]{corr_t095/corr_short_fit_nt8.png}
+					\includegraphics[width=0.48\textwidth]{corr_t095/corr_long_fit_nt8.png}
+					\caption{$N_t = 8$}
+				\end{subfigure}
+			\end{figure}
+	  \end{columns}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Conclusioni}
+	\framesubtitle{Riassunto risultati}
+
+	Riassumendo:
+
+	\
+
+	\begin{itemize}
+		\item teoria di Yang-Mills 3D con gruppo di gauge $\Sp(2)$ presenta una transizione di deconfinamento del
+		secondo ordine (come aspettato)
+		\item andamento di $\expval{\phi(0)\phi(R)}$ per $R > \xi$ previsto da EST
+		\item congettura di Svetisky e Yaffe verificata vicino al punto critico ($0.95T_c$):
+			\begin{itemize}
+				\item per $R > \xi$, in accordo con EST
+				\item per $R < \xi$, dove EST non è più valida
+			\end{itemize} 
+			$\rightarrow$ classe di universalità di modello di Ising 2D
+	\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Conclusioni}
+	\framesubtitle{Ricerche future}
+	
+	Possibili ricerche future:
+
+	\
+
+	\begin{itemize}
+		\item sfruttare $\expval{\phi(0)\phi(R)}$ per  
+			\begin{itemize}
+				\item studiare $\sigma(T)$ e trovare correzioni al potenziale
+				\item studiare come si passa da descrizione EST a descrizione della congettura
+			\end{itemize}
+		\item gruppi $\Sp(N)$ con $N > 2$ in 3D
+			\begin{itemize}
+				\item vale sempre modello di Ising 2D, ma gruppo di gauge diverso
+			\end{itemize}
+	\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+
+	\centering
+	\Huge
+	Grazie per l'attenzione!	
+
+\end{frame}
+
+\end{document}

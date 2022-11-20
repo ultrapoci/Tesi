@@ -23,6 +23,7 @@
 \usepackage[font=small,labelfont=bf]{caption}
 \usepackage{float}
 \usepackage[toc,page]{appendix}
+\usepackage{placeins}
 
 \graphicspath{ {../pics/} }
 \addbibresource{source.bib}
@@ -57,7 +58,7 @@
 	\vspace{10mm}
 	\begin{center}
 			{\LARGE{Deconfinement transition in 3D Yang-Mills theory with Sp(2) gauge group and study of string effects}}\\
-			\vspace{13mm}{\large Tesi magistrale}
+			\vspace{13mm}{\large Tesi di laurea magistrale}
 	\end{center}
 	\vspace{15mm}
 	\par
@@ -71,11 +72,11 @@
 	\hfill
 	\begin{minipage}[t]{0.40\textwidth}\raggedleft
 			{Candidato: {\bf Nicholas Pini}\\
-			Matricola: 813484}
+			Matricola: {\bf 813484}}
 	\end{minipage}
 	%\vspace{25mm}
 	\begin{center}
-	{Anno Accademico 2022/2023}
+	{Anno Accademico 2021/2022}
 	\end{center}
 \end{titlepage}
 
@@ -83,29 +84,46 @@
 Le teorie di gauge non abeliane presentano il fenomeno del confinamento di colore: il potenziale d'interazione fra due cariche di colore cresce linearmente nel limite di lunghe distanze. Il tubo di flusso formato dalle linee di forza del potenziale può essere modellato come una stringa vibrante: questo modello è detto Effective String Theory (EST). È un modello molto predittivo a basse temperature e lunghe distanze, ma che perde affidabilità ad alte temperature, vicino al punto critico della transizione di deconfinamento. Nel regime critico, una congettura di Svetisky e Yaffe prevede che in una teoria di gauge (2+1) dimensionale, con transizione di deconfinamento di secondo ordine, i dettagli fini delle interazioni possono essere ignorati e il sistema è nella stessa classe di universalità del modello di Ising 2D, in quanto entrambi hanno la stessa simmetria Z2 e dimensionalità. Si è scritto un programma per simulare la teoria di Yang-Mills in tre dimensioni a temperatura finita regolarizzata su reticolo usando l'algoritmo Heat-Bath di Cabibbo e Marinari per verificare la congettura nel caso del gruppo di gauge Sp(2). Si è misurato il correlatore del loop di Polyakov (il parametro d'ordine della transizione di deconfinamento) e si è verificato che ha lo stesso andamento del correlatore fra spin del modello di Ising 2D, a corte e lunghe distanze, suggerendo che la congettura è vera per la teoria (2+1) dimensionale di Yang-Mills con gruppo di gauge Sp(2). 
 \end{comment}
 
+\newpage
+\thispagestyle{empty}
+
+\
+
+\newpage
+
 \begin{abstract}
-	Non abelian gauge theories exhibit color confinement: the potential between two color charges is linearly
-	rising in the large distance limit. An Effective String Theory (EST) exists which describes the flux tube formed by
-	the field lines of the potential as a vibrating string. This is an effective model with very good predictive power at
-	low temperatures and large distances, but it is not reliable in the high temperature regime, near the deconfinement critical point. Here,
-	the Svetisky-Yaffe conjecture predicts that a $(2+1)$ dimensional gauge theory is in the same universality class
-	of the 2D Ising model if the deconfinement phase transition is second order, 
-	because the fine details of the interactions can be neglected and the two systems share the same
-	$\mathbb{Z}_2$ symmetry and dimensionality. 
-	We wrote a computer simulation of the finite temperature 3D Yang-Mills theory regularized on a lattice,
-	in order to test this conjecture in the case
-	of the gauge group $\Sp(2)$, implementing the Heat-Bath algorithm by Cabibbo and Marinari. We measured the correlator
-	of Polyakov loops (the order parameter of the deconfinement phase transition) and verified that it behaves like the
-	spin-spin correlator of the 2D Ising model for short and large distances,
-	hinting that the conjecture is true for the $(2+1)$ Yang-Mills
-	gauge theory with gauge group $\Sp(2)$.
+Non abelian gauge theories exhibit color confinement: the potential between two color charges is linearly
+rising in the large distance limit. An Effective String Theory (EST) exists which describes the flux tube formed by
+the field lines of the potential as a vibrating string. This is an effective model with very good predictive power at
+low temperatures and large distances, but it is not reliable in the high temperature regime, near the deconfinement critical point. Here,
+the Svetisky-Yaffe conjecture predicts that a $(2+1)$ dimensional gauge theory is in the same universality class
+of the 2D Ising model if the deconfinement phase transition is second order, 
+because the fine details of the interactions can be neglected and the two systems share the same
+$\mathbb{Z}_2$ symmetry and dimensionality. 
+We wrote a computer simulation of the finite temperature 3D Yang-Mills theory regularized on a lattice,
+in order to test this conjecture in the case
+of the gauge group $\Sp(2)$, implementing the Heat-Bath algorithm by Cabibbo and Marinari. We measured the correlator
+of Polyakov loops (the order parameter of the deconfinement phase transition) and verified that it behaves like the
+spin-spin correlator of the 2D Ising model for short and large distances,
+hinting that the conjecture is true for the $(2+1)$ Yang-Mills
+gauge theory with gauge group $\Sp(2)$.
 \end{abstract}
+
+\newpage
+
+\thispagestyle{empty}
+\
 
 \newpage
 
 \tableofcontents
 
 \newpage
+\thispagestyle{empty}
+\
+
+\newpage
+
 
 \section{Introduction}
 
@@ -1636,6 +1654,10 @@ Exactly as with the heat-bath algorithm, once we find $a_k$, we can embed it int
 subgroup it belongs to, which yields the corresponding $A_k$, and find the new link using \eqref{eq:overrelaxation_newlink}.
 
 \newpage
+\thispagestyle{empty}
+\
+
+\newpage
 
 \section{Results} \label{results}
 
@@ -2153,6 +2175,12 @@ to fit the correlator. Choosing higher values of $N_s$, while keeping $N_t$ smal
 for adjustments of the distance $R$: of course, this would translate to more complex simulations, given that the lattice
 volume increases. 
 
+\FloatBarrier
+
+\newpage
+\thispagestyle{empty}
+\
+
 \newpage
 
 \section{Conclusions} \label{conclusions}
@@ -2288,7 +2316,11 @@ X = \mqty(V_1'^{(3)} & V_1'^{(4)} \\ V_2''^{(3)} & V_2''^{(4)}).
 
 \end{appendices}
 
-\newpage 
+\newpage
+\thispagestyle{empty}
+\
+
+\newpage
 
 \printbibliography
 % https://www.overleaf.com/learn/latex/Bibliography_management_in_LaTeX
