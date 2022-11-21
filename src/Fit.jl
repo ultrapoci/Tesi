@@ -607,8 +607,7 @@ function fssplot(data, kind::Symbol, nt, L = 40:20:100; adj = nothing, usetitle 
 						first.(points), 
 						last.(points), 
 						markershape = :cross,
-						label = "Nₛ = $l\n" *
-						"beta = $(data[kn][kl]["beta_c"])"
+						label = "Nₛ = $l"
 					)
 				elseif adj == :fit
 					@info "Using fit to find new beta_c"
@@ -635,11 +634,7 @@ function fssplot(data, kind::Symbol, nt, L = 40:20:100; adj = nothing, usetitle 
 						first.(points), 
 						last.(points), 
 						markershape = :cross,
-						label = "Nₛ = $l.\n" *
-						"old beta = $(data[kn][kl]["beta_c"])\n" *
-						"new beta = $(measurement(new_beta_c, beta_err))"
-						#"old beta = $(round(beta_c, digits = 4))\n" *
-						#"new beta = $(round(new_beta_c, digits = 4))"
+						label = "Nₛ = $l"
 					)
 				else
 					beta_c = data[kn][kl]["beta_c"]
@@ -656,11 +651,7 @@ function fssplot(data, kind::Symbol, nt, L = 40:20:100; adj = nothing, usetitle 
 						first.(points), 
 						last.(points), 
 						markershape = :cross,
-						label = "Nₛ = $l.\n" *
-						"old beta = $(beta_c)\n" *
-						"new beta = $(new_beta_c)"
-						#"old beta = $(round(beta_c, digits = 4))\n" *
-						#"new beta = $(round(new_beta_c, digits = 4))"
+						label = "Nₛ = $l"
 					)
 				end
 			else
@@ -679,9 +670,7 @@ function fssplot(data, kind::Symbol, nt, L = 40:20:100; adj = nothing, usetitle 
 			first.(points), 
 			last.(points), 
 			markershape = :cross,
-			label = "Nₛ = 100\n" *
-			"beta = $(data[kn]["L100"]["beta_c"])"
-			#"beta = $(round(beta_c100, digits = 4))"
+			label = "Nₛ = 100"
 		)
 		push!(new_betas, (L = 100, beta = data[kn]["L100"]["beta_c"]))
 	end
